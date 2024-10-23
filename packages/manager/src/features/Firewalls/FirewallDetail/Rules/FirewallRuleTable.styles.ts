@@ -4,7 +4,6 @@ import DragIndicator from 'src/assets/icons/drag-indicator.svg';
 import { Box } from 'src/components/Box';
 import { Button } from 'src/components/Button/Button';
 import { StyledLinkButton } from 'src/components/Button/StyledLinkButton';
-import { TableRow } from 'src/components/TableRow';
 import { omittedProps } from 'src/utilities/omittedProps';
 
 import type { FirewallRuleTableRowProps } from './FirewallRuleTable';
@@ -21,7 +20,7 @@ interface StyledFirewallRuleTableRowProps
   status: FirewallRuleTableRowProps['status'];
 }
 
-export const StyledTableRow = styled(TableRow, {
+export const StyledTableRow = styled('tr', {
   label: 'StyledTableRow',
   shouldForwardProp: omittedProps(['originalIndex', 'ruleIndex']),
 })<StyledFirewallRuleTableRowProps>(
