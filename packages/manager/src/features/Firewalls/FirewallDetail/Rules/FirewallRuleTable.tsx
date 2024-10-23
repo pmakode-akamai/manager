@@ -1,6 +1,7 @@
 import {
   DndContext,
   MouseSensor,
+  KeyboardSensor,
   PointerSensor,
   TouchSensor,
   closestCorners,
@@ -161,7 +162,8 @@ export const FirewallRuleTable = (props: FirewallRuleTableProps) => {
         distance: 4,
       },
     }),
-    useSensor(TouchSensor)
+    useSensor(TouchSensor),
+    useSensor(KeyboardSensor)
   );
 
   return (
