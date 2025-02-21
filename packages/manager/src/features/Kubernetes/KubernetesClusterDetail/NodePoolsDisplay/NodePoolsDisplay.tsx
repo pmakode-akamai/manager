@@ -1,11 +1,4 @@
-import {
-  Box,
-  Button,
-  CircleProgress,
-  Select,
-  Stack,
-  Typography,
-} from '@linode/ui';
+import { Button, CircleProgress, Select, Stack, Typography } from '@linode/ui';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { Hidden } from '@mui/material';
@@ -164,14 +157,14 @@ export const NodePoolsDisplay = (props: Props) => {
           <Typography variant="h2">Node Pools</Typography>
         </Stack>
         <Stack
-          sx={(theme) => ({
-            [theme.breakpoints.down('md')]: {
-              paddingTop: theme.spacing(1),
-              width: '100%',
-            },
-          })}
+          // sx={(theme) => ({
+          //   [theme.breakpoints.down('sm')]: {
+          //     paddingTop: theme.spacing(1),
+          //   },
+          // })}
           alignItems="center"
           direction="row"
+          marginLeft="auto"
           spacing={1}
         >
           <FormLabel htmlFor={ariaIdentifier}>
@@ -226,23 +219,19 @@ export const NodePoolsDisplay = (props: Props) => {
             </Button>
           )}
           <Hidden mdUp>
-            <Box sx={{ ml: 'auto !important' }}>
-              <Box sx={{ ml: 1 }}>
-                <ActionMenu
-                  actionsList={[
-                    {
-                      onClick: () => setIsRecycleClusterOpen(true),
-                      title: 'Recycle All Nodes',
-                    },
-                    {
-                      onClick: handleOpenAddDrawer,
-                      title: 'Add a Node Pool',
-                    },
-                  ]}
-                  ariaLabel={`Action menu for Node Pools header`}
-                />
-              </Box>
-            </Box>
+            <ActionMenu
+              actionsList={[
+                {
+                  onClick: () => setIsRecycleClusterOpen(true),
+                  title: 'Recycle All Nodes',
+                },
+                {
+                  onClick: handleOpenAddDrawer,
+                  title: 'Add a Node Pool',
+                },
+              ]}
+              ariaLabel={`Action menu for Node Pools header`}
+            />
           </Hidden>
           <Hidden mdDown>
             <Button
