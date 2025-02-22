@@ -99,7 +99,10 @@ export const PlansPanel = (props: PlansPanelProps) => {
   );
 
   const { isAcceleratedLinodePlansEnabled } = useIsAcceleratedPlansEnabled();
-  const { isTikTokMTCLinodePlansEnabled } = useIsTikTokMTCPlansEnabled();
+  const {
+    isTikTokMTCLinodePlansEnabled,
+    isTikTokMTCLinodePlansEnabledRegion,
+  } = useIsTikTokMTCPlansEnabled(selectedRegionID);
 
   const { data: regionAvailabilities } = useRegionAvailabilityQuery(
     selectedRegionID || '',
@@ -114,6 +117,14 @@ export const PlansPanel = (props: PlansPanelProps) => {
 
   const _types = types.filter((type) => {
     if (!isAcceleratedLinodePlansEnabled && type.class === 'accelerated') {
+      return false;
+    }
+
+    // Picking relevent customplans irrespective of regions
+    if (
+      !isTikTokMTCLinodePlansEnabled &&
+      (type.label.includes('512GB') || type.label.includes('128GB'))
+    ) {
       return false;
     }
 
@@ -169,7 +180,7 @@ export const PlansPanel = (props: PlansPanelProps) => {
         disabledClasses,
         disabledSmallerPlans,
         isLegacyDatabase,
-        isTikTokMTCPlansEnabled: isTikTokMTCLinodePlansEnabled,
+        isTikTokMTCPlansEnabledRegion: isTikTokMTCLinodePlansEnabledRegion,
         plans: plansMap,
         regionAvailabilities,
         selectedRegionId: selectedRegionID,
