@@ -1,4 +1,5 @@
-import { Region } from '@linode/api-v4/lib/regions';
+/* eslint-disable sonarjs/no-duplicate-string */
+import type { Region } from '@linode/api-v4/lib/regions';
 
 export const regions: Region[] = [
   {
@@ -101,6 +102,7 @@ export const regions: Region[] = [
       'Metadata',
       'Premium Plans',
       'Placement Group',
+      'TikTok MTC Plans',
     ],
     country: 'us',
     id: 'us-iad',

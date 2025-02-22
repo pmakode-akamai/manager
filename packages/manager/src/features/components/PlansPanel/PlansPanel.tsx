@@ -2,8 +2,8 @@ import { Notice } from '@linode/ui';
 import * as React from 'react';
 import { useLocation } from 'react-router-dom';
 
-import { isDistributedRegionSupported } from 'src/components/RegionSelect/RegionSelect.utils';
 import { getIsDistributedRegion } from 'src/components/RegionSelect/RegionSelect.utils';
+import { isDistributedRegionSupported } from 'src/components/RegionSelect/RegionSelect.utils';
 import { useIsGeckoEnabled } from 'src/components/RegionSelect/RegionSelect.utils';
 import { TabbedPanel } from 'src/components/TabbedPanel/TabbedPanel';
 import { useFlags } from 'src/hooks/useFlags';
@@ -21,6 +21,7 @@ import {
   planTabInfoContent,
   replaceOrAppendPlaceholder512GbPlans,
   useIsAcceleratedPlansEnabled,
+  useIsTikTokMTCPlansEnabled,
 } from './utils';
 
 import type { PlanSelectionType } from './types';
@@ -91,11 +92,18 @@ export const PlansPanel = (props: PlansPanelProps) => {
   );
 
   const { isAcceleratedLinodePlansEnabled } = useIsAcceleratedPlansEnabled();
+  const { isTikTokMTCLinodePlansEnabled } = useIsTikTokMTCPlansEnabled();
 
   const { data: regionAvailabilities } = useRegionAvailabilityQuery(
     selectedRegionID || '',
     Boolean(flags.soldOutChips) && selectedRegionID !== undefined
   );
+
+  // Add custom plans
+  // const typesWithCustomPlans = [
+  //   ...types,
+  //   // CUSTOM_TIKTOK_MTC_DEDICATED_512_GB_PLAN,
+  // ];
 
   const _types = types.filter((type) => {
     if (!isAcceleratedLinodePlansEnabled && type.class === 'accelerated') {
@@ -106,6 +114,7 @@ export const PlansPanel = (props: PlansPanelProps) => {
       !type.id.includes('dedicated-edge') && !type.id.includes('nanode-edge')
     );
   });
+
   const _plans = getPlanSelectionsByPlanType(
     flags.disableLargestGbPlans
       ? replaceOrAppendPlaceholder512GbPlans(_types)
@@ -153,6 +162,7 @@ export const PlansPanel = (props: PlansPanelProps) => {
         disabledClasses,
         disabledSmallerPlans,
         isLegacyDatabase,
+        isTikTokMTCPlansEnabled: isTikTokMTCLinodePlansEnabled,
         plans: plansMap,
         regionAvailabilities,
         selectedRegionId: selectedRegionID,

@@ -83,6 +83,7 @@ export const accountCapabilities = [
   'Placement Group',
   'SMTP Enabled',
   'Support Ticket Severity',
+  'TikTok MTC Plans',
   'Vlans',
   'VPCs',
 ] as const;

@@ -12,6 +12,7 @@ import {
   PLAN_NOT_AVAILABLE_IN_REGION_COPY,
   PREMIUM_512_GB_PLAN,
   SMALLER_PLAN_DISABLED_COPY,
+  TIKTOK_MTC_CUSTOM_PLANS_AVAILABILITY_REGIONS,
 } from './constants';
 
 import type {
@@ -71,6 +72,31 @@ export const useIsAcceleratedPlansEnabled = () => {
   );
 
   return { isAcceleratedLKEPlansEnabled, isAcceleratedLinodePlansEnabled };
+};
+
+export const useIsTikTokMTCPlansEnabled = () => {
+  const flags = useFlags();
+
+  const { data: account } = useAccount();
+
+  // const isTikTokMTCLinodePlans = Boolean(flags?.tiktokMTCPlans?.linodePlans);
+  // const isTikTokLKEPlans = Boolean(flags?.tiktokMTCPlans?.lkePlans);
+
+  const isTikTokMTCLinodePlans = Boolean(flags?.tiktokMTCPlans);
+  const isTikTokLKEPlans = Boolean(flags?.tiktokMTCPlans);
+
+  const isTikTokMTCLinodePlansEnabled = isFeatureEnabledV2(
+    'TikTok MTC Plans',
+    isTikTokMTCLinodePlans,
+    account?.capabilities ?? []
+  );
+  const isTikTokMTCLKEPlansEnabled = isFeatureEnabledV2(
+    'TikTok MTC Plans',
+    isTikTokLKEPlans,
+    account?.capabilities ?? []
+  );
+
+  return { isTikTokMTCLKEPlansEnabled, isTikTokMTCLinodePlansEnabled };
 };
 
 /**
@@ -286,12 +312,96 @@ export const replaceOrAppendPlaceholder512GbPlans = (
   return types;
 };
 
+// export const getPlanTypes = (
+//   types: (ExtendedType | PlanSelectionType)[],
+//   isTikTokMTCPlansEnabled: boolean
+// ) => {
+//   const tiktokMTCPlanTypes = types.filter((type) => isTikTokMTCPlansEnabled && type.label.includes('512GB'));
+//   const nonTiktokMTClanTypes = types.filter((type) => isTikTokMTCPlansEnabled && type.label.includes('512GB'));
+
+//   if (isTikTokMTCPlansEnabled) {
+//     return types
+//   }
+// };
+
+// interface IsPlanDisabledProps {
+//   disableLargestGbPlansFlag?: boolean;
+//   isTikTokMTCPlansEnabled?: boolean;
+//   plan: ExtendedType | PlanSelectionType;
+//   selectedRegionId?: string;
+// }
+
+// export const isPlanDisabled = ({
+//   disableLargestGbPlansFlag,
+//   isTikTokMTCPlansEnabled,
+//   plan,
+//   selectedRegionId,
+// }: IsPlanDisabledProps) => {
+//   if (
+//     selectedRegionId &&
+//     plan.label.includes('512GB') &&
+//     isTikTokMTCPlansEnabled &&
+//     ['us-iad'].includes(selectedRegionId)
+//   ) {
+//     return false;
+//   }
+//   return (
+//     plan.label.includes('512GB') &&
+//     Boolean(disableLargestGbPlansFlag) &&
+//     // new Ada GPU plans are actually available
+//     plan.class !== 'gpu'
+//   );
+// };
+
+// export const isPlanDisabled = ({
+//   disableLargestGbPlansFlag,
+//   isTikTokMTCPlansEnabled,
+//   plan,
+//   selectedRegionId,
+// }: IsPlanDisabledProps) => {
+//   const is512GB = plan.label.includes('512GB');
+//   const is512GBor128GB =
+//     plan.label.includes('512GB') || plan.label.includes('128GB');
+//   const isOsloOrIADRegion =
+//     selectedRegionId === 'us-iad' || selectedRegionId === 'oslo';
+
+//   // If TikTok is enabled, and the plan is 512GB/128GB in us-iad or oslo, enable the button
+//   if (isOsloOrIADRegion && is512GBor128GB && isTikTokMTCPlansEnabled) {
+//     return false;
+//   }
+
+//   // If TikTok is not enabled, we should prioritize disableLargestGbPlansFlag
+//   if (isOsloOrIADRegion && is512GBor128GB && !isTikTokMTCPlansEnabled) {
+//     return Boolean(disableLargestGbPlansFlag);
+//   }
+
+//   // new Ada GPU plans are actually available
+//   if (is512GB && Boolean(disableLargestGbPlansFlag) && plan.class !== 'gpu') {
+//     return true;
+//   }
+
+//   // For all other cases (not 512GB/128GB), enable the button
+//   return false;
+// };
+
+export const getTikTokMTCCustomPlanTypes = (
+  types: (ExtendedType | PlanSelectionType)[],
+  useIsTikTokMTCPlansEnabled: boolean
+) => {
+  return types.filter(
+    (type) =>
+      useIsTikTokMTCPlansEnabled &&
+      (type.label.includes('512GB') || type.label.includes('128GB'))
+  );
+};
+
 interface ExtractPlansInformationProps {
   disableLargestGbPlansFlag: Flags['disableLargestGbPlans'] | undefined;
   disabledClasses?: LinodeTypeClass[];
   disabledSmallerPlans?: PlanSelectionType[];
   isAPLEnabled?: boolean;
   isLegacyDatabase?: boolean;
+  isTikTokMTCPlansEnabled?: boolean;
   plans: PlanSelectionType[];
   regionAvailabilities: RegionAvailability[] | undefined;
   selectedRegionId: Region['id'] | undefined;
@@ -315,17 +425,45 @@ export const extractPlansInformation = ({
   disabledSmallerPlans,
   isAPLEnabled,
   isLegacyDatabase,
+  isTikTokMTCPlansEnabled,
   plans,
   regionAvailabilities,
   selectedRegionId,
 }: ExtractPlansInformationProps) => {
   const plansForThisLinodeTypeClass: PlanWithAvailability[] = plans.map(
     (plan) => {
+      // const planIsDisabled512Gb
+      // const planIsDisabled512Gb = isPlanDisabled({
+      //   disableLargestGbPlansFlag,
+      //   isTikTokMTCPlansEnabled,
+      //   plan,
+      //   selectedRegionId,
+      // });
+
+      // Disable 512GB plans if not GPU or not in 'oslo' or 'us-iad' regions
+      // 1. new Ada GPU plans are actually available.
+      // 2. 512GB TikTok MTC plans are available in specific regions.
       const planIsDisabled512Gb =
         plan.label.includes('512GB') &&
         Boolean(disableLargestGbPlansFlag) &&
-        // new Ada GPU plans are actually available
-        plan.class !== 'gpu';
+        !(
+          plan.class === 'gpu' ||
+          (selectedRegionId &&
+            TIKTOK_MTC_CUSTOM_PLANS_AVAILABILITY_REGIONS.includes(
+              selectedRegionId
+            ))
+        );
+
+      // TikTok MTC 512/128GB plans are available for `us-iad` & `oslo` regions
+      const planIsLimitedToTikTokMTC = Boolean(
+        (plan.label.includes('512GB') || plan.label.includes('128GB')) &&
+          selectedRegionId &&
+          TIKTOK_MTC_CUSTOM_PLANS_AVAILABILITY_REGIONS.includes(
+            selectedRegionId
+          ) &&
+          !Boolean(isTikTokMTCPlansEnabled)
+      );
+
       const planHasLimitedAvailability = getIsLimitedAvailability({
         plan,
         regionAvailabilities,
@@ -352,6 +490,7 @@ export const extractPlansInformation = ({
         planBelongsToDisabledClass,
         planHasLimitedAvailability,
         planIsDisabled512Gb,
+        planIsLimitedToTikTokMTC,
         planIsSmallerThanUsage,
         planIsTooSmall,
         planIsTooSmallForAPL,
@@ -364,6 +503,7 @@ export const extractPlansInformation = ({
       planBelongsToDisabledClass,
       planHasLimitedAvailability,
       planIsDisabled512Gb,
+      planIsLimitedToTikTokMTC,
       planIsSmallerThanUsage,
       planIsTooSmall,
       planIsTooSmallForAPL,
@@ -379,7 +519,8 @@ export const extractPlansInformation = ({
       planIsDisabled512Gb ||
       planIsTooSmall ||
       planIsSmallerThanUsage ||
-      planIsTooSmallForAPL
+      planIsTooSmallForAPL ||
+      planIsLimitedToTikTokMTC
     ) {
       return [...acc, plan];
     }
@@ -406,6 +547,7 @@ export const getDisabledPlanReasonCopy = ({
   planBelongsToDisabledClass,
   planHasLimitedAvailability,
   planIsDisabled512Gb,
+  planIsLimitedToTikTokMTC,
   planIsSmallerThanUsage,
   planIsTooSmall,
   planIsTooSmallForAPL,
@@ -414,6 +556,7 @@ export const getDisabledPlanReasonCopy = ({
   planBelongsToDisabledClass: DisabledTooltipReasons['planBelongsToDisabledClass'];
   planHasLimitedAvailability: DisabledTooltipReasons['planHasLimitedAvailability'];
   planIsDisabled512Gb: DisabledTooltipReasons['planIsDisabled512Gb'];
+  planIsLimitedToTikTokMTC?: DisabledTooltipReasons['planIsLimitedToTikTokMTC'];
   planIsSmallerThanUsage?: DisabledTooltipReasons['planIsSmallerThanUsage'];
   planIsTooSmall: DisabledTooltipReasons['planIsTooSmall'];
   planIsTooSmallForAPL?: DisabledTooltipReasons['planIsTooSmallForAPL'];
@@ -437,9 +580,17 @@ export const getDisabledPlanReasonCopy = ({
     return PLAN_IS_TOO_SMALL_FOR_APL_COPY;
   }
 
-  if (planHasLimitedAvailability || planIsDisabled512Gb) {
+  if (
+    planHasLimitedAvailability ||
+    planIsDisabled512Gb ||
+    planIsLimitedToTikTokMTC
+  ) {
     return LIMITED_AVAILABILITY_COPY;
   }
+
+  // if (planIsLimitedToTikTokMTC) {
+  //   return PLAN_IS_SOLD_OUT_TIKTOK_MTC_COPY;
+  // }
 
   return PLAN_IS_CURRENTLY_UNAVAILABLE_COPY;
 };
