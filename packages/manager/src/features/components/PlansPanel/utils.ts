@@ -437,6 +437,8 @@ interface ExtractPlansInformationProps {
   disabledSmallerPlans?: PlanSelectionType[];
   isAPLEnabled?: boolean;
   isLegacyDatabase?: boolean;
+  // @todo: check if we can remove the optional prop from `isTikTokMTCPlansEnabledRegion?:` (make it required)
+  // which may requires changes in LKE plans page.
   isTikTokMTCPlansEnabledRegion?: boolean;
   plans: PlanSelectionType[];
   regionAvailabilities: RegionAvailability[] | undefined;
