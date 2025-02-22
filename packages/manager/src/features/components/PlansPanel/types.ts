@@ -32,8 +32,9 @@ export interface PlanSelectionAvailabilityTypes {
   planBelongsToDisabledClass: boolean;
   planHasLimitedAvailability: boolean;
   planIsDisabled512Gb: boolean;
-  planIsLimitedToTikTokMTC?: boolean;
+  planIsLimitedToTikTokMTCRegions?: boolean;
   planIsSmallerThanUsage?: boolean;
+  planIsSoldOutInTikTokMTCRegions?: boolean;
   planIsTooSmall: boolean;
   planIsTooSmallForAPL?: boolean;
 }
