@@ -14,6 +14,7 @@ export const PLAN_IS_TOO_SMALL_FOR_APL_COPY =
   'This plan is too small for Akamai App Platform.';
 export const APL_NOTICE_COPY =
   'Shared CPU instances are currently not available for Akamai App Platform.';
+export const PLAN_IS_SOLD_OUT_TIKTOK_MTC_COPY = 'This plan is sold out';
 
 export const LIMITED_AVAILABILITY_LINK =
   'https://www.linode.com/global-infrastructure/availability/';
@@ -91,6 +92,11 @@ export const DEDICATED_512_GB_PLAN: ExtendedType = {
   transfer: 12000,
   vcpus: 64,
 };
+
+export const TIKTOK_MTC_CUSTOM_PLANS_AVAILABILITY_REGIONS = [
+  'us-iad',
+  'no-oslo',
+];
 
 export const PREMIUM_512_GB_PLAN: ExtendedType = {
   accelerated_devices: 0,

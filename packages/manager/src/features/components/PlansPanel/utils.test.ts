@@ -17,6 +17,7 @@ import {
 } from './utils';
 
 import type { PlanSelectionType } from './types';
+// import { ExtendedType } from 'src/utilities/extendType';
 
 const queryMocks = vi.hoisted(() => ({
   useAccount: vi.fn().mockReturnValue({}),
@@ -319,7 +320,7 @@ describe('extractPlansInformation', () => {
         ...{
           planBelongsToDisabledClass: false,
           planHasLimitedAvailability: true,
-          planIsDisabled512Gb: false,
+          planIsDisabled: false,
           planIsSmallerThanUsage: false,
           planIsTooSmallForAPL: undefined,
         },
@@ -332,7 +333,7 @@ describe('extractPlansInformation', () => {
         ...g6Standard1,
         planBelongsToDisabledClass: false,
         planHasLimitedAvailability: true,
-        planIsDisabled512Gb: false,
+        planIsDisabled: false,
         planIsSmallerThanUsage: false,
         planIsTooSmallForAPL: undefined,
       },
@@ -340,7 +341,7 @@ describe('extractPlansInformation', () => {
         ...g7Standard1,
         planBelongsToDisabledClass: false,
         planHasLimitedAvailability: false,
-        planIsDisabled512Gb: false,
+        planIsDisabled: false,
         planIsSmallerThanUsage: false,
         planIsTooSmallForAPL: undefined,
       },
@@ -348,7 +349,7 @@ describe('extractPlansInformation', () => {
         ...g6Nanode1,
         planBelongsToDisabledClass: false,
         planHasLimitedAvailability: false,
-        planIsDisabled512Gb: false,
+        planIsDisabled: false,
         planIsSmallerThanUsage: false,
         planIsTooSmallForAPL: undefined,
       },
@@ -387,7 +388,7 @@ describe('extractPlansInformation', () => {
         ...{
           planBelongsToDisabledClass: false,
           planHasLimitedAvailability: true,
-          planIsDisabled512Gb: false,
+          planIsDisabled: false,
           planIsSmallerThanUsage: false,
           planIsTooSmall: false,
           planIsTooSmallForAPL: undefined,
@@ -398,7 +399,7 @@ describe('extractPlansInformation', () => {
         ...{
           planBelongsToDisabledClass: false,
           planHasLimitedAvailability: true,
-          planIsDisabled512Gb: false,
+          planIsDisabled: false,
           planIsSmallerThanUsage: false,
           planIsTooSmall: false,
           planIsTooSmallForAPL: undefined,
@@ -409,7 +410,7 @@ describe('extractPlansInformation', () => {
         ...{
           planBelongsToDisabledClass: false,
           planHasLimitedAvailability: false,
-          planIsDisabled512Gb: false,
+          planIsDisabled: false,
           planIsSmallerThanUsage: false,
           planIsTooSmall: true,
           planIsTooSmallForAPL: undefined,
@@ -424,7 +425,7 @@ describe('extractPlansInformation', () => {
         ...{
           planBelongsToDisabledClass: false,
           planHasLimitedAvailability: true,
-          planIsDisabled512Gb: false,
+          planIsDisabled: false,
           planIsSmallerThanUsage: false,
           planIsTooSmall: false,
           planIsTooSmallForAPL: undefined,
@@ -435,7 +436,7 @@ describe('extractPlansInformation', () => {
         ...{
           planBelongsToDisabledClass: false,
           planHasLimitedAvailability: true,
-          planIsDisabled512Gb: false,
+          planIsDisabled: false,
           planIsSmallerThanUsage: false,
           planIsTooSmall: false,
           planIsTooSmallForAPL: undefined,
@@ -446,7 +447,7 @@ describe('extractPlansInformation', () => {
         ...{
           planBelongsToDisabledClass: false,
           planHasLimitedAvailability: false,
-          planIsDisabled512Gb: false,
+          planIsDisabled: false,
           planIsSmallerThanUsage: false,
           planIsTooSmall: true,
           planIsTooSmallForAPL: undefined,
@@ -483,7 +484,7 @@ describe('extractPlansInformation', () => {
         ...g6Standard1,
         planBelongsToDisabledClass: false,
         planHasLimitedAvailability: false,
-        planIsDisabled512Gb: false,
+        planIsDisabled: false,
         planIsSmallerThanUsage: false,
         planIsTooSmall: false,
         planIsTooSmallForAPL: undefined,
@@ -492,7 +493,7 @@ describe('extractPlansInformation', () => {
         ...g6Nanode1,
         planBelongsToDisabledClass: false,
         planHasLimitedAvailability: false,
-        planIsDisabled512Gb: false,
+        planIsDisabled: false,
         planIsSmallerThanUsage: false,
         planIsTooSmall: false,
         planIsTooSmallForAPL: undefined,
@@ -646,3 +647,97 @@ describe('useIsAcceleratedPlansEnabled', () => {
     });
   });
 });
+
+// describe('isPlanDisabled', () => {
+//   const mockPlan512GB:
+//     | ExtendedType
+//     | PlanSelectionType = planSelectionTypeFactory.build({ label: '512GB' });
+//   const mockPlan128GB:
+//     | ExtendedType
+//     | PlanSelectionType = planSelectionTypeFactory.build({ label: '128GB' });
+//   const mockPlan256GB:
+//     | ExtendedType
+//     | PlanSelectionType = planSelectionTypeFactory.build({ label: '256GB' });
+//   const mockPlan64GB:
+//     | ExtendedType
+//     | PlanSelectionType = planSelectionTypeFactory.build({ label: '64GB' });
+//   it('should return false when TikTok is enabled and the plan is 512GB in us-iad region', () => {
+//     const result = isPlanDisabled({
+//       disableLargestGbPlansFlag: false,
+//       isTikTokMTCPlansEnabled: true,
+//       plan: mockPlan512GB,
+//       selectedRegionId: 'us-iad',
+//     });
+//     expect(result).toBe(false);
+//   });
+
+//   it('should return false when TikTok is enabled and the plan is 128GB in oslo region', () => {
+//     const result = isPlanDisabled({
+//       disableLargestGbPlansFlag: false,
+//       isTikTokMTCPlansEnabled: true,
+//       plan: mockPlan128GB,
+//       selectedRegionId: 'oslo',
+//     });
+//     expect(result).toBe(false);
+//   });
+
+//   it('should return true when TikTok is not enabled and disableLargestGbPlansFlag is true for 512GB plan', () => {
+//     const result = isPlanDisabled({
+//       disableLargestGbPlansFlag: true,
+//       isTikTokMTCPlansEnabled: false,
+//       plan: mockPlan512GB,
+//       selectedRegionId: 'us-west',
+//     });
+//     expect(result).toBe(true);
+//   });
+
+//   it('should return false when TikTok is not enabled and disableLargestGbPlansFlag is false for 512GB plan', () => {
+//     const result = isPlanDisabled({
+//       disableLargestGbPlansFlag: false,
+//       isTikTokMTCPlansEnabled: false,
+//       plan: mockPlan512GB,
+//       selectedRegionId: 'us-west',
+//     });
+//     expect(result).toBe(false);
+//   });
+
+//   it('should return true when disableLargestGbPlansFlag is true and region is not us-iad/oslo for 128GB plan', () => {
+//     const result = isPlanDisabled({
+//       disableLargestGbPlansFlag: true,
+//       isTikTokMTCPlansEnabled: false,
+//       plan: mockPlan128GB,
+//       selectedRegionId: 'us-west',
+//     });
+//     expect(result).toBe(true);
+//   });
+
+//   it('should return false when disableLargestGbPlansFlag is false for non-512GB/128GB plans', () => {
+//     const result = isPlanDisabled({
+//       disableLargestGbPlansFlag: false,
+//       isTikTokMTCPlansEnabled: false,
+//       plan: mockPlan256GB,
+//       selectedRegionId: 'us-west',
+//     });
+//     expect(result).toBe(false);
+//   });
+
+//   it('should return false when disableLargestGbPlansFlag is true and region is not us-iad/oslo for non-512GB/128GB plans', () => {
+//     const result = isPlanDisabled({
+//       disableLargestGbPlansFlag: true,
+//       isTikTokMTCPlansEnabled: false,
+//       plan: mockPlan256GB,
+//       selectedRegionId: 'us-west',
+//     });
+//     expect(result).toBe(false);
+//   });
+
+//   it('should return false when disableLargestGbPlansFlag is false for non-512GB/128GB plans and any region', () => {
+//     const result = isPlanDisabled({
+//       disableLargestGbPlansFlag: false,
+//       isTikTokMTCPlansEnabled: true,
+//       plan: mockPlan64GB,
+//       selectedRegionId: 'us-west',
+//     });
+//     expect(result).toBe(false);
+//   });
+// });
