@@ -20,6 +20,8 @@ import {
 import type { RegionSelectProps } from './RegionSelect.types';
 import type { Region } from '@linode/api-v4';
 import type { DisableItemOption } from '@linode/ui';
+// import { useIsTikTokMTCPlansEnabled } from 'src/features/components/PlansPanel/utils';
+// import { TIKTOK_MTC_CUSTOM_PLANS_AVAILABILITY_REGIONS } from 'src/features/components/PlansPanel/constants';
 
 /**
  * A specific select for regions.
@@ -57,6 +59,7 @@ export const RegionSelect = <
     value,
     width,
   } = props;
+  // const { isTikTokMTCLinodePlansEnabled } = useIsTikTokMTCPlansEnabled();
 
   const {
     data: accountAvailability,
@@ -80,6 +83,15 @@ export const RegionSelect = <
     if (disabledRegionsFromProps?.[region.id]) {
       acc[region.id] = disabledRegionsFromProps[region.id];
     }
+
+    // Skip `us-iad/oslo` regions for TikTokMTCLinodePlansEnabled
+    // if (
+    //   isTikTokMTCLinodePlansEnabled &&
+    //   TIKTOK_MTC_CUSTOM_PLANS_AVAILABILITY_REGIONS.includes(region.id)
+    // ) {
+    //   return acc;
+    // }
+
     if (
       !ignoreAccountAvailability &&
       isRegionOptionUnavailable({

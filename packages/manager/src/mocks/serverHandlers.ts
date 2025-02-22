@@ -470,6 +470,17 @@ const acceleratedType = linodeTypeFactory.buildList(7, {
   label: 'Netint Quadra T1U X',
   transfer: 0,
 });
+const customTiktokMTCTypes = [
+  linodeTypeFactory.build({
+    class: 'prodedicated',
+    label: 'Pro Dedicated 128GB',
+  }),
+  linodeTypeFactory.build({
+    class: 'prodedicated',
+    label: 'Pro Dedicated 512GB',
+  }),
+  linodeTypeFactory.build({ class: 'dedicated', label: 'Dedicated 512GB' }),
+];
 const proxyAccountUser = accountUserFactory.build({
   email: 'partner@proxy.com',
   last_login: null,
@@ -620,6 +631,7 @@ export const handlers = [
   http.get('*/linode/types', () => {
     return HttpResponse.json(
       makeResourcePage([
+        proDedicatedType,
         nanodeType,
         ...standardTypes,
         ...dedicatedTypes,
@@ -627,7 +639,7 @@ export const handlers = [
         ...gpuTypesRX,
         ...premiumTypes,
         ...acceleratedType,
-        proDedicatedType,
+        ...customTiktokMTCTypes,
       ])
     );
   }),

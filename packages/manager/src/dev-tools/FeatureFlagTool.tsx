@@ -44,6 +44,7 @@ const options: { flag: keyof Flags; label: string }[] = [
     flag: 'linodeCloneFirewall',
     label: 'Linode Clone Firewall',
   },
+  { flag: 'tiktokMTCPlans', label: 'TikTok MTC Plans' },
 ];
 
 interface RenderFlagItemProps {

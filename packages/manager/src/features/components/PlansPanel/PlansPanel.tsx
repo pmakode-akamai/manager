@@ -25,6 +25,7 @@ import {
   planTabInfoContent,
   replaceOrAppendPlaceholder512GbPlans,
   useIsAcceleratedPlansEnabled,
+  useIsTikTokMTCPlansEnabled,
 } from './utils';
 
 import type { PlanSelectionType } from './types';
@@ -98,11 +99,18 @@ export const PlansPanel = (props: PlansPanelProps) => {
   );
 
   const { isAcceleratedLinodePlansEnabled } = useIsAcceleratedPlansEnabled();
+  const { isTikTokMTCLinodePlansEnabled } = useIsTikTokMTCPlansEnabled();
 
   const { data: regionAvailabilities } = useRegionAvailabilityQuery(
     selectedRegionID || '',
     Boolean(flags.soldOutChips) && Boolean(selectedRegionID)
   );
+
+  // Add custom plans
+  // const typesWithCustomPlans = [
+  //   ...types,
+  //   // CUSTOM_TIKTOK_MTC_DEDICATED_512_GB_PLAN,
+  // ];
 
   const _types = types.filter((type) => {
     if (!isAcceleratedLinodePlansEnabled && type.class === 'accelerated') {
@@ -113,6 +121,7 @@ export const PlansPanel = (props: PlansPanelProps) => {
       !type.id.includes('dedicated-edge') && !type.id.includes('nanode-edge')
     );
   });
+
   const _plans = getPlanSelectionsByPlanType(
     flags.disableLargestGbPlans
       ? replaceOrAppendPlaceholder512GbPlans(_types)
@@ -160,6 +169,7 @@ export const PlansPanel = (props: PlansPanelProps) => {
         disabledClasses,
         disabledSmallerPlans,
         isLegacyDatabase,
+        isTikTokMTCPlansEnabled: isTikTokMTCLinodePlansEnabled,
         plans: plansMap,
         regionAvailabilities,
         selectedRegionId: selectedRegionID,

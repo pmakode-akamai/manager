@@ -22,6 +22,7 @@ export type Capabilities =
   | 'Object Storage'
   | 'Placement Group'
   | 'Premium Plans'
+  | 'TikTok MTC Plans'
   | 'Vlans'
   | 'VPCs'
   | 'StackScripts';
