@@ -32,6 +32,8 @@ export interface PlanSelectionAvailabilityTypes {
   planBelongsToDisabledClass: boolean;
   planHasLimitedAvailability: boolean;
   planIsDisabled512Gb: boolean;
+  // @todo: check - May be need keep planIsLimitedToTikTokMTCRegions & planIsSoldOutInTikTokMTCRegions
+  // props required (remove optional prop) which requires changes in LKE plans page.
   planIsLimitedToTikTokMTCRegions?: boolean;
   planIsSmallerThanUsage?: boolean;
   planIsSoldOutInTikTokMTCRegions?: boolean;
