@@ -113,8 +113,12 @@ export const PlansPanel = (props: PlansPanelProps) => {
       return false;
     }
 
-    // Picking relevent custom plans irrespective of regions
-    if (!isTikTokMTCPlansEnabled && type.label.includes('512GB')) {
+    // Filter out TikTok custom plans (irrespective of regions) if isTikTokMTCPlansEnabled is false
+    if (
+      !isTikTokMTCPlansEnabled &&
+      type.label.includes('512GB') &&
+      type.label.includes('TikTok')
+    ) {
       return false;
     }
 
