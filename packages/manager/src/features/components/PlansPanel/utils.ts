@@ -76,6 +76,50 @@ export const useIsAcceleratedPlansEnabled = () => {
   return { isAcceleratedLKEPlansEnabled, isAcceleratedLinodePlansEnabled };
 };
 
+// export const useIsTikTokMTCPlansEnabled = (
+//   selectedRegion: string | undefined
+// ) => {
+//   const flags = useFlags();
+
+//   const { data: account } = useAccount();
+
+//   // const isTikTokMTCLinodePlans = Boolean(flags?.tiktokMTCPlans?.linodePlans);
+//   // const isTikTokLKEPlans = Boolean(flags?.tiktokMTCPlans?.lkePlans);
+
+//   const isTikTokMTCLinodePlans = Boolean(flags?.tiktokMTCPlans);
+//   const isTikTokLKEPlans = Boolean(flags?.tiktokMTCPlans);
+
+//   const isTikTokMTCLinodePlansEnabled = isFeatureEnabledV2(
+//     'TikTok MTC Plans',
+//     isTikTokMTCLinodePlans,
+//     account?.capabilities ?? []
+//   );
+//   const isTikTokMTCLKEPlansEnabled = isFeatureEnabledV2(
+//     'TikTok MTC Plans',
+//     isTikTokLKEPlans,
+//     account?.capabilities ?? []
+//   );
+
+//   const isTikTokMTCLinodePlansEnabledRegion = Boolean(
+//     selectedRegion &&
+//       TIKTOK_MTC_CUSTOM_PLANS_AVAILABILITY_REGIONS.includes(selectedRegion) &&
+//       isTikTokMTCLinodePlansEnabled
+//   );
+
+//   const isTikTokMTCLKEPlansEnabledRegion = Boolean(
+//     selectedRegion &&
+//       TIKTOK_MTC_CUSTOM_PLANS_AVAILABILITY_REGIONS.includes(selectedRegion) &&
+//       isTikTokMTCLKEPlansEnabled
+//   );
+
+//   return {
+//     isTikTokMTCLKEPlansEnabled,
+//     isTikTokMTCLKEPlansEnabledRegion,
+//     isTikTokMTCLinodePlansEnabled,
+//     isTikTokMTCLinodePlansEnabledRegion,
+//   };
+// };
+
 export const useIsTikTokMTCPlansEnabled = (
   selectedRegion: string | undefined
 ) => {
@@ -83,40 +127,22 @@ export const useIsTikTokMTCPlansEnabled = (
 
   const { data: account } = useAccount();
 
-  // const isTikTokMTCLinodePlans = Boolean(flags?.tiktokMTCPlans?.linodePlans);
-  // const isTikTokLKEPlans = Boolean(flags?.tiktokMTCPlans?.lkePlans);
+  const isTikTokMTCPlans = Boolean(flags?.tiktokMTCPlans);
 
-  const isTikTokMTCLinodePlans = Boolean(flags?.tiktokMTCPlans);
-  const isTikTokLKEPlans = Boolean(flags?.tiktokMTCPlans);
-
-  const isTikTokMTCLinodePlansEnabled = isFeatureEnabledV2(
+  const isTikTokMTCPlansEnabled = isFeatureEnabledV2(
     'TikTok MTC Plans',
-    isTikTokMTCLinodePlans,
+    isTikTokMTCPlans,
     account?.capabilities ?? []
   );
-  const isTikTokMTCLKEPlansEnabled = isFeatureEnabledV2(
-    'TikTok MTC Plans',
-    isTikTokLKEPlans,
-    account?.capabilities ?? []
-  );
-
-  const isTikTokMTCLinodePlansEnabledRegion = Boolean(
+  const isTikTokMTCPlansEnabledRegion = Boolean(
     selectedRegion &&
       TIKTOK_MTC_CUSTOM_PLANS_AVAILABILITY_REGIONS.includes(selectedRegion) &&
-      isTikTokMTCLinodePlansEnabled
-  );
-
-  const isTikTokMTCLKEPlansEnabledRegion = Boolean(
-    selectedRegion &&
-      TIKTOK_MTC_CUSTOM_PLANS_AVAILABILITY_REGIONS.includes(selectedRegion) &&
-      isTikTokMTCLKEPlansEnabled
+      isTikTokMTCPlansEnabled
   );
 
   return {
-    isTikTokMTCLKEPlansEnabled,
-    isTikTokMTCLKEPlansEnabledRegion,
-    isTikTokMTCLinodePlansEnabled,
-    isTikTokMTCLinodePlansEnabledRegion,
+    isTikTokMTCPlansEnabled,
+    isTikTokMTCPlansEnabledRegion,
   };
 };
 
@@ -234,6 +260,14 @@ export const getIsLimitedAvailability = ({
   regionAvailabilities,
   selectedRegionId,
 }: LimitedAvailabilityPlanStatusOptions): boolean => {
+  // If condition just for debugging...
+  // if (plan.label.includes('512GB')) {
+  //   console.log('plan', plan);
+  //   console.log('regionAva', regionAvailabilities);
+  //   console.log('selectedRegionID', selectedRegionId);
+  //   console.log('----------------');
+  // }
+
   if (!regionAvailabilities || !selectedRegionId) {
     return false;
   }
@@ -348,78 +382,6 @@ export const replaceOrAppendPlaceholder512GbPlans = (
   return types;
 };
 
-// export const getPlanTypes = (
-//   types: (ExtendedType | PlanSelectionType)[],
-//   isTikTokMTCPlansEnabled: boolean
-// ) => {
-//   const tiktokMTCPlanTypes = types.filter((type) => isTikTokMTCPlansEnabled && type.label.includes('512GB'));
-//   const nonTiktokMTClanTypes = types.filter((type) => isTikTokMTCPlansEnabled && type.label.includes('512GB'));
-
-//   if (isTikTokMTCPlansEnabled) {
-//     return types
-//   }
-// };
-
-// interface IsPlanDisabledProps {
-//   disableLargestGbPlansFlag?: boolean;
-//   isTikTokMTCPlansEnabled?: boolean;
-//   plan: ExtendedType | PlanSelectionType;
-//   selectedRegionId?: string;
-// }
-
-// export const isPlanDisabled = ({
-//   disableLargestGbPlansFlag,
-//   isTikTokMTCPlansEnabled,
-//   plan,
-//   selectedRegionId,
-// }: IsPlanDisabledProps) => {
-//   if (
-//     selectedRegionId &&
-//     plan.label.includes('512GB') &&
-//     isTikTokMTCPlansEnabled &&
-//     ['us-iad'].includes(selectedRegionId)
-//   ) {
-//     return false;
-//   }
-//   return (
-//     plan.label.includes('512GB') &&
-//     Boolean(disableLargestGbPlansFlag) &&
-//     // new Ada GPU plans are actually available
-//     plan.class !== 'gpu'
-//   );
-// };
-
-// export const isPlanDisabled = ({
-//   disableLargestGbPlansFlag,
-//   isTikTokMTCPlansEnabled,
-//   plan,
-//   selectedRegionId,
-// }: IsPlanDisabledProps) => {
-//   const is512GB = plan.label.includes('512GB');
-//   const is512GBor128GB =
-//     plan.label.includes('512GB') || plan.label.includes('128GB');
-//   const isOsloOrIADRegion =
-//     selectedRegionId === 'us-iad' || selectedRegionId === 'oslo';
-
-//   // If TikTok is enabled, and the plan is 512GB/128GB in us-iad or oslo, enable the button
-//   if (isOsloOrIADRegion && is512GBor128GB && isTikTokMTCPlansEnabled) {
-//     return false;
-//   }
-
-//   // If TikTok is not enabled, we should prioritize disableLargestGbPlansFlag
-//   if (isOsloOrIADRegion && is512GBor128GB && !isTikTokMTCPlansEnabled) {
-//     return Boolean(disableLargestGbPlansFlag);
-//   }
-
-//   // new Ada GPU plans are actually available
-//   if (is512GB && Boolean(disableLargestGbPlansFlag) && plan.class !== 'gpu') {
-//     return true;
-//   }
-
-//   // For all other cases (not 512GB/128GB), enable the button
-//   return false;
-// };
-
 export const getTikTokMTCCustomPlanTypes = (
   types: (ExtendedType | PlanSelectionType)[],
   useIsTikTokMTCPlansEnabled: boolean
@@ -470,14 +432,6 @@ export const extractPlansInformation = ({
 }: ExtractPlansInformationProps) => {
   const plansForThisLinodeTypeClass: PlanWithAvailability[] = plans.map(
     (plan) => {
-      // const planIsDisabled512Gb
-      // const planIsDisabled512Gb = isPlanDisabled({
-      //   disableLargestGbPlansFlag,
-      //   isTikTokMTCPlansEnabled,
-      //   plan,
-      //   selectedRegionId,
-      // });
-
       // Disable 512GB plans if not GPU or not in 'oslo' or 'us-iad' regions
       // 1. new Ada GPU plans are actually available.
       // 2. 512GB TikTok MTC plans are available in specific regions.
@@ -486,14 +440,9 @@ export const extractPlansInformation = ({
         Boolean(disableLargestGbPlansFlag) &&
         !(plan.class === 'gpu' || isTikTokMTCPlansEnabledRegion);
 
-      // TikTok MTC 512/128GB plans are available for `us-iad` & `oslo` regions
+      // TikTok MTC 512GB plans are available for `us-iad` & `oslo` regions (Disable it for other regions)
       const planIsLimitedToTikTokMTCRegions =
-        (plan.label.includes('512GB') || plan.label.includes('128GB')) &&
-        !Boolean(isTikTokMTCPlansEnabledRegion);
-
-      const planIsSoldOutInTikTokMTCRegions =
-        (plan.label.includes('512GB') || plan.label.includes('128GB')) &&
-        Boolean(isTikTokMTCPlansEnabledRegion);
+        plan.label.includes('512GB') && !Boolean(isTikTokMTCPlansEnabledRegion);
 
       const planHasLimitedAvailability = getIsLimitedAvailability({
         plan,
@@ -523,7 +472,6 @@ export const extractPlansInformation = ({
         planIsDisabled512Gb,
         planIsLimitedToTikTokMTCRegions,
         planIsSmallerThanUsage,
-        planIsSoldOutInTikTokMTCRegions,
         planIsTooSmall,
         planIsTooSmallForAPL,
       };
@@ -537,7 +485,6 @@ export const extractPlansInformation = ({
       planIsDisabled512Gb,
       planIsLimitedToTikTokMTCRegions,
       planIsSmallerThanUsage,
-      planIsSoldOutInTikTokMTCRegions,
       planIsTooSmall,
       planIsTooSmallForAPL,
     } = plan;
@@ -553,8 +500,7 @@ export const extractPlansInformation = ({
       planIsTooSmall ||
       planIsSmallerThanUsage ||
       planIsTooSmallForAPL ||
-      planIsLimitedToTikTokMTCRegions ||
-      planIsSoldOutInTikTokMTCRegions
+      planIsLimitedToTikTokMTCRegions
     ) {
       return [...acc, plan];
     }
@@ -583,7 +529,6 @@ export const getDisabledPlanReasonCopy = ({
   planIsDisabled512Gb,
   planIsLimitedToTikTokMTCRegions,
   planIsSmallerThanUsage,
-  planIsSoldOutInTikTokMTCRegions,
   planIsTooSmall,
   planIsTooSmallForAPL,
   wholePanelIsDisabled,
@@ -593,7 +538,6 @@ export const getDisabledPlanReasonCopy = ({
   planIsDisabled512Gb: DisabledTooltipReasons['planIsDisabled512Gb'];
   planIsLimitedToTikTokMTCRegions?: DisabledTooltipReasons['planIsLimitedToTikTokMTCRegions'];
   planIsSmallerThanUsage?: DisabledTooltipReasons['planIsSmallerThanUsage'];
-  planIsSoldOutInTikTokMTCRegions?: DisabledTooltipReasons['planIsSoldOutInTikTokMTCRegions'];
   planIsTooSmall: DisabledTooltipReasons['planIsTooSmall'];
   planIsTooSmallForAPL?: DisabledTooltipReasons['planIsTooSmallForAPL'];
   wholePanelIsDisabled?: DisabledTooltipReasons['wholePanelIsDisabled'];
@@ -602,7 +546,7 @@ export const getDisabledPlanReasonCopy = ({
     return PLAN_NOT_AVAILABLE_IN_REGION_COPY;
   }
 
-  if (planBelongsToDisabledClass || planIsSoldOutInTikTokMTCRegions) {
+  if (planBelongsToDisabledClass) {
     return PLAN_IS_CURRENTLY_UNAVAILABLE_COPY;
   }
 

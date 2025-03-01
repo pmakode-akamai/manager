@@ -114,6 +114,7 @@ const getRandomWholeNumber = (min: number, max: number) =>
 import { accountPermissionsFactory } from 'src/factories/accountPermissions';
 import { accountResourcesFactory } from 'src/factories/accountResources';
 import { userPermissionsFactory } from 'src/factories/userPermissions';
+import { TIKTOK_MTC_CUSTOM_PLANS_AVAILABILITY_REGIONS } from 'src/features/components/PlansPanel/constants';
 import { pickRandom } from 'src/utilities/random';
 
 import type {
@@ -466,13 +467,14 @@ const acceleratedType = linodeTypeFactory.buildList(7, {
 const customTiktokMTCTypes = [
   linodeTypeFactory.build({
     class: 'prodedicated',
-    label: 'Pro Dedicated 128GB',
+    id: 'g6-prodedicated-tiktok',
+    label: 'TikTok Pro Dedicated 512GB',
   }),
   linodeTypeFactory.build({
-    class: 'prodedicated',
-    label: 'Pro Dedicated 512GB',
+    class: 'dedicated',
+    id: 'g6-dedicated-tiktok',
+    label: 'TikTok Dedicated 512GB',
   }),
-  linodeTypeFactory.build({ class: 'dedicated', label: 'Dedicated 512GB' }),
 ];
 const proxyAccountUser = accountUserFactory.build({
   email: 'partner@proxy.com',
@@ -2239,7 +2241,7 @@ export const handlers = [
       ])
     );
   }),
-  http.get('*regions/:regionId/availability', () => {
+  http.get('*regions/:regionId/availability', ({ params }) => {
     return HttpResponse.json([
       regionAvailabilityFactory.build({
         plan: 'g6-standard-6',
@@ -2249,6 +2251,33 @@ export const handlers = [
         plan: 'g6-standard-7',
         region: 'us-east',
       }),
+      ...(params.regionId &&
+      TIKTOK_MTC_CUSTOM_PLANS_AVAILABILITY_REGIONS.includes(
+        params.regionId as string
+      )
+        ? [
+            regionAvailabilityFactory.build({
+              available: false,
+              plan: 'g6-prodedicated-tiktok',
+              region: 'us-iad',
+            }),
+            regionAvailabilityFactory.build({
+              available: false,
+              plan: 'g6-prodedicated-tiktok',
+              region: 'no-oslo',
+            }),
+            regionAvailabilityFactory.build({
+              available: true,
+              plan: 'g6-dedicated-tiktok',
+              region: 'us-iad',
+            }),
+            regionAvailabilityFactory.build({
+              available: false,
+              plan: 'g6-dedicated-tiktok',
+              region: 'no-oslo',
+            }),
+          ]
+        : []),
     ]);
   }),
 

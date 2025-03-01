@@ -61,7 +61,6 @@ export const PlanSelection = (props: PlanSelectionProps) => {
     planIsDisabled512Gb,
     planIsLimitedToTikTokMTCRegions,
     planIsSmallerThanUsage,
-    planIsSoldOutInTikTokMTCRegions,
     planIsTooSmall,
   } = plan;
 
@@ -91,8 +90,7 @@ export const PlanSelection = (props: PlanSelectionProps) => {
     planIsDisabled512Gb ||
     planHasLimitedAvailability ||
     wholePanelIsDisabled ||
-    planIsLimitedToTikTokMTCRegions ||
-    planIsSoldOutInTikTokMTCRegions;
+    planIsLimitedToTikTokMTCRegions;
 
   const disabledPlanReasonCopy = getDisabledPlanReasonCopy({
     planBelongsToDisabledClass,
@@ -100,7 +98,6 @@ export const PlanSelection = (props: PlanSelectionProps) => {
     planIsDisabled512Gb,
     planIsLimitedToTikTokMTCRegions,
     planIsSmallerThanUsage,
-    planIsSoldOutInTikTokMTCRegions,
     planIsTooSmall,
     wholePanelIsDisabled,
   });
@@ -117,8 +114,7 @@ export const PlanSelection = (props: PlanSelectionProps) => {
       planHasLimitedAvailability ||
       planIsTooSmall ||
       planIsSmallerThanUsage ||
-      planIsLimitedToTikTokMTCRegions ||
-      planIsSoldOutInTikTokMTCRegions);
+      planIsLimitedToTikTokMTCRegions);
 
   const isDistributedPlan =
     plan.id.includes('dedicated-edge') || plan.id.includes('nanode-edge');
@@ -256,8 +252,6 @@ export const PlanSelection = (props: PlanSelectionProps) => {
             ...plan.subHeadings,
             planHasLimitedAvailability || planIsDisabled512Gb ? (
               <Chip label="Limited Deployment Availability" />
-            ) : planIsSoldOutInTikTokMTCRegions ? (
-              <Chip label="Sold Out" />
             ) : (
               ''
             ),
