@@ -474,13 +474,29 @@ const acceleratedType = linodeTypeFactory.buildList(7, {
 const customTiktokMTCTypes = [
   linodeTypeFactory.build({
     class: 'prodedicated',
+    disk: 10240000,
     id: 'g6-prodedicated-tiktok',
     label: 'TikTok Pro Dedicated 512GB',
+    network_out: 40000,
+    price: {
+      hourly: 7.0,
+      monthly: 5040.0,
+    },
+    transfer: 24000,
+    vcpus: 128,
   }),
   linodeTypeFactory.build({
     class: 'dedicated',
+    disk: 10240000,
     id: 'g6-dedicated-tiktok',
     label: 'TikTok Dedicated 512GB',
+    network_out: 40000,
+    price: {
+      hourly: 7.0,
+      monthly: 5040.0,
+    },
+    transfer: 24000,
+    vcpus: 128,
   }),
 ];
 const proxyAccountUser = accountUserFactory.build({
@@ -648,11 +664,16 @@ export const handlers = [
   http.get('*/linode/types-legacy', () => {
     return HttpResponse.json(makeResourcePage(linodeTypeFactory.buildList(0)));
   }),
-  ...[nanodeType, ...standardTypes, ...dedicatedTypes, proDedicatedType].map(
-    (type) =>
-      http.get(`*/linode/types/${type.id}`, () => {
-        return HttpResponse.json(type);
-      })
+  ...[
+    nanodeType,
+    ...standardTypes,
+    ...dedicatedTypes,
+    proDedicatedType,
+    ...customTiktokMTCTypes,
+  ].map((type) =>
+    http.get(`*/linode/types/${type.id}`, () => {
+      return HttpResponse.json(type);
+    })
   ),
   http.get(`*/linode/types/*`, () => {
     return HttpResponse.json(linodeTypeFactory.build());
@@ -701,7 +722,20 @@ export const handlers = [
       label: 'multiple-ips',
       tags: ['test1', 'test2', 'test3'],
     });
+    const tikTokLinodes = [
+      linodeFactory.build({
+        label: 'tiktok-custom-plan-linode-1',
+        region: 'us-iad',
+        type: 'g6-dedicated-tiktok',
+      }),
+      linodeFactory.build({
+        label: 'tiktok-custom-plan-linode-2',
+        region: 'no-oslo',
+        type: 'g6-dedicated-tiktok',
+      }),
+    ];
     const linodes = [
+      ...tikTokLinodes,
       metadataLinodeWithCompatibleImage,
       metadataLinodeWithCompatibleImageAndRegion,
       linodeInDistributedRegion,
