@@ -381,16 +381,16 @@ export const replaceOrAppendPlaceholder512GbPlans = (
   return types;
 };
 
-export const getTikTokMTCCustomPlanTypes = (
-  types: (ExtendedType | PlanSelectionType)[],
-  useIsTikTokMTCPlansEnabled: boolean
-) => {
-  return types.filter(
-    (type) =>
-      useIsTikTokMTCPlansEnabled &&
-      (type.label.includes('512GB') || type.label.includes('128GB'))
-  );
-};
+// export const getTikTokMTCCustomPlanTypes = (
+//   types: (ExtendedType | PlanSelectionType)[],
+//   useIsTikTokMTCPlansEnabled: boolean
+// ) => {
+//   return types.filter(
+//     (type) =>
+//       useIsTikTokMTCPlansEnabled &&
+//       (type.label.includes('512GB'))
+//   );
+// };
 
 interface ExtractPlansInformationProps {
   disableLargestGbPlansFlag: Flags['disableLargestGbPlans'] | undefined;
@@ -431,17 +431,20 @@ export const extractPlansInformation = ({
 }: ExtractPlansInformationProps) => {
   const plansForThisLinodeTypeClass: PlanWithAvailability[] = plans.map(
     (plan) => {
-      // Disable 512GB plans if not GPU or not in 'oslo' or 'us-iad' regions
+      // Disable 512GB plans if not GPU or custom TikTok plans.
       // 1. new Ada GPU plans are actually available.
       // 2. 512GB TikTok MTC plans are available in specific regions.
+      // 3. 'oslo' or 'us-iad' specific regions may or may not have 512GB Plans.
       const planIsDisabled512Gb =
         plan.label.includes('512GB') &&
         Boolean(disableLargestGbPlansFlag) &&
-        !(plan.class === 'gpu' || isTikTokMTCPlansEnabledRegion);
+        !(plan.class === 'gpu' || plan.label.includes('TikTok'));
 
       // TikTok MTC 512GB plans are available for `us-iad` & `oslo` regions (Disable it for other regions)
       const planIsLimitedToTikTokMTCRegions =
-        plan.label.includes('512GB') && !Boolean(isTikTokMTCPlansEnabledRegion);
+        plan.label.includes('512GB') &&
+        plan.label.includes('TikTok') &&
+        !Boolean(isTikTokMTCPlansEnabledRegion);
 
       const planHasLimitedAvailability = getIsLimitedAvailability({
         plan,
