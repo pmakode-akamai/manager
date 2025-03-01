@@ -87,10 +87,10 @@ interface AcceleratedPlansFlag {
   lkePlans: boolean;
 }
 
-interface TikTokMTCPlansFlag extends BaseFeatureFlag {
-  linodePlans: boolean;
-  lkePlans: boolean;
-}
+// interface TikTokMTCPlansFlag extends BaseFeatureFlag {
+//   linodePlans: boolean;
+//   lkePlans: boolean;
+// }
 
 interface DesignUpdatesBannerFlag extends BaseFeatureFlag {
   key: string;
@@ -155,7 +155,8 @@ export interface Flags {
   taxCollectionBanner: TaxCollectionBanner;
   taxId: BaseFeatureFlag;
   taxes: Taxes;
-  tiktokMTCPlans: TikTokMTCPlansFlag;
+  // tiktokMTCPlans: TikTokMTCPlansFlag;
+  tiktokMTCPlans: boolean;
   tpaProviders: Provider[];
   udp: boolean;
 }
