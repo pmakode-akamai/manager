@@ -17,6 +17,7 @@ import { PlanInformation } from './PlanInformation';
 import {
   determineInitialPlanCategoryTab,
   extractPlansInformation,
+  filterPlanTypes,
   getPlanSelectionsByPlanType,
   planTabInfoContent,
   replaceOrAppendPlaceholder512GbPlans,
@@ -108,23 +109,10 @@ export const PlansPanel = (props: PlansPanelProps) => {
   //   // CUSTOM_TIKTOK_MTC_DEDICATED_512_GB_PLAN,
   // ];
 
-  const _types = types.filter((type) => {
-    if (!isAcceleratedLinodePlansEnabled && type.class === 'accelerated') {
-      return false;
-    }
-
-    // Filter out TikTok custom plans (irrespective of regions) if isTikTokMTCPlansEnabled is false
-    if (
-      !isTikTokMTCPlansEnabled &&
-      type.label.includes('512GB') &&
-      type.label.includes('TikTok')
-    ) {
-      return false;
-    }
-
-    return (
-      !type.id.includes('dedicated-edge') && !type.id.includes('nanode-edge')
-    );
+  const _types = filterPlanTypes(types, {
+    filterType: 'Linode',
+    isAcceleratedLinodePlansEnabled,
+    isTikTokMTCPlansEnabled,
   });
 
   const _plans = getPlanSelectionsByPlanType(

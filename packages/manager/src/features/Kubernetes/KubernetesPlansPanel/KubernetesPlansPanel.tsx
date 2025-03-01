@@ -5,6 +5,7 @@ import { PlanInformation } from 'src/features/components/PlansPanel/PlanInformat
 import {
   determineInitialPlanCategoryTab,
   extractPlansInformation,
+  filterPlanTypes,
   getPlanSelectionsByPlanType,
   planTabInfoContent,
   replaceOrAppendPlaceholder512GbPlans,
@@ -78,14 +79,7 @@ export const KubernetesPlansPanel = (props: Props) => {
   const isPlanDisabledByAPL = (plan: 'shared' | LinodeTypeClass) =>
     plan === 'shared' && Boolean(isAPLEnabled);
 
-  const _types = types.filter(
-    (type) =>
-      !type.id.includes('dedicated-edge') &&
-      !type.id.includes('nanode-edge') &&
-      // Filter out GPU types for enterprise; otherwise, return the rest of the types.
-      // TODO: remove this once GPU plans are supported in LKE-E (Q3 2025)
-      (selectedTier === 'enterprise' ? !type.id.includes('gpu') : true)
-  );
+  const _types = filterPlanTypes(types, { filterType: 'LKE', selectedTier });
 
   const plans = getPlanSelectionsByPlanType(
     flags.disableLargestGbPlans

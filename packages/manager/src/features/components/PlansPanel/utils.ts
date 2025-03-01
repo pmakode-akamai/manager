@@ -27,6 +27,7 @@ import type {
   LinodeTypeClass,
   Region,
   RegionAvailability,
+  KubernetesTier,
 } from '@linode/api-v4';
 import type { Flags } from 'src/featureFlags';
 import type { ExtendedType } from 'src/utilities/extendType';
@@ -51,6 +52,61 @@ export const planTypeOrder: (
   'premium',
   'accelerated',
 ];
+
+interface FilterOptions {
+  filterType: 'LKE' | 'Linode';
+  isAcceleratedLinodePlansEnabled?: boolean;
+  isTikTokMTCPlansEnabled?: boolean;
+  selectedTier?: KubernetesTier;
+}
+
+// @todo: Make this function more readable and cleaner
+export const filterPlanTypes = (
+  types: (ExtendedType | PlanSelectionType)[],
+  options: FilterOptions
+) => {
+  return types.filter((type) => {
+    // ---------------------------- For LKE --------------------------------
+    if (options.filterType === 'LKE') {
+      // Temporarily filter out Tiktok Plans for LKE
+      if (type.label.includes('512GB') && type.label.includes('TikTok')) {
+        return false;
+      }
+
+      return (
+        !type.id.includes('dedicated-edge') &&
+        !type.id.includes('nanode-edge') &&
+        // Filter out GPU types for enterprise; otherwise, return the rest of the types.
+        // TODO: remove this once GPU plans are supported in LKE-E (Q3 2025)
+        (options.selectedTier === 'enterprise'
+          ? !type.id.includes('gpu')
+          : true)
+      );
+    } else {
+      // -------------------------- For Linode -----------------------------
+
+      if (
+        !options.isAcceleratedLinodePlansEnabled &&
+        type.class === 'accelerated'
+      ) {
+        return false;
+      }
+
+      // Filter out TikTok custom plans (irrespective of regions) if isTikTokMTCPlansEnabled is false
+      if (
+        !options.isTikTokMTCPlansEnabled &&
+        type.label.includes('512GB') &&
+        type.label.includes('TikTok')
+      ) {
+        return false;
+      }
+
+      return (
+        !type.id.includes('dedicated-edge') && !type.id.includes('nanode-edge')
+      );
+    }
+  });
+};
 
 export const useIsAcceleratedPlansEnabled = () => {
   const flags = useFlags();
