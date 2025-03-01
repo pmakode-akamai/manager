@@ -49,7 +49,6 @@ export const LinodeActionMenu = (props: LinodeActionMenuProps) => {
     linodeStatus,
     linodeType,
   } = props;
-
   const history = useHistory();
   const regions = useRegionsQuery().data ?? [];
   const isBareMetalInstance = linodeType?.class === 'metal';
@@ -82,6 +81,15 @@ export const LinodeActionMenu = (props: LinodeActionMenuProps) => {
 
   const distributedRegionTooltipText =
     'Cloning is currently not supported for distributed region instances.';
+
+  const tiktokLinodeToolTipText =
+    'Resizing is not supported for TikTok custom plan instances.';
+
+  const isTikTokLinode = Boolean(
+    linodeType?.label &&
+      linodeType.label.includes('512GB') &&
+      linodeType.label.includes('TikTok')
+  );
 
   const actionConfigs: ActionConfig[] = [
     {
@@ -145,12 +153,14 @@ export const LinodeActionMenu = (props: LinodeActionMenuProps) => {
     },
     {
       condition: !isBareMetalInstance,
-      disabled: isLinodeReadOnly || hasHostMaintenance,
+      disabled: isLinodeReadOnly || hasHostMaintenance || isTikTokLinode,
       isReadOnly: isLinodeReadOnly,
       onClick: props.onOpenResizeDialog,
       title: 'Resize',
       tooltipAction: 'resize',
-      tooltipText: maintenanceTooltipText,
+      tooltipText: isTikTokLinode
+        ? tiktokLinodeToolTipText
+        : maintenanceTooltipText,
     },
     {
       condition: true,
