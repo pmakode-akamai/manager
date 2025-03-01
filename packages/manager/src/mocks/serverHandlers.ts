@@ -470,6 +470,7 @@ const customTiktokMTCTypes = [
     disk: 10240000,
     id: 'g6-prodedicated-tiktok',
     label: 'TikTok Pro Dedicated 512GB',
+    memory: 524288,
     network_out: 40000,
     price: {
       hourly: 7.0,
@@ -483,6 +484,7 @@ const customTiktokMTCTypes = [
     disk: 10240000,
     id: 'g6-dedicated-tiktok',
     label: 'TikTok Dedicated 512GB',
+    memory: 524288,
     network_out: 40000,
     price: {
       hourly: 7.0,
