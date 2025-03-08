@@ -21,8 +21,8 @@ import type {
   PlanWithAvailability,
 } from './types';
 import type {
-  Capabilities,
   BaseType,
+  Capabilities,
   LinodeTypeClass,
   Region,
   RegionAvailability,

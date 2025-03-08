@@ -14,6 +14,7 @@ import {
   planTypeOrder,
   replaceOrAppendPlaceholder512GbPlans,
   useIsAcceleratedPlansEnabled,
+  useIsTikTokMTCPlansEnabled,
 } from './utils';
 
 import type { PlanSelectionType } from './types';
@@ -656,6 +657,144 @@ describe('useIsAcceleratedPlansEnabled', () => {
     expect(result.current).toStrictEqual({
       isAcceleratedLKEPlansEnabled: false,
       isAcceleratedLinodePlansEnabled: true,
+    });
+  });
+});
+
+describe('useIsTikTokMTCPlansEnabled', () => {
+  it('should return false for TikTok accounts & regions if no capability, feature flag is false, and region is non-TikTok', () => {
+    queryMocks.useAccount.mockReturnValue({
+      data: {
+        capabilities: [],
+      },
+    });
+    queryMocks.useFlags.mockReturnValue({
+      tiktokMTCPlans: false,
+    });
+
+    const { result } = renderHook(() => useIsTikTokMTCPlansEnabled('us-east'));
+    expect(result.current).toStrictEqual({
+      isTikTokMTCPlansEnabled: false,
+      isTikTokMTCPlansEnabledRegion: false,
+    });
+  });
+
+  it('should return false for TikTok accounts & regions if no capability, feature flag is true, and region is non-TikTok', () => {
+    queryMocks.useAccount.mockReturnValue({
+      data: {
+        capabilities: [],
+      },
+    });
+    queryMocks.useFlags.mockReturnValue({
+      tiktokMTCPlans: true,
+    });
+
+    const { result } = renderHook(() => useIsTikTokMTCPlansEnabled('us-east'));
+    expect(result.current).toStrictEqual({
+      isTikTokMTCPlansEnabled: false,
+      isTikTokMTCPlansEnabledRegion: false,
+    });
+  });
+
+  it('should return false for TikTok accounts & regions if capability exists, feature flag is false, and region is non-TikTok', () => {
+    queryMocks.useAccount.mockReturnValue({
+      data: {
+        capabilities: ['TikTok MTC Plans'],
+      },
+    });
+    queryMocks.useFlags.mockReturnValue({
+      tiktokMTCPlans: false,
+    });
+
+    const { result } = renderHook(() => useIsTikTokMTCPlansEnabled('us-east'));
+    expect(result.current).toStrictEqual({
+      isTikTokMTCPlansEnabled: false,
+      isTikTokMTCPlansEnabledRegion: false,
+    });
+  });
+
+  it('should return true for TikTok accounts & false for tiktok regions if capability exists, feature flag is true, and region is non-TikTok', () => {
+    queryMocks.useAccount.mockReturnValue({
+      data: {
+        capabilities: ['TikTok MTC Plans'],
+      },
+    });
+    queryMocks.useFlags.mockReturnValue({
+      tiktokMTCPlans: true,
+    });
+
+    const { result } = renderHook(() => useIsTikTokMTCPlansEnabled('us-east'));
+    expect(result.current).toStrictEqual({
+      isTikTokMTCPlansEnabled: true,
+      isTikTokMTCPlansEnabledRegion: false,
+    });
+  });
+
+  it('should return false for TikTok accounts & regions if no capability, feature flag is true, and region is TikTok', () => {
+    queryMocks.useAccount.mockReturnValue({
+      data: {
+        capabilities: [],
+      },
+    });
+    queryMocks.useFlags.mockReturnValue({
+      tiktokMTCPlans: true,
+    });
+
+    const { result } = renderHook(() => useIsTikTokMTCPlansEnabled('us-iad'));
+    expect(result.current).toStrictEqual({
+      isTikTokMTCPlansEnabled: false,
+      isTikTokMTCPlansEnabledRegion: false,
+    });
+  });
+
+  it('should return false for TikTok accounts & regions if capability exists, feature flag is false, and region is TikTok', () => {
+    queryMocks.useAccount.mockReturnValue({
+      data: {
+        capabilities: ['TikTok MTC Plans'],
+      },
+    });
+    queryMocks.useFlags.mockReturnValue({
+      tiktokMTCPlans: false,
+    });
+
+    const { result } = renderHook(() => useIsTikTokMTCPlansEnabled('us-iad'));
+    expect(result.current).toStrictEqual({
+      isTikTokMTCPlansEnabled: false,
+      isTikTokMTCPlansEnabledRegion: false,
+    });
+  });
+
+  it('should return false for TikTok accounts & regions if no capability, feature flag is false, and region is TikTok', () => {
+    queryMocks.useAccount.mockReturnValue({
+      data: {
+        capabilities: [],
+      },
+    });
+    queryMocks.useFlags.mockReturnValue({
+      tiktokMTCPlans: false,
+    });
+
+    const { result } = renderHook(() => useIsTikTokMTCPlansEnabled('us-iad'));
+    expect(result.current).toStrictEqual({
+      isTikTokMTCPlansEnabled: false,
+      isTikTokMTCPlansEnabledRegion: false,
+    });
+  });
+
+  it('should return true for TikTok accounts & regions if capability exists, feature flag is true, and region is TikTok', () => {
+    queryMocks.useAccount.mockReturnValue({
+      data: {
+        capabilities: ['TikTok MTC Plans'],
+      },
+    });
+    queryMocks.useFlags.mockReturnValue({
+      tiktokMTCPlans: true,
+    });
+
+    const { result } = renderHook(() => useIsTikTokMTCPlansEnabled('us-iad'));
+    expect(result.current).toStrictEqual({
+      isTikTokMTCPlansEnabled: true,
+      isTikTokMTCPlansEnabledRegion: true,
     });
   });
 });
