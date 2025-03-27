@@ -1,5 +1,14 @@
 {
   // Temporarily extending ESLint config from linode/manager as the base config.
   // @todo: modularization - Replace the path with the base shared ESLint config once available.
-  "extends": ["../manager/.eslintrc.cjs"]
+  "extends": ["../manager/.eslintrc.cjs"],
+  "rules": {
+    "no-restricted-imports": [
+      "error",
+      {
+        "message": "Do not import from @linode/shared within the same package to avoid circular dependencies. Use a relative path instead.",
+        "name": "@linode/shared"
+      }
+    ]
+  }
 }
