@@ -102,7 +102,6 @@ export const regions: Region[] = [
       'Metadata',
       'Premium Plans',
       'Placement Group',
-      'TikTok MTC Plans',
     ],
     country: 'us',
     id: 'us-iad',
