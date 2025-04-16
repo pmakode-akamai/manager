@@ -6,7 +6,6 @@ import { useFlags } from 'src/hooks/useFlags';
 import {
   DEDICATED_512_GB_PLAN,
   LIMITED_AVAILABILITY_COPY,
-  MTC_TT_CUSTOM_PLANS_AVAILABILITY_REGIONS,
   PLAN_IS_CURRENTLY_UNAVAILABLE_COPY,
   PLAN_IS_SMALLER_THAN_USAGE_COPY,
   PLAN_IS_TOO_SMALL_FOR_APL_COPY,
@@ -21,8 +20,8 @@ import type {
   PlanWithAvailability,
 } from './types';
 import type {
-  Capabilities,
   BaseType,
+  Capabilities,
   LinodeTypeClass,
   Region,
   RegionAvailability,
@@ -304,9 +303,9 @@ export const replaceOrAppendPlaceholder512GbPlans = (
 };
 
 interface ExtractPlansInformationProps {
-  disableLargestGbPlansFlag: Flags['disableLargestGbPlans'] | undefined;
   disabledClasses?: LinodeTypeClass[];
   disabledSmallerPlans?: PlanSelectionType[];
+  disableLargestGbPlansFlag: Flags['disableLargestGbPlans'] | undefined;
   isAPLEnabled?: boolean;
   isLegacyDatabase?: boolean;
   plans: PlanSelectionType[];
@@ -338,23 +337,12 @@ export const extractPlansInformation = ({
 }: ExtractPlansInformationProps) => {
   const plansForThisLinodeTypeClass: PlanWithAvailability[] = plans.map(
     (plan) => {
-      const mtcTT2025Plan =
-        plan.class === 'premium' && plan.label.includes('Premium HT 512 GB');
-
       // Disable 512GB plans apart from gpus and mtc-tt-2025
       const planIsDisabled512Gb =
         plan.label.includes('512GB') &&
         Boolean(disableLargestGbPlansFlag) &&
-        // - new Ada GPU plans are actually available
-        // - mtc-tt-2025 plans are available for oslo/iad regions
-        !(plan.class === 'gpu' || mtcTT2025Plan);
-
-      const planIsMtcTikTokAndUnavailableInSelectedRegion =
-        mtcTT2025Plan &&
-        !(
-          selectedRegionId &&
-          MTC_TT_CUSTOM_PLANS_AVAILABILITY_REGIONS.includes(selectedRegionId)
-        );
+        // new Ada GPU plans are actually available
+        plan.class !== 'gpu';
 
       const planHasLimitedAvailability = getIsLimitedAvailability({
         plan,
@@ -382,7 +370,6 @@ export const extractPlansInformation = ({
         planBelongsToDisabledClass,
         planHasLimitedAvailability,
         planIsDisabled512Gb,
-        planIsMtcTikTokAndUnavailableInSelectedRegion,
         planIsSmallerThanUsage,
         planIsTooSmall,
         planIsTooSmallForAPL,
@@ -395,7 +382,6 @@ export const extractPlansInformation = ({
       planBelongsToDisabledClass,
       planHasLimitedAvailability,
       planIsDisabled512Gb,
-      planIsMtcTikTokAndUnavailableInSelectedRegion,
       planIsSmallerThanUsage,
       planIsTooSmall,
       planIsTooSmallForAPL,
@@ -409,7 +395,6 @@ export const extractPlansInformation = ({
       planBelongsToDisabledClass ||
       planHasLimitedAvailability ||
       planIsDisabled512Gb ||
-      planIsMtcTikTokAndUnavailableInSelectedRegion ||
       planIsSmallerThanUsage ||
       planIsTooSmall ||
       planIsTooSmallForAPL
@@ -439,7 +424,6 @@ export const getDisabledPlanReasonCopy = ({
   planBelongsToDisabledClass,
   planHasLimitedAvailability,
   planIsDisabled512Gb,
-  planIsMtcTikTokAndUnavailableInSelectedRegion,
   planIsSmallerThanUsage,
   planIsTooSmall,
   planIsTooSmallForAPL,
@@ -448,13 +432,12 @@ export const getDisabledPlanReasonCopy = ({
   planBelongsToDisabledClass: DisabledTooltipReasons['planBelongsToDisabledClass'];
   planHasLimitedAvailability: DisabledTooltipReasons['planHasLimitedAvailability'];
   planIsDisabled512Gb: DisabledTooltipReasons['planIsDisabled512Gb'];
-  planIsMtcTikTokAndUnavailableInSelectedRegion?: DisabledTooltipReasons['planIsMtcTikTokAndUnavailableInSelectedRegion'];
   planIsSmallerThanUsage?: DisabledTooltipReasons['planIsSmallerThanUsage'];
   planIsTooSmall: DisabledTooltipReasons['planIsTooSmall'];
   planIsTooSmallForAPL?: DisabledTooltipReasons['planIsTooSmallForAPL'];
   wholePanelIsDisabled?: DisabledTooltipReasons['wholePanelIsDisabled'];
 }): string => {
-  if (wholePanelIsDisabled || planIsMtcTikTokAndUnavailableInSelectedRegion) {
+  if (wholePanelIsDisabled) {
     return PLAN_NOT_AVAILABLE_IN_REGION_COPY;
   }
 
