@@ -6,6 +6,7 @@ import { useFlags } from 'src/hooks/useFlags';
 import {
   DEDICATED_512_GB_PLAN,
   LIMITED_AVAILABILITY_COPY,
+  MTC_TT_CUSTOM_PLANS_AVAILABILITY_REGIONS,
   PLAN_IS_CURRENTLY_UNAVAILABLE_COPY,
   PLAN_IS_SMALLER_THAN_USAGE_COPY,
   PLAN_IS_TOO_SMALL_FOR_APL_COPY,
@@ -20,8 +21,8 @@ import type {
   PlanWithAvailability,
 } from './types';
 import type {
-  Capabilities,
   BaseType,
+  Capabilities,
   LinodeTypeClass,
   Region,
   RegionAvailability,
@@ -75,13 +76,30 @@ export const useIsAcceleratedPlansEnabled = () => {
 };
 
 const shouldExcludePlan = (
-  type: { id: string },
-  options: { isLKE?: boolean } = {}
+  type: { class: LinodeTypeClass; id: string },
+  options: { isLKE?: boolean; selectedRegionId?: string } = {}
 ): boolean => {
-  const { isLKE = false } = options;
-  const excludedPlanIdSubstring = 'rtx6000';
+  const { isLKE = false, selectedRegionId } = options;
+
   // Filter out RTX6000 plans when in LKE context
-  return isLKE && type.id.includes(excludedPlanIdSubstring);
+  const excludedPlanIdSubstring = 'rtx6000';
+  if (isLKE && type.id.includes(excludedPlanIdSubstring)) {
+    return true;
+  }
+
+  // Filter out mtc-tt-2025 plans in non-tt regions
+  if (
+    type.class === 'premium' &&
+    type.id === 'g8-premimum-128-ht' &&
+    !(
+      selectedRegionId &&
+      MTC_TT_CUSTOM_PLANS_AVAILABILITY_REGIONS.includes(selectedRegionId)
+    )
+  ) {
+    return true;
+  }
+
+  return false;
 };
 
 /**
@@ -95,22 +113,23 @@ const shouldExcludePlan = (
  */
 
 export const getPlanSelectionsByPlanType = <
-  T extends BaseType & { class: LinodeTypeClass }
+  T extends BaseType & { class: LinodeTypeClass },
 >(
   types: T[],
-  options: { isLKE?: boolean } = {}
+  options: { isLKE?: boolean; selectedRegionId?: string } = {}
 ): Partial<PlansByType<T>> => {
   const plansByType: PlansByType<T> = planTypeOrder.reduce((acc, key) => {
     acc[key] = [];
     return acc;
   }, {} as PlansByType<T>);
-  const { isLKE = false } = options;
+  const { isLKE = false, selectedRegionId } = options;
 
   // group plans by type
   for (const type of types) {
-    if (shouldExcludePlan(type, { isLKE })) {
+    if (shouldExcludePlan(type, { isLKE, selectedRegionId })) {
       continue;
     }
+
     switch (type.class) {
       case 'nanode':
       case 'standard':

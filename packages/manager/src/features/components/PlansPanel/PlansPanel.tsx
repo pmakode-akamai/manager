@@ -51,8 +51,8 @@ export interface PlansPanelProps {
   selectedId?: string;
   selectedRegionID?: string;
   showLimits?: boolean;
-  tabDisabledMessage?: string;
   tabbedPanelInnerClass?: string;
+  tabDisabledMessage?: string;
   types: PlanSelectionType[];
 }
 
@@ -113,10 +113,12 @@ export const PlansPanel = (props: PlansPanelProps) => {
       !type.id.includes('dedicated-edge') && !type.id.includes('nanode-edge')
     );
   });
+
   const _plans = getPlanSelectionsByPlanType(
     flags.disableLargestGbPlans
       ? replaceOrAppendPlaceholder512GbPlans(_types)
-      : _types
+      : _types,
+    { selectedRegionId: selectedRegionID }
   );
 
   const hideDistributedRegions =
