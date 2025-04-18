@@ -35,7 +35,7 @@ export const ACCELERATED_COMPUTE_INSTANCES_LINK =
   'https://techdocs.akamai.com/cloud-computing/docs/accelerated-compute-instances';
 
 export const MTC_TT = {
-  availability_regions: ['us-iad', 'no-east'], // Currently available in iad/oslo regions.
+  availability_regions: ['us-iad', 'no-east'], // Currently available in iad/oslo regions. (used in mocks/serverHandlers.ts only)
   available_types: ['g8-premium-64-ht', 'g8-premium-128-ht'],
 };
 
