@@ -7,7 +7,6 @@ import {
   DEDICATED_512_GB_PLAN,
   LIMITED_AVAILABILITY_COPY,
   MTC_TT,
-  PLAN_CURRENTLY_NOT_AVAILABLE_IN_REGION_COPY,
   PLAN_IS_CURRENTLY_UNAVAILABLE_COPY,
   PLAN_IS_SMALLER_THAN_USAGE_COPY,
   PLAN_IS_TOO_SMALL_FOR_APL_COPY,
@@ -222,6 +221,17 @@ const isMTCTTPlan = (plan: PlanSelectionType) => {
   );
 };
 
+/**
+ * Checks if a plan is part of the MTC_TT plan group.
+ * These plans have specific availability requirements and are treated differently
+ * from regular plans in terms of region availability and 512GB plan handling.
+ */
+// const isMTCTTPlan = (plan: PlanSelectionType) => {
+//   return (
+//     plan.class === 'premium' && MTC_TT['available_types'].includes(plan.id)
+//   );
+// };
+
 export const planTabInfoContent = {
   accelerated: {
     dataId: 'data-qa-accelerated',
@@ -350,24 +360,14 @@ export const extractPlansInformation = ({
 }: ExtractPlansInformationProps) => {
   const plansForThisLinodeTypeClass: PlanWithAvailability[] = plans.map(
     (plan) => {
-      const isCustomMTCPlan = isMTCTTPlan(plan);
-
       // Special handling for 512GB plans:
       // - Generally disabled when `disableLargestGbPlansFlag` is true
-      // - Exceptions: GPU plans and MTC_TT plans
+      // - Disabled when it's a tiktok plan
+      // - Exceptions: GPU plans
       const planIsDisabled512Gb =
-        plan.label.includes('512GB') &&
+        (plan.label.includes('512GB') || isMTCTTPlan(plan)) &&
         Boolean(disableLargestGbPlansFlag) &&
-        !(plan.class === 'gpu' || isCustomMTCPlan);
-
-      // MTC_TT plans are only available in specific regions.
-      // Check if the selected region is one of the allowed regions.
-      const planIsMTCTTAndUnavailableInSelectedRegion =
-        isCustomMTCPlan &&
-        !(
-          selectedRegionId &&
-          MTC_TT['availability_regions'].includes(selectedRegionId)
-        );
+        plan.class !== 'gpu';
 
       const planHasLimitedAvailability = getIsLimitedAvailability({
         plan,
@@ -395,7 +395,6 @@ export const extractPlansInformation = ({
         planBelongsToDisabledClass,
         planHasLimitedAvailability,
         planIsDisabled512Gb,
-        planIsMTCTTAndUnavailableInSelectedRegion,
         planIsSmallerThanUsage,
         planIsTooSmall,
         planIsTooSmallForAPL,
@@ -408,7 +407,6 @@ export const extractPlansInformation = ({
       planBelongsToDisabledClass,
       planHasLimitedAvailability,
       planIsDisabled512Gb,
-      planIsMTCTTAndUnavailableInSelectedRegion,
       planIsSmallerThanUsage,
       planIsTooSmall,
       planIsTooSmallForAPL,
@@ -422,7 +420,6 @@ export const extractPlansInformation = ({
       planBelongsToDisabledClass ||
       planHasLimitedAvailability ||
       planIsDisabled512Gb ||
-      planIsMTCTTAndUnavailableInSelectedRegion ||
       planIsSmallerThanUsage ||
       planIsTooSmall ||
       planIsTooSmallForAPL
@@ -452,7 +449,6 @@ export const getDisabledPlanReasonCopy = ({
   planBelongsToDisabledClass,
   planHasLimitedAvailability,
   planIsDisabled512Gb,
-  planIsMTCTTAndUnavailableInSelectedRegion,
   planIsSmallerThanUsage,
   planIsTooSmall,
   planIsTooSmallForAPL,
@@ -461,7 +457,6 @@ export const getDisabledPlanReasonCopy = ({
   planBelongsToDisabledClass: DisabledTooltipReasons['planBelongsToDisabledClass'];
   planHasLimitedAvailability: DisabledTooltipReasons['planHasLimitedAvailability'];
   planIsDisabled512Gb: DisabledTooltipReasons['planIsDisabled512Gb'];
-  planIsMTCTTAndUnavailableInSelectedRegion?: DisabledTooltipReasons['planIsMTCTTAndUnavailableInSelectedRegion'];
   planIsSmallerThanUsage?: DisabledTooltipReasons['planIsSmallerThanUsage'];
   planIsTooSmall: DisabledTooltipReasons['planIsTooSmall'];
   planIsTooSmallForAPL?: DisabledTooltipReasons['planIsTooSmallForAPL'];
@@ -469,10 +464,6 @@ export const getDisabledPlanReasonCopy = ({
 }): string => {
   if (wholePanelIsDisabled) {
     return PLAN_NOT_AVAILABLE_IN_REGION_COPY;
-  }
-
-  if (planIsMTCTTAndUnavailableInSelectedRegion) {
-    return PLAN_CURRENTLY_NOT_AVAILABLE_IN_REGION_COPY;
   }
 
   if (planBelongsToDisabledClass) {

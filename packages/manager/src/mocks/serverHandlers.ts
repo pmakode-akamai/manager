@@ -2312,7 +2312,18 @@ export const handlers = [
               region: 'no-east',
             }),
           ]
-        : []),
+        : [
+            regionAvailabilityFactory.build({
+              available: false,
+              plan: 'g8-premium-128-ht',
+              region: 'us-iad',
+            }),
+            regionAvailabilityFactory.build({
+              available: false,
+              plan: 'g8-premium-128-ht',
+              region: 'no-east',
+            }),
+          ]),
     ]);
   }),
 
