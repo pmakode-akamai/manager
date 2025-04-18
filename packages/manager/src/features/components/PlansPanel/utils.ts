@@ -221,17 +221,6 @@ const isMTCTTPlan = (plan: PlanSelectionType) => {
   );
 };
 
-/**
- * Checks if a plan is part of the MTC_TT plan group.
- * These plans have specific availability requirements and are treated differently
- * from regular plans in terms of region availability and 512GB plan handling.
- */
-// const isMTCTTPlan = (plan: PlanSelectionType) => {
-//   return (
-//     plan.class === 'premium' && MTC_TT['available_types'].includes(plan.id)
-//   );
-// };
-
 export const planTabInfoContent = {
   accelerated: {
     dataId: 'data-qa-accelerated',
@@ -362,7 +351,7 @@ export const extractPlansInformation = ({
     (plan) => {
       // Special handling for 512GB plans:
       // - Generally disabled when `disableLargestGbPlansFlag` is true
-      // - Disabled when it's a tiktok plan
+      // - Disabled when it's a MTC_TT plan
       // - Exceptions: GPU plans
       const planIsDisabled512Gb =
         (plan.label.includes('512GB') || isMTCTTPlan(plan)) &&
