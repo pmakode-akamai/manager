@@ -2289,39 +2289,30 @@ export const handlers = [
     );
   }),
   http.get('*regions/:regionId/availability', ({ params }) => {
+    const selectedRegionId = params.regionId as string;
     return HttpResponse.json([
       regionAvailabilityFactory.build({
         plan: 'g6-standard-6',
-        region: 'us-east',
+        region: selectedRegionId,
       }),
       regionAvailabilityFactory.build({
         plan: 'g6-standard-7',
-        region: 'us-east',
+        region: selectedRegionId,
       }),
-      ...(params.regionId &&
-      MTC_TT['availability_regions'].includes(params.regionId as string)
+      // Region-based availability of MTC plans is shown only for customers with MTC customer tag.
+      ...(MTC_TT['availability_regions'].includes(selectedRegionId)
         ? [
             regionAvailabilityFactory.build({
               available: true,
               plan: 'g8-premium-128-ht',
-              region: 'us-iad',
-            }),
-            regionAvailabilityFactory.build({
-              available: false,
-              plan: 'g8-premium-128-ht',
-              region: 'no-east',
+              region: selectedRegionId,
             }),
           ]
         : [
             regionAvailabilityFactory.build({
               available: false,
               plan: 'g8-premium-128-ht',
-              region: 'us-iad',
-            }),
-            regionAvailabilityFactory.build({
-              available: false,
-              plan: 'g8-premium-128-ht',
-              region: 'no-east',
+              region: selectedRegionId,
             }),
           ]),
     ]);

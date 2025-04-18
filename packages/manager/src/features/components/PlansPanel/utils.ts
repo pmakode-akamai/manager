@@ -351,12 +351,11 @@ export const extractPlansInformation = ({
     (plan) => {
       // Special handling for 512GB plans:
       // - Generally disabled when `disableLargestGbPlansFlag` is true
-      // - Disabled when it's a MTC_TT plan
-      // - Exceptions: GPU plans
+      // - Exceptions: GPU plans and MTC_TT plans
       const planIsDisabled512Gb =
-        (plan.label.includes('512GB') || isMTCTTPlan(plan)) &&
+        plan.label.includes('512GB') &&
         Boolean(disableLargestGbPlansFlag) &&
-        plan.class !== 'gpu';
+        !(plan.class === 'gpu' || isMTCTTPlan(plan));
 
       const planHasLimitedAvailability = getIsLimitedAvailability({
         plan,
