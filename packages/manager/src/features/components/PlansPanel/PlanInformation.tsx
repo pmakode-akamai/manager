@@ -11,6 +11,7 @@ import {
   DEDICATED_COMPUTE_INSTANCES_LINK,
   GPU_COMPUTE_INSTANCES_LINK,
   HIGH_MEMORY_COMPUTE_INSTANCES_LINK,
+  MTC_TT,
   PREMIUM_COMPUTE_INSTANCES_LINK,
   SHARED_COMPUTE_INSTANCES_LINK,
   TRANSFER_COSTS_LINK,
@@ -27,6 +28,13 @@ interface ExtendedPlanType {
   planType: 'shared' | LinodeTypeClass;
 }
 
+interface ClassDescriptionCopy extends ExtendedPlanType {
+  customMTCCopyProps?: {
+    selectedRegionId: (typeof MTC_TT)['availability_regions'][number];
+    showMTCTTBanner: boolean;
+  };
+}
+
 export interface PlanInformationProps extends ExtendedPlanType {
   disabledClasses?: LinodeTypeClass[];
   flow: 'kubernetes' | 'linode';
@@ -36,6 +44,7 @@ export interface PlanInformationProps extends ExtendedPlanType {
   isAPLEnabled?: boolean;
   isSelectedRegionEligibleForPlan: boolean;
   regionsData?: Region[];
+  selectedRegionId?: string;
 }
 
 export const PlanInformation = (props: PlanInformationProps) => {
@@ -49,12 +58,14 @@ export const PlanInformation = (props: PlanInformationProps) => {
     isSelectedRegionEligibleForPlan,
     planType,
     regionsData,
+    selectedRegionId,
   } = props;
   const getDisabledClass = (thisClass: LinodeTypeClass) => {
     return Boolean(disabledClasses?.includes(thisClass));
   };
-  const showGPUEgressBanner = Boolean(useFlags().gpuv2?.egressBanner);
-  const showTransferBanner = Boolean(useFlags().gpuv2?.transferBanner);
+  const flags = useFlags();
+  const showGPUEgressBanner = Boolean(flags.gpuv2?.egressBanner);
+  const showTransferBanner = Boolean(flags.gpuv2?.transferBanner);
 
   const showLimitedAvailabilityBanner =
     hasSelectedRegion &&
@@ -134,13 +145,13 @@ export const PlanInformation = (props: PlanInformationProps) => {
       ) : null}
       {showLimitedAvailabilityBanner && (
         <Notice
+          dataTestId={limitedAvailabilityBannerTestId}
           sx={(theme: Theme) => ({
             marginBottom: theme.spacing(3),
             marginLeft: 0,
             marginTop: 0,
             padding: `${theme.spacing(0.5)} ${theme.spacing(2)}`,
           })}
-          dataTestId={limitedAvailabilityBannerTestId}
           variant="warning"
         >
           <StyledNoticeTypography>
@@ -148,26 +159,37 @@ export const PlanInformation = (props: PlanInformationProps) => {
           </StyledNoticeTypography>
         </Notice>
       )}
-      <ClassDescriptionCopy planType={planType} />
+      <ClassDescriptionCopy
+        customMTCCopyProps={{
+          selectedRegionId:
+            selectedRegionId as (typeof MTC_TT)['availability_regions'][number],
+          showMTCTTBanner: Boolean(flags.mtctt2025),
+        }}
+        planType={planType}
+      />
     </>
   );
 };
 
 export const limitedAvailabilityBannerTestId = 'limited-availability-banner';
 
-export const ClassDescriptionCopy = (props: ExtendedPlanType) => {
-  const { planType } = props;
+export const ClassDescriptionCopy = (props: ClassDescriptionCopy) => {
+  const { planType, customMTCCopyProps } = props;
   let planTypeLabel: null | string;
   let docLink: null | string;
 
   switch (planType) {
+    case 'accelerated':
+      planTypeLabel = 'Accelerated';
+      docLink = ACCELERATED_COMPUTE_INSTANCES_LINK;
+      break;
     case 'dedicated':
       planTypeLabel = 'Dedicated CPU';
       docLink = DEDICATED_COMPUTE_INSTANCES_LINK;
       break;
-    case 'shared':
-      planTypeLabel = 'Shared CPU';
-      docLink = SHARED_COMPUTE_INSTANCES_LINK;
+    case 'gpu':
+      planTypeLabel = 'GPU';
+      docLink = GPU_COMPUTE_INSTANCES_LINK;
       break;
     case 'highmem':
       planTypeLabel = 'High Memory';
@@ -177,13 +199,9 @@ export const ClassDescriptionCopy = (props: ExtendedPlanType) => {
       planTypeLabel = 'Premium CPU';
       docLink = PREMIUM_COMPUTE_INSTANCES_LINK;
       break;
-    case 'gpu':
-      planTypeLabel = 'GPU';
-      docLink = GPU_COMPUTE_INSTANCES_LINK;
-      break;
-    case 'accelerated':
-      planTypeLabel = 'Accelerated';
-      docLink = ACCELERATED_COMPUTE_INSTANCES_LINK;
+    case 'shared':
+      planTypeLabel = 'Shared CPU';
+      docLink = SHARED_COMPUTE_INSTANCES_LINK;
       break;
     default:
       planTypeLabel = null;
@@ -202,6 +220,14 @@ export const ClassDescriptionCopy = (props: ExtendedPlanType) => {
           ?.typography
       }{' '}
       <Link to={docLink}>Learn more</Link> about our {planTypeLabel} plans.
+      {customMTCCopyProps &&
+      customMTCCopyProps.showMTCTTBanner &&
+      planType === 'premium' &&
+      MTC_TT['availability_regions'].includes(
+        customMTCCopyProps.selectedRegionId
+      )
+        ? " Custom 'Premium HT 512GB' plans are currently available in OSLO & IAD regions"
+        : null}
     </Typography>
   ) : null;
 };

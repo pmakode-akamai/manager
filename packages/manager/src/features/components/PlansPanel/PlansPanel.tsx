@@ -193,6 +193,7 @@ export const PlansPanel = (props: PlansPanelProps) => {
                 )}
                 planType={plan}
                 regionsData={regionsData || []}
+                selectedRegionId={selectedRegionID}
               />
               {showDistributedRegionPlanTable && !isGeckoLAEnabled && (
                 <Notice
