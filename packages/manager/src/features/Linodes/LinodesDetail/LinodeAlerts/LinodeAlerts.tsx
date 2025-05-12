@@ -8,7 +8,12 @@ import { useFlags } from 'src/hooks/useFlags';
 import { AclpPreferenceToggle } from '../AclpPreferenceToggle';
 import { LinodeSettingsAlertsPanel } from '../LinodeSettings/LinodeSettingsAlertsPanel';
 
-const LinodeAlerts = () => {
+interface Props {
+  isAclpAlertsSupportedRegion: boolean;
+}
+
+const LinodeAlerts = (props: Props) => {
+  const { isAclpAlertsSupportedRegion } = props;
   const { linodeId } = useParams<{ linodeId: string }>();
   const id = Number(linodeId);
   const flags = useFlags();
@@ -24,8 +29,20 @@ const LinodeAlerts = () => {
 
   return (
     <Box>
-      {flags.aclpIntegration ? <AclpPreferenceToggle type="alerts" /> : null}
-      {flags.aclpIntegration && isAclpAlertsPreferenceBeta ? (
+      {flags.aclpIntegration ? (
+        isAclpAlertsSupportedRegion ? (
+          <AclpPreferenceToggle type="alerts" />
+        ) : (
+          <Notice variant="info">
+            The resources/entities regions you have chosen are not supported for
+            the new Alerts.
+          </Notice>
+        )
+      ) : null}
+
+      {flags.aclpIntegration &&
+      isAclpAlertsSupportedRegion &&
+      isAclpAlertsPreferenceBeta ? (
         // Beta ACLP Alerts View
         <Notice variant="info">ACLP Alerts Coming soon...</Notice>
       ) : (

@@ -19,3 +19,9 @@ export const getSelectedDeviceOption = (
   }
   return optionList.find((option) => option.value === selectedValue) || null;
 };
+
+export const isAclpSupportedRegion = (region: string) => {
+  const aclpSupportedRegions = ['in-maa'];
+
+  return Boolean(region && aclpSupportedRegions.includes(region));
+};

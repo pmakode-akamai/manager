@@ -20,6 +20,8 @@ import { SMTPRestrictionText } from 'src/features/Linodes/SMTPRestrictionText';
 import { useFlags } from 'src/hooks/useFlags';
 import { useTypeQuery } from 'src/queries/types';
 
+import { isAclpSupportedRegion } from './utilities';
+
 const LinodeMetrics = React.lazy(() => import('./LinodeMetrics/LinodeMetrics'));
 const LinodeNetworking = React.lazy(() =>
   import('./LinodeNetworking/LinodeNetworking').then((module) => ({
@@ -59,6 +61,10 @@ const LinodesDetailNavigation = () => {
   // Bare metal Linodes have a very different detail view
   const isBareMetalInstance = type?.class === 'metal';
 
+  const isAclpAlertsSupportedRegion = Boolean(
+    linode && isAclpSupportedRegion(linode.region)
+  );
+
   const tabs = [
     {
       chip:
@@ -94,7 +100,9 @@ const LinodesDetailNavigation = () => {
     },
     {
       chip:
-        flags.aclpIntegration && aclpPreferences?.isAclpAlertsPreferenceBeta ? (
+        flags.aclpIntegration &&
+        isAclpAlertsSupportedRegion &&
+        aclpPreferences?.isAclpAlertsPreferenceBeta ? (
           <BetaChip />
         ) : null,
       routeName: `${url}/alerts`,
@@ -186,7 +194,9 @@ const LinodesDetailNavigation = () => {
                 <LinodeActivity />
               </SafeTabPanel>
               <SafeTabPanel index={idx++}>
-                <LinodeAlerts />
+                <LinodeAlerts
+                  isAclpAlertsSupportedRegion={isAclpAlertsSupportedRegion}
+                />
               </SafeTabPanel>
               <SafeTabPanel index={idx++}>
                 <LinodeSettings />
