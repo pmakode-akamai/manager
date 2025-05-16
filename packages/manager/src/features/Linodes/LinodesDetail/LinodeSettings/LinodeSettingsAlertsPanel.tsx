@@ -1,10 +1,20 @@
 import { useLinodeQuery, useLinodeUpdateMutation } from '@linode/queries';
-import { ActionsPanel, Divider, Notice, Paper, Typography } from '@linode/ui';
+import {
+  ActionsPanel,
+  Box,
+  Divider,
+  Notice,
+  Paper,
+  Tooltip,
+  Typography,
+} from '@linode/ui';
 import { styled } from '@mui/material/styles';
 import { useFormik } from 'formik';
 import { useSnackbar } from 'notistack';
 import * as React from 'react';
 
+import InfoIcon from 'src/assets/icons/info.svg';
+import { useFlags } from 'src/hooks/useFlags';
 import { useTypeQuery } from 'src/queries/types';
 import { getAPIErrorFor } from 'src/utilities/getAPIErrorFor';
 
@@ -20,6 +30,7 @@ interface Props {
 export const LinodeSettingsAlertsPanel = (props: Props) => {
   const { isReadOnly, linodeId } = props;
   const { enqueueSnackbar } = useSnackbar();
+  const flags = useFlags();
 
   const { data: linode } = useLinodeQuery(linodeId);
 
@@ -220,14 +231,25 @@ export const LinodeSettingsAlertsPanel = (props: Props) => {
 
   const generalError = hasErrorFor('none');
 
+  const alertsHeading = flags.aclpIntegration ? 'Default Alerts' : 'Alerts';
+
   return (
     <Paper sx={(theme) => ({ pb: theme.spacingFunction(16) })}>
-      <Typography
-        sx={(theme) => ({ mb: theme.spacingFunction(12) })}
-        variant="h2"
-      >
-        Alerts
-      </Typography>
+      <Box alignItems="baseline" display="flex" gap={0.5}>
+        <Typography
+          sx={(theme) => ({ mb: theme.spacingFunction(12) })}
+          variant="h2"
+        >
+          {alertsHeading}
+        </Typography>
+        {flags.aclpIntegration && (
+          <Tooltip title="Default alerts are not editable. Try Alerts (Beta) to create alerts.">
+            <span>
+              <InfoIcon />
+            </span>
+          </Tooltip>
+        )}
+      </Box>
       {generalError && <Notice variant="error">{generalError}</Notice>}
       {alertSections.map((p, idx) => (
         <React.Fragment key={`alert-${idx}`}>

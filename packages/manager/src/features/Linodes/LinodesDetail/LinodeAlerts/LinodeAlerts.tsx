@@ -17,10 +17,12 @@ const LinodeAlerts = () => {
     (preferences) => preferences?.isAclpAlertsBeta
   );
 
-  const isReadOnly =
+  const isLinodeReadOnly =
     grants !== undefined &&
     grants?.linode.find((grant) => grant.id === id)?.permissions ===
       'read_only';
+
+  const isReadOnly = isLinodeReadOnly || flags.aclpIntegration;
 
   return (
     <Box>
