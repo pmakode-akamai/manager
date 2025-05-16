@@ -243,7 +243,7 @@ export const LinodeSettingsAlertsPanel = (props: Props) => {
           {alertsHeading}
         </Typography>
         {flags.aclpIntegration && (
-          <Tooltip title="Default alerts are not editable. Try Alerts (Beta) to create alerts.">
+          <Tooltip title="Default alerts are not editable. Try Alerts (Beta) to create custom alerts.">
             <span>
               <InfoIcon />
             </span>
