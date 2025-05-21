@@ -8,16 +8,22 @@ import { Skeleton } from 'src/components/Skeleton';
 import type { ManagerPreferences } from '@linode/utilities';
 
 export interface AclpPreferenceToggleType {
+  linodeId?: number;
   type: 'alerts' | 'metrics';
 }
 
 interface PreferenceConfigItem {
   getBannerText: (isBeta: boolean | undefined) => JSX.Element;
   getButtonText: (isBeta: boolean | undefined) => string;
+  getUpdatePayload: (
+    isCurrentBeta: boolean | undefined,
+    linodeId: number | undefined,
+    currentPreferences: ManagerPreferences | undefined
+  ) => any;
   preferenceKey: string;
-  updateKey: keyof ManagerPreferences;
   usePreferenceSelector: (
-    preferences: ManagerPreferences | undefined
+    preferences: ManagerPreferences | undefined,
+    linodeId?: number
   ) => boolean | undefined;
 }
 
@@ -26,9 +32,31 @@ const preferenceConfig: Record<
   PreferenceConfigItem
 > = {
   metrics: {
-    usePreferenceSelector: (preferences) => preferences?.isAclpMetricsBeta,
-    updateKey: 'isAclpMetricsBeta',
+    usePreferenceSelector: (preferences, linodeId) => {
+      return linodeId !== undefined
+        ? preferences?.aclpBetaMetricsPreferences?.edit_flows[linodeId]
+        : preferences?.aclpBetaMetricsPreferences?.create_flows;
+    },
     preferenceKey: 'metrics-preference',
+    getUpdatePayload: (isCurrentBeta, linodeId, currentPreferences) => {
+      if (linodeId !== undefined) {
+        return {
+          aclpBetaMetricsPreferences: {
+            ...currentPreferences?.aclpBetaMetricsPreferences,
+            edit_flows: {
+              ...currentPreferences?.aclpBetaMetricsPreferences?.edit_flows,
+              [linodeId]: !isCurrentBeta,
+            },
+          },
+        };
+      }
+      return {
+        aclpBetaMetricsPreferences: {
+          ...currentPreferences?.aclpBetaMetricsPreferences,
+          create_flows: !isCurrentBeta,
+        },
+      };
+    },
     getButtonText: (isBeta) =>
       isBeta ? 'Switch to legacy Metrics' : 'Try the Metrics (Beta)',
     getBannerText: (isBeta) =>
@@ -46,9 +74,31 @@ const preferenceConfig: Record<
       ),
   },
   alerts: {
-    usePreferenceSelector: (preferences) => preferences?.isAclpAlertsBeta,
-    updateKey: 'isAclpAlertsBeta',
+    usePreferenceSelector: (preferences, linodeId) => {
+      return linodeId !== undefined
+        ? preferences?.aclpBetaAlertsPreferences?.edit_flows[linodeId]
+        : preferences?.aclpBetaAlertsPreferences?.create_flows;
+    },
     preferenceKey: 'alerts-preference',
+    getUpdatePayload: (isCurrentBeta, linodeId, currentPreferences) => {
+      if (linodeId !== undefined) {
+        return {
+          aclpBetaAlertsPreferences: {
+            ...currentPreferences?.aclpBetaAlertsPreferences,
+            edit_flows: {
+              ...currentPreferences?.aclpBetaAlertsPreferences?.edit_flows,
+              [linodeId]: !isCurrentBeta,
+            },
+          },
+        };
+      }
+      return {
+        aclpBetaAlertsPreferences: {
+          ...currentPreferences?.aclpBetaAlertsPreferences,
+          create_flows: !isCurrentBeta,
+        },
+      };
+    },
     getButtonText: (isBeta) =>
       isBeta ? 'Switch to legacy Alerts' : 'Try Alerts (Beta)',
     getBannerText: (isBeta) =>
@@ -67,12 +117,14 @@ const preferenceConfig: Record<
   },
 };
 
-export const AclpPreferenceToggle = ({ type }: AclpPreferenceToggleType) => {
+export const AclpPreferenceToggle = ({
+  type,
+  linodeId,
+}: AclpPreferenceToggleType) => {
   const config = preferenceConfig[type];
 
-  const { data: isBeta, isLoading } = usePreferences(
-    config.usePreferenceSelector
-  );
+  const { data: preferences, isLoading } = usePreferences();
+  const isBeta = config.usePreferenceSelector(preferences, linodeId);
 
   const { mutateAsync: updatePreferences } = useMutatePreferences();
 
@@ -94,9 +146,9 @@ export const AclpPreferenceToggle = ({ type }: AclpPreferenceToggleType) => {
         <Button
           buttonType="primary"
           onClick={() =>
-            updatePreferences({
-              [config.updateKey]: !isBeta,
-            })
+            updatePreferences(
+              config.getUpdatePayload(isBeta, linodeId, preferences)
+            )
           }
           sx={{ textTransform: 'none' }}
         >

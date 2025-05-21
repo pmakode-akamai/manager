@@ -22,6 +22,14 @@ export type ThemeChoice = 'dark' | 'light' | 'system';
 
 export type ManagerPreferences = Partial<{
   aclpAlertsGroupByTag: boolean;
+  aclpBetaAlertsPreferences: {
+    create_flows: boolean;
+    edit_flows: Record<number, boolean>;
+  };
+  aclpBetaMetricsPreferences: {
+    create_flows: boolean;
+    edit_flows: Record<number, boolean>;
+  };
   aclpPreference: AclpConfig; // Why is this type in @linode/api-v4?
   avatarColor: string;
   backups_cta_dismissed: boolean;
@@ -31,8 +39,6 @@ export type ManagerPreferences = Partial<{
   domains_group_by_tag: boolean;
   firewall_beta_notification: boolean;
   gst_banner_dismissed: boolean;
-  isAclpAlertsBeta: boolean;
-  isAclpMetricsBeta: boolean;
   isTableStripingEnabled: boolean;
   linode_news_banner_dismissed: boolean;
   linodes_group_by_tag: boolean;

@@ -47,8 +47,10 @@ const LinodesDetailNavigation = () => {
   const history = useHistory();
   const flags = useFlags();
   const { data: aclpPreferences } = usePreferences((preferences) => ({
-    isAclpMetricsPreferenceBeta: preferences?.isAclpMetricsBeta,
-    isAclpAlertsPreferenceBeta: preferences?.isAclpAlertsBeta,
+    isAclpMetricsPreferenceBeta:
+      preferences?.aclpBetaMetricsPreferences?.edit_flows[id],
+    isAclpAlertsPreferenceBeta:
+      preferences?.aclpBetaAlertsPreferences?.edit_flows[id],
   }));
 
   const { data: type } = useTypeQuery(

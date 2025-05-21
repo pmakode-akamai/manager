@@ -6,7 +6,7 @@ import { useParams } from 'react-router-dom';
 import { AlertReusableComponent } from 'src/features/CloudPulse/Alerts/ContextualView/AlertReusableComponent';
 import { useFlags } from 'src/hooks/useFlags';
 
-import { AclpPreferenceToggle } from '../AclpPreferenceToggle';
+import { AclpPreferenceToggle } from '../../AclpPreferenceToggle';
 import { LinodeSettingsAlertsPanel } from '../LinodeSettings/LinodeSettingsAlertsPanel';
 
 const LinodeAlerts = () => {
@@ -17,7 +17,7 @@ const LinodeAlerts = () => {
   const { data: grants } = useGrants();
   const { data: linode } = useLinodeQuery(id);
   const { data: isAclpAlertsPreferenceBeta } = usePreferences(
-    (preferences) => preferences?.isAclpAlertsBeta
+    (preferences) => preferences?.aclpBetaAlertsPreferences?.edit_flows[id]
   );
 
   const isReadOnly =
@@ -27,7 +27,9 @@ const LinodeAlerts = () => {
 
   return (
     <Box>
-      {flags.aclpIntegration ? <AclpPreferenceToggle type="alerts" /> : null}
+      {flags.aclpIntegration ? (
+        <AclpPreferenceToggle linodeId={id} type="alerts" />
+      ) : null}
       {flags.aclpIntegration && isAclpAlertsPreferenceBeta ? (
         // Beta ACLP Alerts View
         <AlertReusableComponent

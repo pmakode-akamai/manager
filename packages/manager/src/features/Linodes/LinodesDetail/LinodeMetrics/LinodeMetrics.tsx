@@ -5,7 +5,7 @@ import * as React from 'react';
 import { CloudPulseDashboardWithFilters } from 'src/features/CloudPulse/Dashboard/CloudPulseDashboardWithFilters';
 import { useFlags } from 'src/hooks/useFlags';
 
-import { AclpPreferenceToggle } from '../AclpPreferenceToggle';
+import { AclpPreferenceToggle } from '../../AclpPreferenceToggle';
 import LinodeSummary from './LinodeSummary/LinodeSummary';
 
 interface Props {
@@ -16,13 +16,16 @@ interface Props {
 const LinodeMetrics = ({ linodeCreated, linodeId }: Props) => {
   const flags = useFlags();
   const { data: isAclpMetricsPreferenceBeta } = usePreferences(
-    (preferences) => preferences?.isAclpMetricsBeta
+    (preferences) =>
+      preferences?.aclpBetaMetricsPreferences?.edit_flows[linodeId]
   );
   const linodeDashboardId = 2;
 
   return (
     <Box>
-      {flags.aclpIntegration ? <AclpPreferenceToggle type="metrics" /> : null}
+      {flags.aclpIntegration ? (
+        <AclpPreferenceToggle linodeId={linodeId} type="metrics" />
+      ) : null}
       {flags.aclpIntegration && isAclpMetricsPreferenceBeta ? (
         // Beta ACLP Metrics View
         <CloudPulseDashboardWithFilters
