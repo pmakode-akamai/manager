@@ -1,5 +1,5 @@
 import { usePreferences } from '@linode/queries';
-import { Box } from '@linode/ui';
+import { Accordion, Divider } from '@linode/ui';
 import * as React from 'react';
 import { useController, useFormContext } from 'react-hook-form';
 
@@ -44,18 +44,25 @@ export const Alerts = () => {
   };
 
   return (
-    <Box>
-      {flags.aclpIntegration && <AclpPreferenceToggle type="alerts" />}
-      {flags.aclpIntegration && isAclpAlertsPreferenceBeta ? (
-        <AlertReusableComponent
-          enabledAlerts={field.value}
-          onToggleAlert={handleToggleAlert}
-          serviceType="linode"
-        />
-      ) : (
-        <LinodeSettingsAlertsPanel isCreateFlow />
-      )}
-    </Box>
+    <>
+      <Accordion
+        detailProps={{ sx: { p: 0 } }}
+        heading="Alerts"
+        summaryProps={{ sx: { p: 0 } }}
+      >
+        {flags.aclpIntegration && <AclpPreferenceToggle type="alerts" />}
+        {flags.aclpIntegration && isAclpAlertsPreferenceBeta ? (
+          <AlertReusableComponent
+            enabledAlerts={field.value}
+            onToggleAlert={handleToggleAlert}
+            serviceType="linode"
+          />
+        ) : (
+          <LinodeSettingsAlertsPanel isCreateFlow />
+        )}
+      </Accordion>
+      <Divider />
+    </>
   );
 };
 

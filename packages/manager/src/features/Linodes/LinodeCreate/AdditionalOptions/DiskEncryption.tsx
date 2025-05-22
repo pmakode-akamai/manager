@@ -1,5 +1,5 @@
 import { useRegionsQuery } from '@linode/queries';
-import { Accordion } from '@linode/ui';
+import { Accordion, Divider } from '@linode/ui';
 import React from 'react';
 import { Controller, useFormContext, useWatch } from 'react-hook-form';
 
@@ -39,38 +39,41 @@ export const DiskEncryption = () => {
   );
 
   return (
-    <Accordion
-      detailProps={{ sx: { p: 0 } }}
-      heading="Disk Encryption"
-      summaryProps={{ sx: { p: 0 } }}
-    >
-      <Controller
-        control={control}
-        name="disk_encryption"
-        render={({ field, fieldState }) => (
-          <Encryption
-            descriptionCopy={
-              isDistributedRegion
-                ? DISK_ENCRYPTION_DISTRIBUTED_DESCRIPTION
-                : DISK_ENCRYPTION_GENERAL_DESCRIPTION
-            }
-            disabled={isDistributedRegion || !regionSupportsDiskEncryption}
-            disabledReason={
-              isDistributedRegion
-                ? DISK_ENCRYPTION_DEFAULT_DISTRIBUTED_INSTANCES
-                : DISK_ENCRYPTION_UNAVAILABLE_IN_REGION_COPY
-            }
-            error={fieldState.error?.message}
-            isEncryptEntityChecked={
-              isDistributedRegion || field.value === 'enabled'
-            }
-            onChange={(checked) =>
-              field.onChange(checked ? 'enabled' : 'disabled')
-            }
-            showHeader={false}
-          />
-        )}
-      />
-    </Accordion>
+    <>
+      <Accordion
+        detailProps={{ sx: { p: 0 } }}
+        heading="Disk Encryption"
+        summaryProps={{ sx: { p: 0 } }}
+      >
+        <Controller
+          control={control}
+          name="disk_encryption"
+          render={({ field, fieldState }) => (
+            <Encryption
+              descriptionCopy={
+                isDistributedRegion
+                  ? DISK_ENCRYPTION_DISTRIBUTED_DESCRIPTION
+                  : DISK_ENCRYPTION_GENERAL_DESCRIPTION
+              }
+              disabled={isDistributedRegion || !regionSupportsDiskEncryption}
+              disabledReason={
+                isDistributedRegion
+                  ? DISK_ENCRYPTION_DEFAULT_DISTRIBUTED_INSTANCES
+                  : DISK_ENCRYPTION_UNAVAILABLE_IN_REGION_COPY
+              }
+              error={fieldState.error?.message}
+              isEncryptEntityChecked={
+                isDistributedRegion || field.value === 'enabled'
+              }
+              onChange={(checked) =>
+                field.onChange(checked ? 'enabled' : 'disabled')
+              }
+              showHeader={false}
+            />
+          )}
+        />
+      </Accordion>
+      <Divider />
+    </>
   );
 };
