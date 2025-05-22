@@ -56,7 +56,11 @@ export const UserData = () => {
   }
 
   return (
-    <Accordion heading={<UserDataHeading />} sx={{ m: '0 !important', p: 1 }}>
+    <Accordion
+      detailProps={{ sx: { p: 0 } }}
+      heading={<UserDataHeading />}
+      summaryProps={{ sx: { p: 0 } }}
+    >
       <Typography>
         User data is a feature of the Metadata service that enables you to
         perform system configuration tasks (such as adding users and installing

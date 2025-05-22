@@ -13,6 +13,11 @@ export interface EncryptionProps {
   isEncryptEntityChecked: boolean;
   notices?: string[];
   onChange: (checked: boolean) => void;
+  /**
+   * An option to show header or not
+   * @default true
+   */
+  showHeader?: boolean;
 }
 
 export const Encryption = (props: EncryptionProps) => {
@@ -25,13 +30,16 @@ export const Encryption = (props: EncryptionProps) => {
     isEncryptEntityChecked,
     notices,
     onChange,
+    showHeader = true,
   } = props;
 
   return (
     <Box>
-      <Typography data-testid={headerTestId} variant="h3">
-        {`${entityType ?? 'Disk'} Encryption`}
-      </Typography>
+      {showHeader && (
+        <Typography data-testid={headerTestId} variant="h3">
+          {`${entityType ?? 'Disk'} Encryption`}
+        </Typography>
+      )}
       {error && (
         <Notice spacingBottom={0} spacingTop={8} text={error} variant="error" />
       )}

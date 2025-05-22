@@ -3,7 +3,7 @@ import React from 'react';
 
 import { Link } from 'src/components/Link';
 
-import { useLinodeCreateQueryParams } from '../utilities';
+import { useLinodeCreateQueryParams } from '../../utilities';
 
 import type { LinodeCreateType } from '@linode/utilities';
 
@@ -26,7 +26,7 @@ export const UserDataHeading = () => {
   return (
     <Stack spacing={1}>
       <Stack direction="row" spacing={1}>
-        <Typography variant="h2">Add User Data</Typography>
+        <Typography variant="h3">Add User Data</Typography>
         <TooltipIcon
           status="help"
           sxTooltipIcon={{ p: 0 }}

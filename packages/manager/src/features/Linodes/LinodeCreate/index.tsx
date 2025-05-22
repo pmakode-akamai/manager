@@ -35,6 +35,7 @@ import {
 } from 'src/utilities/linodes';
 
 import { Actions } from './Actions';
+import { AdditionalOptions } from './AdditionalOptions/AdditionalOptions';
 import { Addons } from './Addons/Addons';
 import { Details } from './Details/Details';
 import { LinodeCreateError } from './Error';
@@ -54,7 +55,6 @@ import { Images } from './Tabs/Images';
 import { Marketplace } from './Tabs/Marketplace/Marketplace';
 import { OperatingSystems } from './Tabs/OperatingSystems';
 import { StackScripts } from './Tabs/StackScripts/StackScripts';
-import { UserData } from './UserData/UserData';
 import {
   captureLinodeCreateAnalyticsEvent,
   defaultValues,
@@ -260,8 +260,8 @@ export const LinodeCreate = () => {
           {!isLinodeInterfacesEnabled && params.type !== 'Clone Linode' && (
             <VLAN />
           )}
-          <UserData />
           {isLinodeInterfacesEnabled && <Networking />}
+          <AdditionalOptions />
           <Addons />
           <EUAgreement />
           <Summary />
