@@ -39,13 +39,6 @@ export interface AlertInformationActionTableProps {
   columns: TableColumnHeader[];
 
   /**
-   * A mapping of enabled alert IDs grouped by alert type.
-   * Used to determine the toggle status (on/off) for each alert row.
-   * Only use in create flow.
-   */
-  enabledAlerts?: LinodeAclpAlertsPayload;
-
-  /**
    * Id of the selected entity
    * Only used in edit flow
    */
@@ -65,9 +58,9 @@ export interface AlertInformationActionTableProps {
   /**
    * Called when an alert is toggled on or off.
    * Only use in create flow.
-   * @param alert object for which toggle button is click.
+   * @param payload enabled alerts ids
    */
-  onToggleAlert?: (alert: Alert) => void;
+  onToggleAlert?: (payload: LinodeAclpAlertsPayload) => void;
 
   /**
    * Column name by which columns will be ordered by default
@@ -98,7 +91,6 @@ export const AlertInformationActionTable = (
     error,
     orderByColumn,
     onToggleAlert,
-    enabledAlerts,
   } = props;
 
   const _error = error
@@ -108,16 +100,36 @@ export const AlertInformationActionTable = (
   const [selectedAlert, setSelectedAlert] = React.useState<Alert>({} as Alert);
   const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
+  const [alertStates, setAlertStates] = React.useState<Record<string, boolean>>(
+    {}
+  );
 
   const { mutateAsync: addEntity } = useAddEntityToAlert();
 
   const { mutateAsync: removeEntity } = useRemoveEntityFromAlert();
+
+  const enabledAlertIds = React.useMemo<LinodeAclpAlertsPayload>(() => {
+    return {
+      user: alerts
+        .filter(
+          (alert) => alert.type === 'user' && alertStates[alert.id] === true
+        )
+        .map((alert) => alert.id),
+      system: alerts
+        .filter(
+          (alert) => alert.type === 'system' && alertStates[alert.id] === true
+        )
+        .map((alert) => alert.id),
+    };
+  }, [alerts, alertStates]);
 
   const handleCancel = () => {
     setIsDialogOpen(false);
   };
   const handleConfirm = React.useCallback(
     (alert: Alert, currentStatus: boolean) => {
+      if (!entityId || !entityName) return;
+
       const payload: EntityAlertUpdatePayload = {
         alert,
         entityId,
@@ -146,12 +158,25 @@ export const AlertInformationActionTable = (
     },
     [addEntity, enqueueSnackbar, entityId, entityName, removeEntity]
   );
-  const handleToggle = (alert: Alert) => {
+
+  const handleToggleEditFlow = (alert: Alert) => {
     setIsDialogOpen(true);
     setSelectedAlert(alert);
   };
 
-  const isEnabled = selectedAlert.entity_ids?.includes(entityId) ?? false;
+  const handleToggleCreateFlow = (alert: Alert) => {
+    if (!onToggleAlert) return;
+
+    // Toggle the state for this alert
+    setAlertStates((prev) => ({
+      ...prev,
+      [alert.id]: !prev[alert.id],
+    }));
+
+    onToggleAlert(enabledAlertIds);
+  };
+
+  const isEnabled = selectedAlert.entity_ids?.includes(entityId ?? '') ?? false;
 
   return (
     <>
@@ -204,19 +229,17 @@ export const AlertInformationActionTable = (
                           (entityId && entityName && (
                             <AlertInformationActionRow
                               alert={alert}
-                              handleToggle={handleToggle}
+                              handleToggle={handleToggleEditFlow}
                               key={alert.id}
                               status={alert.entity_ids.includes(entityId)}
                             />
                           )) ||
-                          (enabledAlerts && onToggleAlert && (
+                          (onToggleAlert && (
                             <AlertInformationActionRow
                               alert={alert}
-                              handleToggle={onToggleAlert}
+                              handleToggle={handleToggleCreateFlow}
                               key={alert.id}
-                              status={enabledAlerts?.[alert.type].includes(
-                                alert.id
-                              )}
+                              status={alertStates[alert.id] ?? false}
                             />
                           ))
                       )}

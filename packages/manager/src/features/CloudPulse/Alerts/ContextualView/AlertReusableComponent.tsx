@@ -20,23 +20,14 @@ import {
   convertAlertsToTypeSet,
   filterAlertsByStatusAndType,
 } from '../Utils/utils';
-import { AlertInfoActionTableCreateFlow } from './AlertInfoActionTableCreateFlow';
 import { AlertInformationActionTable } from './AlertInformationActionTable';
 
 import type {
-  Alert,
   AlertDefinitionType,
   LinodeAclpAlertsPayload,
 } from '@linode/api-v4';
 
 interface AlertReusableComponentProps {
-  /**
-   * A mapping of enabled alert IDs grouped by alert type.
-   * Used to determine the toggle status (on/off) for each alert row.
-   * Only use in create flow.
-   */
-  enabledAlerts?: LinodeAclpAlertsPayload | null;
-
   /**
    * Id for the selected entity
    */
@@ -50,9 +41,9 @@ interface AlertReusableComponentProps {
   /**
    * Called when an alert is toggled on or off.
    * Only use in create flow.
-   * @param alert object for which toggle button is click.
+   * @param payload enabled alerts ids
    */
-  onToggleAlert?: (alert: Alert) => void;
+  onToggleAlert?: (payload: LinodeAclpAlertsPayload) => void;
 
   /**
    * Service type of selected entity
@@ -61,8 +52,7 @@ interface AlertReusableComponentProps {
 }
 
 export const AlertReusableComponent = (props: AlertReusableComponentProps) => {
-  const { enabledAlerts, entityId, entityName, onToggleAlert, serviceType } =
-    props;
+  const { entityId, entityName, onToggleAlert, serviceType } = props;
   const {
     data: alerts,
     error,
@@ -142,7 +132,6 @@ export const AlertReusableComponent = (props: AlertReusableComponentProps) => {
           <AlertInformationActionTable
             alerts={filteredAlerts}
             columns={AlertContextualViewTableHeaderMap}
-            enabledAlerts={enabledAlerts}
             entityId={entityId}
             entityName={entityName}
             error={error}
