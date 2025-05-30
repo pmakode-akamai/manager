@@ -139,29 +139,16 @@ export const AlertReusableComponent = (props: AlertReusableComponentProps) => {
             />
           </Box>
 
-          {/*  Edit Flow */}
-          {entityId && entityName && (
-            <AlertInformationActionTable
-              alerts={filteredAlerts}
-              columns={AlertContextualViewTableHeaderMap}
-              entityId={entityId}
-              entityName={entityName}
-              error={error}
-              orderByColumn="Alert Name"
-            />
-          )}
-
-          {/* Create Flow */}
-          {enabledAlerts && onToggleAlert && (
-            <AlertInfoActionTableCreateFlow
-              alerts={filteredAlerts}
-              columns={AlertContextualViewTableHeaderMap}
-              enabledAlerts={enabledAlerts}
-              error={error}
-              onToggleAlert={onToggleAlert}
-              orderByColumn="Alert Name"
-            />
-          )}
+          <AlertInformationActionTable
+            alerts={filteredAlerts}
+            columns={AlertContextualViewTableHeaderMap}
+            enabledAlerts={enabledAlerts}
+            entityId={entityId}
+            entityName={entityName}
+            error={error}
+            onToggleAlert={onToggleAlert}
+            orderByColumn="Alert Name"
+          />
         </Stack>
       </Stack>
     </Paper>

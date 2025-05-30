@@ -20,7 +20,12 @@ import { getAPIErrorOrDefault } from 'src/utilities/errorUtils';
 import { AlertConfirmationDialog } from '../AlertsLanding/AlertConfirmationDialog';
 import { AlertInformationActionRow } from './AlertInformationActionRow';
 
-import type { Alert, APIError, EntityAlertUpdatePayload } from '@linode/api-v4';
+import type {
+  Alert,
+  APIError,
+  EntityAlertUpdatePayload,
+  LinodeAclpAlertsPayload,
+} from '@linode/api-v4';
 
 export interface AlertInformationActionTableProps {
   /**
@@ -34,19 +39,35 @@ export interface AlertInformationActionTableProps {
   columns: TableColumnHeader[];
 
   /**
-   * Id of the selected entity
+   * A mapping of enabled alert IDs grouped by alert type.
+   * Used to determine the toggle status (on/off) for each alert row.
+   * Only use in create flow.
    */
-  entityId: string;
+  enabledAlerts?: LinodeAclpAlertsPayload;
+
+  /**
+   * Id of the selected entity
+   * Only used in edit flow
+   */
+  entityId?: string;
 
   /**
    * Name of the selected entity
+   * Only used in edit flow
    */
-  entityName: string;
+  entityName?: string;
 
   /**
    * Error received from API
    */
   error?: APIError[] | null;
+
+  /**
+   * Called when an alert is toggled on or off.
+   * Only use in create flow.
+   * @param alert object for which toggle button is click.
+   */
+  onToggleAlert?: (alert: Alert) => void;
 
   /**
    * Column name by which columns will be ordered by default
@@ -69,7 +90,16 @@ export interface TableColumnHeader {
 export const AlertInformationActionTable = (
   props: AlertInformationActionTableProps
 ) => {
-  const { alerts, columns, entityId, entityName, error, orderByColumn } = props;
+  const {
+    alerts,
+    columns,
+    entityId,
+    entityName,
+    error,
+    orderByColumn,
+    onToggleAlert,
+    enabledAlerts,
+  } = props;
 
   const _error = error
     ? getAPIErrorOrDefault(error, 'Error while fetching the alerts')
@@ -169,14 +199,27 @@ export const AlertInformationActionTable = (
                         length={paginatedAndOrderedAlerts.length}
                         loading={false}
                       />
-                      {paginatedAndOrderedAlerts?.map((alert) => (
-                        <AlertInformationActionRow
-                          alert={alert}
-                          handleToggle={handleToggle}
-                          key={alert.id}
-                          status={alert.entity_ids.includes(entityId)}
-                        />
-                      ))}
+                      {paginatedAndOrderedAlerts?.map(
+                        (alert) =>
+                          (entityId && entityName && (
+                            <AlertInformationActionRow
+                              alert={alert}
+                              handleToggle={handleToggle}
+                              key={alert.id}
+                              status={alert.entity_ids.includes(entityId)}
+                            />
+                          )) ||
+                          (enabledAlerts && onToggleAlert && (
+                            <AlertInformationActionRow
+                              alert={alert}
+                              handleToggle={onToggleAlert}
+                              key={alert.id}
+                              status={enabledAlerts?.[alert.type].includes(
+                                alert.id
+                              )}
+                            />
+                          ))
+                      )}
                     </TableBody>
                   </Table>
                 </Grid>
