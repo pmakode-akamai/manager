@@ -101,7 +101,7 @@ export const AlertInformationActionTable = (
   const [selectedAlert, setSelectedAlert] = React.useState<Alert>({} as Alert);
   const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
-  const [alertStates, setAlertStates] = React.useState<Record<string, boolean>>(
+  const [alertStates, setAlertStates] = React.useState<Record<number, boolean>>(
     {}
   );
 
@@ -155,7 +155,7 @@ export const AlertInformationActionTable = (
 
     // Toggle the state for this alert
     setAlertStates((prev) => {
-      const newState: Record<string, boolean> = {
+      const newState: Record<number, boolean> = {
         ...prev,
         [alert.id]: !prev[alert.id],
       };

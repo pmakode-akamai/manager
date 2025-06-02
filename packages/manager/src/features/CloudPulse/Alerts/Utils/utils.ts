@@ -420,7 +420,7 @@ export const handleMultipleError = <T extends FieldValues>(
  */
 export const getEnabledAlertIds = (
   alerts: Alert[],
-  newState: Record<string, boolean>
+  newState: Record<number, boolean>
 ) => {
   return {
     user: alerts
