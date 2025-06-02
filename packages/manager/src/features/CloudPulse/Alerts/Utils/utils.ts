@@ -412,3 +412,22 @@ export const handleMultipleError = <T extends FieldValues>(
     setError(errorFieldToSet, { message: errorMap.get(errorFieldToSet) });
   }
 };
+
+/**
+ * @param alerts list of alerts
+ * @param newState state of the alerts
+ * @returns the enabled alert ids
+ */
+export const getEnabledAlertIds = (
+  alerts: Alert[],
+  newState: Record<string, boolean>
+) => {
+  return {
+    user: alerts
+      .filter(({ type, id }) => type === 'user' && newState[id])
+      .map(({ id }) => id),
+    system: alerts
+      .filter(({ type, id }) => type === 'system' && newState[id])
+      .map(({ id }) => id),
+  };
+};

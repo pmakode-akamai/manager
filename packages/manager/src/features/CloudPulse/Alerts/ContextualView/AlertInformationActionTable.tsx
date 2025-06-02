@@ -18,6 +18,7 @@ import {
 import { getAPIErrorOrDefault } from 'src/utilities/errorUtils';
 
 import { AlertConfirmationDialog } from '../AlertsLanding/AlertConfirmationDialog';
+import { getEnabledAlertIds } from '../Utils/utils';
 import { AlertInformationActionRow } from './AlertInformationActionRow';
 
 import type {
@@ -108,21 +109,6 @@ export const AlertInformationActionTable = (
 
   const { mutateAsync: removeEntity } = useRemoveEntityFromAlert();
 
-  const enabledAlertIds = React.useMemo<LinodeAclpAlertsPayload>(() => {
-    return {
-      user: alerts
-        .filter(
-          (alert) => alert.type === 'user' && alertStates[alert.id] === true
-        )
-        .map((alert) => alert.id),
-      system: alerts
-        .filter(
-          (alert) => alert.type === 'system' && alertStates[alert.id] === true
-        )
-        .map((alert) => alert.id),
-    };
-  }, [alerts, alertStates]);
-
   const handleCancel = () => {
     setIsDialogOpen(false);
   };
@@ -168,12 +154,18 @@ export const AlertInformationActionTable = (
     if (!onToggleAlert) return;
 
     // Toggle the state for this alert
-    setAlertStates((prev) => ({
-      ...prev,
-      [alert.id]: !prev[alert.id],
-    }));
+    setAlertStates((prev) => {
+      const newState: Record<string, boolean> = {
+        ...prev,
+        [alert.id]: !prev[alert.id],
+      };
 
-    onToggleAlert(enabledAlertIds);
+      // Calculate enabled alert IDs from the new state and call onToggleAlert
+      const enabledAlertIds = getEnabledAlertIds(alerts, newState);
+      onToggleAlert(enabledAlertIds);
+
+      return newState;
+    });
   };
 
   const isEnabled = selectedAlert.entity_ids?.includes(entityId ?? '') ?? false;
