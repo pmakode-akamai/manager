@@ -1,15 +1,14 @@
 import { usePreferences } from '@linode/queries';
-import { Box } from '@linode/ui';
+import { Accordion } from '@linode/ui';
 import * as React from 'react';
 import { useController, useFormContext } from 'react-hook-form';
 
 import { AlertReusableComponent } from 'src/features/CloudPulse/Alerts/ContextualView/AlertReusableComponent';
+import { AclpPreferenceToggle } from 'src/features/Linodes/LinodesDetail/AclpPreferenceToggle';
+import { LinodeSettingsAlertsPanel } from 'src/features/Linodes/LinodesDetail/LinodeSettings/LinodeSettingsAlertsPanel';
 import { useFlags } from 'src/hooks/useFlags';
 
-import { AclpPreferenceToggle } from '../../LinodesDetail/AclpPreferenceToggle';
-import { LinodeSettingsAlertsPanel } from '../../LinodesDetail/LinodeSettings/LinodeSettingsAlertsPanel';
-
-import type { LinodeCreateFormValues } from '../utilities';
+import type { LinodeCreateFormValues } from '../../utilities';
 import type { Alert } from '@linode/api-v4';
 
 export const Alerts = () => {
@@ -44,7 +43,11 @@ export const Alerts = () => {
   };
 
   return (
-    <Box>
+    <Accordion
+      detailProps={{ sx: { p: 0 } }}
+      heading="Alerts"
+      summaryProps={{ sx: { p: 0 } }}
+    >
       {flags.aclpIntegration && <AclpPreferenceToggle type="alerts" />}
       {flags.aclpIntegration && isAclpAlertsPreferenceBeta ? (
         <AlertReusableComponent
@@ -55,7 +58,7 @@ export const Alerts = () => {
       ) : (
         <LinodeSettingsAlertsPanel isCreateFlow />
       )}
-    </Box>
+    </Accordion>
   );
 };
 
