@@ -6,7 +6,6 @@ import {
   convertAlertsToTypeSet,
   convertSecondsToMinutes,
   filterAlertsByStatusAndType,
-  getEnabledAlertIds,
   getSchemaWithEntityIdValidation,
   getServiceTypeLabel,
   handleMultipleError,
@@ -199,17 +198,5 @@ describe('getSchemaWithEntityIdValidation', () => {
       message:
         'Must be one of avg, sum, min, max, count and no full stop.|Must have at least one rule.|Invalid value.',
     });
-  });
-});
-
-it('test getEnabledAlertIds', () => {
-  const alerts = alertFactory.buildList(2, { type: 'user' });
-  const newState = {
-    [alerts[0].id]: true,
-    [alerts[1].id]: false,
-  };
-  expect(getEnabledAlertIds(alerts, newState)).toEqual({
-    user: [alerts[0].id],
-    system: [],
   });
 });
