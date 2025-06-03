@@ -344,6 +344,6 @@ export interface DeleteAlertPayload {
 }
 
 export interface CloudPulseAlertsPayload {
-  system: Alert['id'][];
-  user: Alert['id'][];
+  system: number[];
+  user: number[];
 }
