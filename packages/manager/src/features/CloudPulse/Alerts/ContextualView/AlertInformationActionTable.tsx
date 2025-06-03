@@ -18,14 +18,13 @@ import {
 import { getAPIErrorOrDefault } from 'src/utilities/errorUtils';
 
 import { AlertConfirmationDialog } from '../AlertsLanding/AlertConfirmationDialog';
-import { getEnabledAlertIds } from '../Utils/utils';
 import { AlertInformationActionRow } from './AlertInformationActionRow';
 
 import type {
   Alert,
   APIError,
+  CloudPulseAlertsPayload,
   EntityAlertUpdatePayload,
-  LinodeAclpAlertsPayload,
 } from '@linode/api-v4';
 
 export interface AlertInformationActionTableProps {
@@ -61,7 +60,7 @@ export interface AlertInformationActionTableProps {
    * Only use in create flow.
    * @param payload enabled alerts ids
    */
-  onToggleAlert?: (payload: LinodeAclpAlertsPayload) => void;
+  onToggleAlert?: (payload: CloudPulseAlertsPayload) => void;
 
   /**
    * Column name by which columns will be ordered by default
@@ -101,9 +100,11 @@ export const AlertInformationActionTable = (
   const [selectedAlert, setSelectedAlert] = React.useState<Alert>({} as Alert);
   const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
-  const [alertStates, setAlertStates] = React.useState<Record<number, boolean>>(
-    {}
-  );
+  const [enabledAlerts, setEnabledAlerts] =
+    React.useState<CloudPulseAlertsPayload>({
+      system: [],
+      user: [],
+    });
 
   const { mutateAsync: addEntity } = useAddEntityToAlert();
 
@@ -114,7 +115,7 @@ export const AlertInformationActionTable = (
   };
   const handleConfirm = React.useCallback(
     (alert: Alert, currentStatus: boolean) => {
-      if (!entityId || !entityName) return;
+      if (entityId === undefined) return;
 
       const payload: EntityAlertUpdatePayload = {
         alert,
@@ -153,18 +154,18 @@ export const AlertInformationActionTable = (
   const handleToggleCreateFlow = (alert: Alert) => {
     if (!onToggleAlert) return;
 
-    // Toggle the state for this alert
-    setAlertStates((prev) => {
-      const newState: Record<number, boolean> = {
-        ...prev,
-        [alert.id]: !prev[alert.id],
-      };
+    setEnabledAlerts((prev: CloudPulseAlertsPayload) => {
+      const newPayload = { ...prev };
+      const index = newPayload[alert.type].indexOf(alert.id);
+      // If the alert is already in the payload, remove it, otherwise add it
+      if (index !== -1) {
+        newPayload[alert.type].splice(index, 1);
+      } else {
+        newPayload[alert.type].push(alert.id);
+      }
 
-      // Calculate enabled alert IDs from the new state and call onToggleAlert
-      const enabledAlertIds = getEnabledAlertIds(alerts, newState);
-      onToggleAlert(enabledAlertIds);
-
-      return newState;
+      onToggleAlert(newPayload);
+      return newPayload;
     });
   };
 
@@ -231,7 +232,9 @@ export const AlertInformationActionTable = (
                               alert={alert}
                               handleToggle={handleToggleCreateFlow}
                               key={alert.id}
-                              status={alertStates[alert.id] ?? false}
+                              status={enabledAlerts[alert.type].includes(
+                                alert.id
+                              )}
                             />
                           ))
                       )}
