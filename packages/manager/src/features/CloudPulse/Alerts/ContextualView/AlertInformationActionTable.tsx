@@ -40,13 +40,13 @@ export interface AlertInformationActionTableProps {
 
   /**
    * Id of the selected entity
-   * Only used in edit flow
+   * Only use in edit flow
    */
   entityId?: string;
 
   /**
    * Name of the selected entity
-   * Only used in edit flow
+   * Only use in edit flow
    */
   entityName?: string;
 
@@ -80,6 +80,25 @@ export interface TableColumnHeader {
   label: string;
 }
 
+export interface AlertRowPropsOptions {
+  /**
+   * Enabled alerts payload
+   */
+  enabledAlerts: CloudPulseAlertsPayload;
+
+  /**
+   * Id of the entity
+   * Only use in edit flow.
+   */
+  entityId?: string;
+
+  /**
+   * Callback function to handle alert toggle
+   * Only use in create flow.
+   */
+  onToggleAlert?: (payload: CloudPulseAlertsPayload) => void;
+}
+
 export const AlertInformationActionTable = (
   props: AlertInformationActionTableProps
 ) => {
@@ -109,6 +128,26 @@ export const AlertInformationActionTable = (
   const { mutateAsync: addEntity } = useAddEntityToAlert();
 
   const { mutateAsync: removeEntity } = useRemoveEntityFromAlert();
+
+  const getAlertRowProps = (alert: Alert, options: AlertRowPropsOptions) => {
+    const { entityId, enabledAlerts, onToggleAlert } = options;
+
+    // Ensure that at least one of entityId or onToggleAlert is provided
+    if (!(entityId || onToggleAlert)) {
+      return null;
+    }
+
+    const isEditMode = !!entityId;
+
+    const handleToggle = isEditMode
+      ? handleToggleEditFlow
+      : handleToggleCreateFlow;
+    const status = isEditMode
+      ? alert.entity_ids.includes(entityId)
+      : enabledAlerts[alert.type].includes(alert.id);
+
+    return { handleToggle, status };
+  };
 
   const handleCancel = () => {
     setIsDialogOpen(false);
@@ -217,27 +256,24 @@ export const AlertInformationActionTable = (
                         length={paginatedAndOrderedAlerts.length}
                         loading={false}
                       />
-                      {paginatedAndOrderedAlerts?.map(
-                        (alert) =>
-                          (entityId && entityName && (
-                            <AlertInformationActionRow
-                              alert={alert}
-                              handleToggle={handleToggleEditFlow}
-                              key={alert.id}
-                              status={alert.entity_ids.includes(entityId)}
-                            />
-                          )) ||
-                          (onToggleAlert && (
-                            <AlertInformationActionRow
-                              alert={alert}
-                              handleToggle={handleToggleCreateFlow}
-                              key={alert.id}
-                              status={enabledAlerts[alert.type].includes(
-                                alert.id
-                              )}
-                            />
-                          ))
-                      )}
+                      {paginatedAndOrderedAlerts?.map((alert) => {
+                        const rowProps = getAlertRowProps(alert, {
+                          enabledAlerts,
+                          entityId,
+                          onToggleAlert,
+                        });
+
+                        if (!rowProps) return null;
+
+                        return (
+                          <AlertInformationActionRow
+                            alert={alert}
+                            handleToggle={rowProps.handleToggle}
+                            key={alert.id}
+                            status={rowProps.status}
+                          />
+                        );
+                      })}
                     </TableBody>
                   </Table>
                 </Grid>
