@@ -36,12 +36,18 @@ const LinodeAlerts = () => {
   const [hasAclpAlertsUnsavedChanges, setHasAclpAlertsUnsavedChanges] =
     React.useState<boolean>(false);
 
+  const [
+    showUnsavedChangesModalForRestrictedModeChange,
+    setShowUnsavedChangesModalForRestrictedModeChange,
+  ] = React.useState<boolean>(false);
+
   const { proceed, reset, status } = useBlocker({
     enableBeforeUnload:
       hasLegacyAlertsUnsavedChanges || hasAclpAlertsUnsavedChanges,
     shouldBlockFn: ({ next }) => {
       const hasUnsavedChanges =
-        hasLegacyAlertsUnsavedChanges || hasAclpAlertsUnsavedChanges;
+        (hasLegacyAlertsUnsavedChanges && !isAlertsBetaMode.get) ||
+        (hasAclpAlertsUnsavedChanges && isAlertsBetaMode.get);
 
       // Only block if there are unsaved changes
       if (!hasUnsavedChanges) {
@@ -71,6 +77,10 @@ const LinodeAlerts = () => {
     }
   }, [status, reset]);
 
+  const isAlertsModeChangeRestricted =
+    (hasAclpAlertsUnsavedChanges && isAlertsBetaMode.get) ||
+    (hasLegacyAlertsUnsavedChanges && !isAlertsBetaMode.get);
+
   return (
     <>
       <ConfirmationDialog
@@ -80,6 +90,10 @@ const LinodeAlerts = () => {
               label: 'Confirm',
               onClick: () => {
                 handleProceedNavigation();
+                if (showUnsavedChangesModalForRestrictedModeChange) {
+                  setShowUnsavedChangesModalForRestrictedModeChange(false);
+                  isAlertsBetaMode.set(!isAlertsBetaMode.get);
+                }
               },
             }}
             secondaryButtonProps={{
@@ -87,14 +101,18 @@ const LinodeAlerts = () => {
               label: 'Cancel',
               onClick: () => {
                 handleCancelNavigation();
+                setShowUnsavedChangesModalForRestrictedModeChange(false);
               },
             }}
           />
         )}
         onClose={() => {
           handleCancelNavigation();
+          setShowUnsavedChangesModalForRestrictedModeChange(false);
         }}
-        open={status === 'blocked'}
+        open={
+          status === 'blocked' || showUnsavedChangesModalForRestrictedModeChange
+        }
         title="Unsaved Changes"
       >
         <Typography variant="body1">
@@ -106,7 +124,13 @@ const LinodeAlerts = () => {
           isAclpAlertsSupportedRegionLinode && (
             <AclpPreferenceToggle
               isAlertsBetaMode={isAlertsBetaMode.get}
-              onAlertsModeChange={isAlertsBetaMode.set}
+              onAlertsModeChange={
+                isAlertsModeChangeRestricted
+                  ? () => {
+                      setShowUnsavedChangesModalForRestrictedModeChange(true);
+                    }
+                  : isAlertsBetaMode.set
+              }
               type="alerts"
             />
           )}
