@@ -140,12 +140,10 @@ const validateFirewallPorts = string().test({
 });
 
 export const FirewallRuleTypeSchema = object().shape({
-  action: string().oneOf(['ACCEPT', 'DROP']).required('Action is required'),
+  action: string().oneOf(['ACCEPT', 'DROP']).nullable(),
   description: string().nullable(),
   label: string().nullable(),
-  protocol: string()
-    .oneOf(['ALL', 'TCP', 'UDP', 'ICMP', 'IPENCAP'])
-    .required('Protocol is required.'),
+  protocol: string().oneOf(['ALL', 'TCP', 'UDP', 'ICMP', 'IPENCAP']).nullable(),
   ports: string().when('protocol', {
     is: (val: any) => val !== 'ICMP' && val !== 'IPENCAP',
     then: () => validateFirewallPorts,
@@ -165,6 +163,7 @@ export const FirewallRuleTypeSchema = object().shape({
     .strict(true)
     .notRequired()
     .nullable(),
+  ruleset: number().nullable(),
 });
 
 export const FirewallRuleSchema = object().shape({

@@ -1,16 +1,16 @@
-import {
-  type Firewall,
-  type FirewallDevice,
-  type FirewallDeviceEntityType,
-  type FirewallRules,
-  type FirewallRuleType,
-  type FirewallSettings,
-  type FirewallTemplate,
-  type FirewallTemplateRules,
-} from '@linode/api-v4/lib/firewalls/types';
 import { Factory } from '@linode/utilities';
 
-import type { FirewallDeviceEntity } from '@linode/api-v4/lib/firewalls/types';
+import type {
+  Firewall,
+  FirewallDevice,
+  FirewallDeviceEntity,
+  FirewallDeviceEntityType,
+  FirewallRules,
+  FirewallRuleType,
+  FirewallSettings,
+  FirewallTemplate,
+  FirewallTemplateRules,
+} from '@linode/api-v4/lib/firewalls/types';
 
 export const firewallRuleFactory = Factory.Sync.makeFactory<FirewallRuleType>({
   action: 'DROP',
@@ -23,6 +23,11 @@ export const firewallRuleFactory = Factory.Sync.makeFactory<FirewallRuleType>({
   ports: '22',
   protocol: 'TCP',
 });
+
+export const firewallRuleSetFactory =
+  Factory.Sync.makeFactory<FirewallRuleType>({
+    ruleset: Factory.each((id) => id),
+  });
 
 export const firewallRulesFactory = Factory.Sync.makeFactory<FirewallRules>({
   fingerprint: '8a545843',

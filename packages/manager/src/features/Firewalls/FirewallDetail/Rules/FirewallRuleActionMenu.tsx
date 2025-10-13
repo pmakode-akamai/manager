@@ -5,6 +5,8 @@ import * as React from 'react';
 import { ActionMenu } from 'src/components/ActionMenu/ActionMenu';
 import { InlineMenuAction } from 'src/components/InlineMenuAction/InlineMenuAction';
 
+import { FirewallRuleTableRowType } from './shared';
+
 import type { Theme } from '@mui/material/styles';
 import type {
   Action,
@@ -17,6 +19,7 @@ export interface FirewallRuleActionMenuProps extends Partial<ActionMenuProps> {
   handleDeleteFirewallRule: (idx: number) => void;
   handleOpenRuleDrawerForEditing: (idx: number) => void;
   idx: number;
+  rowType: FirewallRuleTableRowType;
 }
 
 export const FirewallRuleActionMenu = React.memo(
@@ -30,24 +33,34 @@ export const FirewallRuleActionMenu = React.memo(
       handleDeleteFirewallRule,
       handleOpenRuleDrawerForEditing,
       idx,
+      rowType,
       ...actionMenuProps
     } = props;
 
+    const isRuleset = rowType === 'ruleset';
+    const rulesetEditActionToolTipText =
+      'Edit your custom Rule Set\u2019s label, description, or rules, using the API. Rule Sets that are defined by a managed-service can only be updated by service accounts.';
+
     const actions: Action[] = [
       {
-        disabled,
+        disabled: isRuleset || disabled, // Edit is disabled for ruleset
         onClick: () => {
           handleOpenRuleDrawerForEditing(idx);
         },
         title: 'Edit',
+        tooltip: isRuleset ? rulesetEditActionToolTipText : undefined,
       },
-      {
-        disabled,
-        onClick: () => {
-          handleCloneFirewallRule(idx);
-        },
-        title: 'Clone',
-      },
+      ...(!isRuleset
+        ? [
+            {
+              disabled,
+              onClick: () => {
+                handleCloneFirewallRule(idx);
+              },
+              title: 'Clone',
+            },
+          ]
+        : []),
       {
         disabled,
         onClick: () => {
@@ -67,6 +80,7 @@ export const FirewallRuleActionMenu = React.memo(
                 disabled={action.disabled}
                 key={action.title}
                 onClick={action.onClick}
+                tooltip={action.tooltip}
               />
             );
           })}
