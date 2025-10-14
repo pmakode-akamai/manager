@@ -331,8 +331,8 @@ const FirewallRuleTableRow = React.memo((props: FirewallRuleTableRowProps) => {
     originalIndex,
     ports,
     protocol,
-    status,
     rowType,
+    status,
   } = props;
 
   const actionMenuProps = {
@@ -385,11 +385,12 @@ const FirewallRuleTableRow = React.memo((props: FirewallRuleTableRowProps) => {
       key={id}
       originalIndex={originalIndex}
       ref={setNodeRef}
+      rowType={rowType}
       ruleIndex={index}
       status={status}
+      sx={rowStyles}
       {...attributes}
       {...listeners}
-      sx={rowStyles}
     >
       <TableCell aria-label={`Label: ${label}`}>
         <StyledDragIndicator aria-label="Drag indicator icon" />
@@ -449,23 +450,19 @@ const FirewallRuleSetTableRow = React.memo(
     const {
       disabled,
       errors,
-      handleCloneFirewallRule,
       handleDeleteFirewallRule,
-      handleOpenRuleDrawerForEditing,
       handleUndo,
       id,
       index,
       label,
       originalIndex,
-      status,
       rowType,
+      status,
     } = props;
 
     const actionMenuProps = {
       disabled: status === 'PENDING_DELETION' || disabled,
-      handleCloneFirewallRule,
       handleDeleteFirewallRule,
-      handleOpenRuleDrawerForEditing,
       idx: index,
       rowType,
     };
@@ -514,6 +511,7 @@ const FirewallRuleSetTableRow = React.memo(
           key={id}
           originalIndex={originalIndex}
           ref={setNodeRef}
+          rowType={rowType}
           ruleIndex={index}
           status={status}
           sx={rowStyles}
@@ -554,12 +552,15 @@ const FirewallRuleSetTableRow = React.memo(
         {!isActive &&
           rulesetResponse.rules.map((rule, idx) => {
             const addresses = generateAddressesLabel(rule.addresses);
+            const isLastRow = rulesetResponse.rules.length - 1 === idx;
             return (
               <StyledTableRow
                 aria-label={label ?? `firewall ruleset rule ${id}`}
                 disabled={disabled}
+                isLastRow={isLastRow}
                 key={idx}
                 originalIndex={originalIndex}
+                rowType={rowType}
                 ruleIndex={index}
                 status={status}
               >

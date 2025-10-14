@@ -1237,6 +1237,12 @@ export const handlers = [
       firewallFactory.build({
         id: 1001,
         label: 'firewall with rule and ruleset',
+        rules: firewallRulesFactory.build({
+          inbound: [
+            ...firewallRuleSetFactory.buildList(1),
+            ...firewallRuleFactory.buildList(1),
+          ],
+        }),
       }),
     ];
     firewallFactory.resetSequenceNumber();

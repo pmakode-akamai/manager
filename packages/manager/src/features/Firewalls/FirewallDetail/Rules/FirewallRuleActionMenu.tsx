@@ -15,9 +15,9 @@ import type {
 
 export interface FirewallRuleActionMenuProps extends Partial<ActionMenuProps> {
   disabled: boolean;
-  handleCloneFirewallRule: (idx: number) => void;
+  handleCloneFirewallRule?: (idx: number) => void; // Not required for Ruleset
   handleDeleteFirewallRule: (idx: number) => void;
-  handleOpenRuleDrawerForEditing: (idx: number) => void;
+  handleOpenRuleDrawerForEditing?: (idx: number) => void; // // Not required for Ruleset since this action is disabled
   idx: number;
   rowType: FirewallRuleTableRowType;
 }
@@ -45,7 +45,9 @@ export const FirewallRuleActionMenu = React.memo(
       {
         disabled: isRuleset || disabled, // Edit is disabled for ruleset
         onClick: () => {
-          handleOpenRuleDrawerForEditing(idx);
+          if (handleOpenRuleDrawerForEditing) {
+            handleOpenRuleDrawerForEditing(idx);
+          }
         },
         title: 'Edit',
         tooltip: isRuleset ? rulesetEditActionToolTipText : undefined,
@@ -55,7 +57,9 @@ export const FirewallRuleActionMenu = React.memo(
             {
               disabled,
               onClick: () => {
-                handleCloneFirewallRule(idx);
+                if (handleCloneFirewallRule) {
+                  handleCloneFirewallRule(idx);
+                }
               },
               title: 'Clone',
             },
