@@ -5,30 +5,17 @@ import {
   CircleProgress,
   Drawer,
   ErrorState,
-  Hidden,
   Notice,
-  Paper,
   Stack,
-  Typography,
 } from '@linode/ui';
 import { useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams, useSearch } from '@tanstack/react-router';
 import * as React from 'react';
-import { makeStyles } from 'tss-react/mui';
 
 import { DebouncedSearchTextField } from 'src/components/DebouncedSearchTextField';
 import { DocumentTitleSegment } from 'src/components/DocumentTitle';
 import { Link } from 'src/components/Link';
-import { PaginationFooter } from 'src/components/PaginationFooter/PaginationFooter';
 // import { SuspenseLoader } from 'src/components/SuspenseLoader';
-import { Table } from 'src/components/Table';
-import { TableBody } from 'src/components/TableBody';
-import { TableCell } from 'src/components/TableCell';
-import { TableHead } from 'src/components/TableHead';
-import { TableRow } from 'src/components/TableRow';
-import { TableRowEmpty } from 'src/components/TableRowEmpty/TableRowEmpty';
-import { TableRowError } from 'src/components/TableRowError/TableRowError';
-import { TableSortCell } from 'src/components/TableSortCell';
 import { SafeTabPanel } from 'src/components/Tabs/SafeTabPanel';
 import { Tab } from 'src/components/Tabs/Tab';
 import { TabList } from 'src/components/Tabs/TabList';
@@ -57,35 +44,17 @@ import { getEventsForImages } from '../utils';
 import { DeleteImageDialog } from './DeleteImageDialog';
 import { EditImageDrawer } from './EditImageDrawer';
 import { ManageImageReplicasForm } from './ImageRegions/ManageImageRegionsForm';
-import { ImageRow } from './ImageRow';
 import { ImagesLandingEmptyState } from './ImagesLandingEmptyState';
+import { ImagesTable } from './ImagesTable';
 import { RebuildImageDrawer } from './RebuildImageDrawer';
 import { getImagesSubTabIndex, tabs } from './utilities';
 
 import type { Handlers as ImageHandlers } from './ImagesActionMenu';
 import type { Filter, Image } from '@linode/api-v4';
-import type { Theme } from '@mui/material/styles';
 import type { ImageAction } from 'src/routes/images';
-
-const useStyles = makeStyles()((theme: Theme) => ({
-  imageTable: {
-    marginBottom: theme.spacingFunction(24),
-    padding: 0,
-  },
-  imageTableHeader: {
-    border: `1px solid ${theme.tokens.alias.Border.Normal}`,
-    borderBottom: 0,
-    padding: theme.spacingFunction(8),
-    paddingLeft: theme.spacingFunction(12),
-  },
-  imageTableSubheader: {
-    marginTop: theme.spacingFunction(8),
-  },
-}));
 
 export const ImagesLandingTable = () => {
   const navigate = useNavigate();
-  const { classes } = useStyles();
   const params = useParams({
     from: '/images/$imageId/$action',
     shouldThrow: false,
@@ -368,175 +337,175 @@ export const ImagesLandingTable = () => {
     });
   };
 
-  const customImages = (
-    <Paper className={classes.imageTable}>
-      <div className={classes.imageTableHeader}>
-        <Typography variant="h3">Custom Images</Typography>
-        <Typography className={classes.imageTableSubheader}>
-          These are{' '}
-          <Link to="https://techdocs.akamai.com/cloud-computing/docs/capture-an-image#capture-an-image">
-            encrypted
-          </Link>{' '}
-          images you manually uploaded or captured from an existing compute
-          instance disk. You can deploy an image to a compute instance in any
-          region.
-        </Typography>
-      </div>
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableSortCell
-              active={manualImagesOrderBy === 'label'}
-              direction={manualImagesOrder}
-              handleClick={handleManualImagesOrderChange}
-              label="label"
-            >
-              Image
-            </TableSortCell>
-            <Hidden smDown>
-              <TableCell>Status</TableCell>
-            </Hidden>
-            <Hidden smDown>
-              <TableCell>Replicated in</TableCell>
-            </Hidden>
-            <TableSortCell
-              active={manualImagesOrderBy === 'size'}
-              direction={manualImagesOrder}
-              handleClick={handleManualImagesOrderChange}
-              label="size"
-            >
-              Original Image
-            </TableSortCell>
-            <Hidden mdDown>
-              <TableCell>All Replicas</TableCell>
-            </Hidden>
-            <Hidden mdDown>
-              <TableSortCell
-                active={manualImagesOrderBy === 'created'}
-                direction={manualImagesOrder}
-                handleClick={handleManualImagesOrderChange}
-                label="created"
-              >
-                Created
-              </TableSortCell>
-            </Hidden>
-            <Hidden mdDown>
-              <TableCell>Image ID</TableCell>
-            </Hidden>
-            <TableCell />
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {manualImages?.results === 0 && (
-            <TableRowEmpty
-              colSpan={9}
-              message={`No Custom Images to display.`}
-            />
-          )}
-          {manualImagesError && query && (
-            <TableRowError colSpan={9} message={manualImagesError[0].reason} />
-          )}
-          {manualImages?.data.map((manualImage) => (
-            <ImageRow
-              event={manualImagesEvents[manualImage.id]}
-              handlers={handlers}
-              image={manualImage}
-              key={manualImage.id}
-            />
-          ))}
-        </TableBody>
-      </Table>
-      <PaginationFooter
-        count={manualImages?.results ?? 0}
-        eventCategory="Custom Images Table"
-        handlePageChange={paginationForManualImages.handlePageChange}
-        handleSizeChange={paginationForManualImages.handlePageSizeChange}
-        page={paginationForManualImages.page}
-        pageSize={paginationForManualImages.pageSize}
-      />
-    </Paper>
-  );
+  // const customImages = (
+  //   <Paper className={classes.imageTable}>
+  //     <div className={classes.imageTableHeader}>
+  //       <Typography variant="h3">Custom Images</Typography>
+  //       <Typography className={classes.imageTableSubheader}>
+  //         These are{' '}
+  //         <Link to="https://techdocs.akamai.com/cloud-computing/docs/capture-an-image#capture-an-image">
+  //           encrypted
+  //         </Link>{' '}
+  //         images you manually uploaded or captured from an existing compute
+  //         instance disk. You can deploy an image to a compute instance in any
+  //         region.
+  //       </Typography>
+  //     </div>
+  //     <Table>
+  //       <TableHead>
+  //         <TableRow>
+  //           <TableSortCell
+  //             active={manualImagesOrderBy === 'label'}
+  //             direction={manualImagesOrder}
+  //             handleClick={handleManualImagesOrderChange}
+  //             label="label"
+  //           >
+  //             Image
+  //           </TableSortCell>
+  //           <Hidden smDown>
+  //             <TableCell>Status</TableCell>
+  //           </Hidden>
+  //           <Hidden smDown>
+  //             <TableCell>Replicated in</TableCell>
+  //           </Hidden>
+  //           <TableSortCell
+  //             active={manualImagesOrderBy === 'size'}
+  //             direction={manualImagesOrder}
+  //             handleClick={handleManualImagesOrderChange}
+  //             label="size"
+  //           >
+  //             Original Image
+  //           </TableSortCell>
+  //           <Hidden mdDown>
+  //             <TableCell>All Replicas</TableCell>
+  //           </Hidden>
+  //           <Hidden mdDown>
+  //             <TableSortCell
+  //               active={manualImagesOrderBy === 'created'}
+  //               direction={manualImagesOrder}
+  //               handleClick={handleManualImagesOrderChange}
+  //               label="created"
+  //             >
+  //               Created
+  //             </TableSortCell>
+  //           </Hidden>
+  //           <Hidden mdDown>
+  //             <TableCell>Image ID</TableCell>
+  //           </Hidden>
+  //           <TableCell />
+  //         </TableRow>
+  //       </TableHead>
+  //       <TableBody>
+  //         {manualImages?.results === 0 && (
+  //           <TableRowEmpty
+  //             colSpan={9}
+  //             message={`No Custom Images to display.`}
+  //           />
+  //         )}
+  //         {manualImagesError && query && (
+  //           <TableRowError colSpan={9} message={manualImagesError[0].reason} />
+  //         )}
+  //         {manualImages?.data.map((manualImage) => (
+  //           <ImageRow
+  //             event={manualImagesEvents[manualImage.id]}
+  //             handlers={handlers}
+  //             image={manualImage}
+  //             key={manualImage.id}
+  //           />
+  //         ))}
+  //       </TableBody>
+  //     </Table>
+  //     <PaginationFooter
+  //       count={manualImages?.results ?? 0}
+  //       eventCategory="Custom Images Table"
+  //       handlePageChange={paginationForManualImages.handlePageChange}
+  //       handleSizeChange={paginationForManualImages.handlePageSizeChange}
+  //       page={paginationForManualImages.page}
+  //       pageSize={paginationForManualImages.pageSize}
+  //     />
+  //   </Paper>
+  // );
 
-  const recoveryImages = (
-    <Paper className={classes.imageTable}>
-      <div className={classes.imageTableHeader}>
-        <Typography variant="h3">Recovery Images</Typography>
-        <Typography className={classes.imageTableSubheader}>
-          These are images we automatically capture when Linode disks are
-          deleted. They will be deleted after the indicated expiration date.
-        </Typography>
-      </div>
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableSortCell
-              active={automaticImagesOrderBy === 'label'}
-              direction={automaticImagesOrder}
-              handleClick={handleAutomaticImagesOrderChange}
-              label="label"
-            >
-              Image
-            </TableSortCell>
-            <Hidden smDown>
-              <TableCell>Status</TableCell>
-            </Hidden>
-            <TableSortCell
-              active={automaticImagesOrderBy === 'size'}
-              direction={automaticImagesOrder}
-              handleClick={handleAutomaticImagesOrderChange}
-              label="size"
-            >
-              Size
-            </TableSortCell>
-            <Hidden smDown>
-              <TableSortCell
-                active={automaticImagesOrderBy === 'created'}
-                direction={automaticImagesOrder}
-                handleClick={handleAutomaticImagesOrderChange}
-                label="created"
-              >
-                Created
-              </TableSortCell>
-            </Hidden>
-            <Hidden smDown>
-              <TableCell>Expires</TableCell>
-            </Hidden>
-            <TableCell />
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {automaticImages?.results === 0 && (
-            <TableRowEmpty
-              colSpan={6}
-              message={`No Recovery Images to display.`}
-            />
-          )}
-          {automaticImagesError && query && (
-            <TableRowError
-              colSpan={9}
-              message={automaticImagesError[0].reason}
-            />
-          )}
-          {automaticImages?.data.map((automaticImage) => (
-            <ImageRow
-              event={automaticImagesEvents[automaticImage.id]}
-              handlers={handlers}
-              image={automaticImage}
-              key={automaticImage.id}
-            />
-          ))}
-        </TableBody>
-      </Table>
-      <PaginationFooter
-        count={automaticImages?.results ?? 0}
-        eventCategory="Recovery Images Table"
-        handlePageChange={paginationForAutomaticImages.handlePageChange}
-        handleSizeChange={paginationForAutomaticImages.handlePageSizeChange}
-        page={paginationForAutomaticImages.page}
-        pageSize={paginationForAutomaticImages.pageSize}
-      />
-    </Paper>
-  );
+  // const recoveryImages = (
+  //   <Paper className={classes.imageTable}>
+  //     <div className={classes.imageTableHeader}>
+  //       <Typography variant="h3">Recovery Images</Typography>
+  //       <Typography className={classes.imageTableSubheader}>
+  //         These are images we automatically capture when Linode disks are
+  //         deleted. They will be deleted after the indicated expiration date.
+  //       </Typography>
+  //     </div>
+  //     <Table>
+  //       <TableHead>
+  //         <TableRow>
+  //           <TableSortCell
+  //             active={automaticImagesOrderBy === 'label'}
+  //             direction={automaticImagesOrder}
+  //             handleClick={handleAutomaticImagesOrderChange}
+  //             label="label"
+  //           >
+  //             Image
+  //           </TableSortCell>
+  //           <Hidden smDown>
+  //             <TableCell>Status</TableCell>
+  //           </Hidden>
+  //           <TableSortCell
+  //             active={automaticImagesOrderBy === 'size'}
+  //             direction={automaticImagesOrder}
+  //             handleClick={handleAutomaticImagesOrderChange}
+  //             label="size"
+  //           >
+  //             Size
+  //           </TableSortCell>
+  //           <Hidden smDown>
+  //             <TableSortCell
+  //               active={automaticImagesOrderBy === 'created'}
+  //               direction={automaticImagesOrder}
+  //               handleClick={handleAutomaticImagesOrderChange}
+  //               label="created"
+  //             >
+  //               Created
+  //             </TableSortCell>
+  //           </Hidden>
+  //           <Hidden smDown>
+  //             <TableCell>Expires</TableCell>
+  //           </Hidden>
+  //           <TableCell />
+  //         </TableRow>
+  //       </TableHead>
+  //       <TableBody>
+  //         {automaticImages?.results === 0 && (
+  //           <TableRowEmpty
+  //             colSpan={6}
+  //             message={`No Recovery Images to display.`}
+  //           />
+  //         )}
+  //         {automaticImagesError && query && (
+  //           <TableRowError
+  //             colSpan={9}
+  //             message={automaticImagesError[0].reason}
+  //           />
+  //         )}
+  //         {automaticImages?.data.map((automaticImage) => (
+  //           <ImageRow
+  //             event={automaticImagesEvents[automaticImage.id]}
+  //             handlers={handlers}
+  //             image={automaticImage}
+  //             key={automaticImage.id}
+  //           />
+  //         ))}
+  //       </TableBody>
+  //     </Table>
+  //     <PaginationFooter
+  //       count={automaticImages?.results ?? 0}
+  //       eventCategory="Recovery Images Table"
+  //       handlePageChange={paginationForAutomaticImages.handlePageChange}
+  //       handleSizeChange={paginationForAutomaticImages.handlePageSizeChange}
+  //       page={paginationForAutomaticImages.page}
+  //       pageSize={paginationForAutomaticImages.pageSize}
+  //     />
+  //   </Paper>
+  // );
 
   return (
     <Stack spacing={3}>
@@ -551,7 +520,6 @@ export const ImagesLandingTable = () => {
         value={query ?? ''}
       />
       <Tabs index={getImagesSubTabIndex(search.subType)} onChange={onTabChange}>
-        {/* <TanStackTabLinkList tabs={tabs} /> */}
         <TabList>
           <Tab>My custom images</Tab>
           <Tab>
@@ -559,15 +527,122 @@ export const ImagesLandingTable = () => {
           </Tab>
           <Tab>Recovery images</Tab>
         </TabList>
-        {/* <React.Suspense fallback={<SuspenseLoader />}> */}
         <TabPanels>
-          <SafeTabPanel index={0}>{customImages}</SafeTabPanel>
+          <SafeTabPanel index={0}>
+            <ImagesTable
+              columns={[
+                { header: 'Image', label: 'label', sortable: true },
+                {
+                  header: 'Status',
+                  hiddenProps: { smDown: true },
+                },
+                {
+                  header: 'Replicated in',
+                  hiddenProps: { smDown: true },
+                },
+                { header: 'Original Image', label: 'size', sortable: true },
+                {
+                  header: 'All Replicas',
+                  hiddenProps: { mdDown: true },
+                },
+                {
+                  header: 'Created',
+                  label: 'created',
+                  sortable: true,
+                  hiddenProps: { mdDown: true },
+                },
+                {
+                  header: 'Image ID',
+                  hiddenProps: { mdDown: true },
+                },
+              ]}
+              emptyMessage="No Custom Images to display."
+              error={manualImagesError}
+              eventCategory="Custom Images Table"
+              events={manualImagesEvents}
+              handleOrderChange={handleManualImagesOrderChange}
+              handlers={handlers}
+              headerProps={{
+                title: 'Custom Images',
+                description: (
+                  <>
+                    These are{' '}
+                    <Link to="https://techdocs.akamai.com/cloud-computing/docs/capture-an-image#capture-an-image">
+                      encrypted
+                    </Link>{' '}
+                    images you manually uploaded or captured from an existing
+                    compute instance disk.
+                  </>
+                ),
+              }}
+              images={manualImages?.data ?? []}
+              order={manualImagesOrder}
+              orderBy={manualImagesOrderBy}
+              pagination={{
+                page: paginationForManualImages.page,
+                pageSize: paginationForManualImages.pageSize,
+                count: manualImages?.results ?? 0,
+                handlePageChange: paginationForManualImages.handlePageChange,
+                handlePageSizeChange:
+                  paginationForManualImages.handlePageSizeChange,
+              }}
+              query={query}
+            />
+          </SafeTabPanel>
           <SafeTabPanel index={1}>
             <Notice variant="info">Share with me is coming soon...</Notice>
           </SafeTabPanel>
-          <SafeTabPanel index={2}>{recoveryImages}</SafeTabPanel>
+          <SafeTabPanel index={2}>
+            <ImagesTable
+              columns={[
+                { header: 'Image', label: 'label', sortable: true },
+                {
+                  header: 'Status',
+                  hiddenProps: { smDown: true },
+                },
+                { header: 'Size', label: 'size', sortable: true },
+                {
+                  header: 'Created',
+                  label: 'created',
+                  sortable: true,
+                  hiddenProps: { smDown: true },
+                },
+                {
+                  header: 'Expires',
+                  hiddenProps: { smDown: true },
+                },
+              ]}
+              emptyMessage="No Recovery Images to display."
+              error={automaticImagesError}
+              eventCategory="Recovery Images Table"
+              events={automaticImagesEvents}
+              handleOrderChange={handleAutomaticImagesOrderChange}
+              handlers={handlers}
+              headerProps={{
+                title: 'Recovery Images',
+                description: (
+                  <>
+                    These are images we automatically capture when Linode disks
+                    are deleted. They will be deleted after the indicated
+                    expiration date.
+                  </>
+                ),
+              }}
+              images={automaticImages?.data ?? []}
+              order={automaticImagesOrder}
+              orderBy={automaticImagesOrderBy}
+              pagination={{
+                page: paginationForAutomaticImages.page,
+                pageSize: paginationForAutomaticImages.pageSize,
+                count: manualImages?.results ?? 0,
+                handlePageChange: paginationForAutomaticImages.handlePageChange,
+                handlePageSizeChange:
+                  paginationForAutomaticImages.handlePageSizeChange,
+              }}
+              query={query}
+            />
+          </SafeTabPanel>
         </TabPanels>
-        {/* </React.Suspense> */}
       </Tabs>
 
       <EditImageDrawer
