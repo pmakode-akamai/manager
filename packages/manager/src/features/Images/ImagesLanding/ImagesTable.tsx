@@ -39,6 +39,11 @@ interface HeaderProps {
   title: string;
 }
 
+interface SelectableRowProps {
+  onToggleSelect: (id: string) => void;
+  selectedIds: string[];
+}
+
 interface ImagesTableProps {
   columns: ColumnConfig[];
   emptyMessage: string;
@@ -50,8 +55,8 @@ interface ImagesTableProps {
   handleOrderChange: (newOrderBy: string, newOrder: Order) => void;
   handlers: ImageHandlers;
   headerProps?: HeaderProps;
+  hideActionMenu?: boolean;
   images: Image[];
-  isSelectableRow?: boolean;
   order: Order;
   orderBy: string;
   pagination: {
@@ -62,6 +67,7 @@ interface ImagesTableProps {
     pageSize: number;
   };
   query?: string;
+  selectableRowProps?: SelectableRowProps;
 }
 
 const useStyles = makeStyles()((theme: Theme) => ({
@@ -95,10 +101,13 @@ export const ImagesTable = (props: ImagesTableProps) => {
     pagination,
     eventCategory,
     emptyMessage,
-    isSelectableRow,
+    selectableRowProps,
+    hideActionMenu,
   } = props;
 
   const { classes } = useStyles();
+
+  const isSelectable = Boolean(selectableRowProps);
   return (
     <Paper className={classes.imageTable}>
       {headerProps && headerProps.title && (
@@ -140,7 +149,7 @@ export const ImagesTable = (props: ImagesTableProps) => {
       <Table>
         <TableHead>
           <TableRow>
-            {isSelectableRow && <TableCell />}
+            {isSelectable && <TableCell />}
             {columns.map((col, idx) => {
               if (col.sortable && col.label) {
                 return (
@@ -162,7 +171,7 @@ export const ImagesTable = (props: ImagesTableProps) => {
                 );
               }
             })}
-            <TableCell />
+            {!hideActionMenu && <TableCell />}
           </TableRow>
         </TableHead>
         <TableBody>
@@ -182,8 +191,13 @@ export const ImagesTable = (props: ImagesTableProps) => {
             <ImageRow
               event={events[image.id]}
               handlers={handlers}
+              handleToggleCheck={() =>
+                selectableRowProps?.onToggleSelect(image.id)
+              }
+              hideActionMenu={hideActionMenu}
               image={image}
-              isSelectableRow={isSelectableRow}
+              isChecked={selectableRowProps?.selectedIds.includes(image.id)}
+              isSelectableRow={isSelectable}
               key={image.id}
             />
           ))}

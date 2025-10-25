@@ -20,12 +20,23 @@ import type { Event, Image } from '@linode/api-v4';
 interface Props {
   event?: Event;
   handlers: Handlers;
+  handleToggleCheck?: () => void;
+  hideActionMenu?: boolean;
   image: Image;
+  isChecked?: boolean;
   isSelectableRow?: boolean;
 }
 
 export const ImageRow = (props: Props) => {
-  const { event, handlers, image, isSelectableRow } = props;
+  const {
+    event,
+    handlers,
+    image,
+    isChecked,
+    isSelectableRow,
+    handleToggleCheck,
+    hideActionMenu,
+  } = props;
 
   const {
     capabilities,
@@ -153,17 +164,19 @@ export const ImageRow = (props: Props) => {
           <TableCell>{id}</TableCell>
         </Hidden>
       )}
-      <TableCell actionCell>
-        <ImagesActionMenu {...props} />
-      </TableCell>
+      {!hideActionMenu && (
+        <TableCell actionCell>
+          <ImagesActionMenu {...props} />
+        </TableCell>
+      )}
     </>
   );
 
   return isSelectableRow ? (
     <SelectableTableRow
       data-qa-image-cell={id}
-      handleToggleCheck={() => {}}
-      isChecked={false}
+      handleToggleCheck={handleToggleCheck!}
+      isChecked={isChecked!}
       key={id}
     >
       {tableCells}
