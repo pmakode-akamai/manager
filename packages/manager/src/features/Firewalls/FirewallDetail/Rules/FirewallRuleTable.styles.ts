@@ -3,9 +3,8 @@ import { styled } from '@mui/material/styles';
 
 import DragIndicator from 'src/assets/icons/drag-indicator.svg';
 
-import { FirewallRuleTableRowType } from './shared';
-
 import type { FirewallRuleTableRowProps } from './FirewallRuleTable';
+import type { FirewallRuleTableRowType } from './shared';
 
 type StyledFirewallRuleButtonProps = Pick<FirewallRuleTableRowProps, 'status'>;
 
@@ -45,8 +44,12 @@ export const StyledTableRow = styled('tr', {
       ? { backgroundColor: theme.bg.lightBlue1 }
       : {}),
     ...(status === 'NOT_MODIFIED' ? { backgroundColor: theme.bg.bgPaper } : {}),
-    ...(rowType === 'ruleset' && !isLastRow
-      ? { '& td': { borderBottom: 'none' } }
+    ...(rowType === 'ruleset'
+      ? {
+          '& td': {
+            ...(!isLastRow && { borderBottom: 'none' }),
+          },
+        }
       : {}),
   })
 );
