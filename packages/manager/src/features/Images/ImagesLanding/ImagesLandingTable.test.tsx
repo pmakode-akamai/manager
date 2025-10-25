@@ -16,6 +16,7 @@ const queryMocks = vi.hoisted(() => ({
   usePermissions: vi.fn().mockReturnValue({ data: { create_image: false } }),
   useQueryWithPermissions: vi.fn().mockReturnValue({}),
   useLinodesPermissionsCheck: vi.fn().mockReturnValue({}),
+  useParams: vi.fn(),
   useSearch: vi.fn(),
 }));
 
@@ -33,6 +34,7 @@ vi.mock('@tanstack/react-router', async () => {
   return {
     ...actual,
     useLocation: queryMocks.useLocation,
+    useParams: queryMocks.useParams,
     useSearch: queryMocks.useSearch,
   };
 });
@@ -64,11 +66,13 @@ describe('Images Landing Table', () => {
     queryMocks.useLocation.mockReturnValue({
       pathname: '/images/images',
     });
+    queryMocks.useParams.mockReturnValue({});
     queryMocks.useSearch.mockReturnValue({});
   });
 
   it("should render 'My custom images' tab with items", async () => {
     queryMocks.useFlags.mockReturnValue({ privateImageSharing: false });
+    queryMocks.useParams.mockReturnValue({ subType: 'custom' });
 
     server.use(
       http.get('*/images', () => {
@@ -85,7 +89,8 @@ describe('Images Landing Table', () => {
     const { getByText, queryByTestId } = renderWithTheme(
       <ImagesLandingTable />,
       {
-        initialRoute: '/images',
+        initialRoute: '/images/images/custom',
+        initialEntries: ['/images/images/custom'],
       }
     );
 
@@ -107,7 +112,7 @@ describe('Images Landing Table', () => {
 
   it("should render 'Recovery images tab' with items", async () => {
     queryMocks.useFlags.mockReturnValue({ privateImageSharing: false });
-    queryMocks.useSearch.mockReturnValue({
+    queryMocks.useParams.mockReturnValue({
       subType: 'recovery',
     });
 
@@ -126,8 +131,8 @@ describe('Images Landing Table', () => {
     const { getByText, queryByTestId } = renderWithTheme(
       <ImagesLandingTable />,
       {
-        initialRoute: '/images/images',
-        initialEntries: ['/images/images?subType=recovery'],
+        initialRoute: '/images/images/recovery',
+        initialEntries: ['/images/images/recovery'],
       }
     );
 
@@ -180,7 +185,7 @@ describe('Images Landing Table', () => {
   });
 
   it("should render 'My custom images' (manual) empty state", async () => {
-    queryMocks.useSearch.mockReturnValue({
+    queryMocks.useParams.mockReturnValue({
       subType: 'custom',
     });
 
@@ -197,8 +202,8 @@ describe('Images Landing Table', () => {
     );
 
     const { findByText } = renderWithTheme(<ImagesLandingTable />, {
-      initialRoute: '/images/images',
-      initialEntries: ['/images/images?subType=custom'],
+      initialRoute: '/images/images/custom',
+      initialEntries: ['/images/images/custom'],
     });
 
     expect(await findByText('No Custom Images to display.')).toBeVisible();
@@ -206,7 +211,7 @@ describe('Images Landing Table', () => {
 
   it("should render 'Recovery images' (automatic) empty state", async () => {
     queryMocks.useFlags.mockReturnValue({ privateImageSharing: false });
-    queryMocks.useSearch.mockReturnValue({
+    queryMocks.useParams.mockReturnValue({
       subType: 'recovery',
     });
 
@@ -223,8 +228,8 @@ describe('Images Landing Table', () => {
     );
 
     const { findByText } = renderWithTheme(<ImagesLandingTable />, {
-      initialRoute: '/images/images',
-      initialEntries: ['/images/images?subType=recovery'],
+      initialRoute: '/images/images/recovery',
+      initialEntries: ['/images/images/recovery'],
     });
 
     expect(await findByText('No Recovery Images to display.')).toBeVisible();
@@ -276,7 +281,7 @@ describe('Images Landing Table', () => {
     await userEvent.click(getByText('Edit'));
 
     expect(router.state.location.pathname).toBe(
-      `/images/${encodeURIComponent(image.id)}/edit`
+      `/images/images/custom/${encodeURIComponent(image.id)}/edit`
     );
   });
 
@@ -306,7 +311,7 @@ describe('Images Landing Table', () => {
     await userEvent.click(getByText('Rebuild an Existing Linode'));
 
     expect(router.state.location.pathname).toBe(
-      `/images/${encodeURIComponent(image.id)}/rebuild`
+      `/images/images/custom/${encodeURIComponent(image.id)}/rebuild`
     );
   });
 
@@ -372,7 +377,7 @@ describe('Images Landing Table', () => {
     await userEvent.click(getByText('Delete'));
 
     expect(router.state.location.pathname).toBe(
-      `/images/${encodeURIComponent(image.id)}/delete`
+      `/images/images/custom/${encodeURIComponent(image.id)}/delete`
     );
   });
 

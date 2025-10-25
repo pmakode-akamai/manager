@@ -12,7 +12,7 @@ export const ImagesCreateContainer = () => {
         breadcrumbDataAttrs={{ 'data-qa-create-image-header': true }}
         docsLabel="Docs"
         docsLink="https://techdocs.akamai.com/cloud-computing/docs/images"
-        removeCrumbX={2}
+        removeCrumbX={[2, 3, 4]}
         spacingBottom={4}
         title="Create"
       />

@@ -65,7 +65,7 @@ export const LinodeDiskActionMenu = (props: Props) => {
       disabled: !imagePermissions.create_image || !!swapTooltip,
       onClick: () =>
         navigate({
-          to: `/images/create/disk`,
+          to: `/images/images/custom/create/disk`,
           search: {
             selectedLinode: String(linodeId),
             selectedDisk: String(disk.id),

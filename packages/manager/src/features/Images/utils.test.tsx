@@ -102,7 +102,7 @@ describe('useImagesSubTabs', () => {
       wrapper: (ui) => wrapWithTheme(ui, options),
     });
 
-    expect(result.current.subTabs.map((t) => t.key)).toEqual([
+    expect(result.current.subTabs.map((t) => t.type)).toEqual([
       'custom',
       'recovery',
     ]);
@@ -115,7 +115,7 @@ describe('useImagesSubTabs', () => {
       wrapper: (ui) => wrapWithTheme(ui, options),
     });
 
-    expect(result.current.subTabs.map((t) => t.key)).toEqual([
+    expect(result.current.subTabs.map((t) => t.type)).toEqual([
       'custom',
       'shared',
       'recovery',

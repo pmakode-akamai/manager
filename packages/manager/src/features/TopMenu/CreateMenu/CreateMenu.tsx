@@ -73,7 +73,7 @@ export const CreateMenu = () => {
         {
           description: 'Capture or upload Linux images',
           display: 'Image',
-          to: '/images/create',
+          to: '/images/images/custom/create',
         },
         {
           description: 'Highly available container workloads',

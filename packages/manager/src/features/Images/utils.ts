@@ -8,11 +8,12 @@ import type { Event, Image, Linode } from '@linode/api-v4';
 
 interface ImagesSubTab {
   isBeta?: boolean;
-  key: ImagesSubTabType;
   title: string;
+  type: ImagesSubTabType;
 }
 
 export type ImagesSubTabType = 'custom' | 'recovery' | 'shared';
+export const DEFAULT_IMAGES_SUBTYPE: ImagesSubTabType = 'custom';
 
 export const getImageLabelForLinode = (linode: Linode, images: Image[]) => {
   const image = images?.find((image) => image.id === linode.image);
@@ -68,7 +69,7 @@ export const useIsPrivateImageSharingEnabled = () => {
 /**
  * Returns the currently selected Images sub-tab index and the list of available sub-tabs.
  *
- * @param tab - the current tab. Currently, this value comes from 'subType' query param on the Images Landing Page.
+ * @param tab - the current tab. Currently, this value comes from 'subType' route param on the Images Landing Page.
  * @returns An object containing:
  *   - `subTabIndex`: the index of the selected sub-tab
  *   - `subTabs`: the array of available sub-tabs
@@ -78,25 +79,25 @@ export const useImagesSubTabs = (tab: ImagesSubTabType | undefined) => {
 
   const subTabs = useMemo(() => {
     const tabs: ImagesSubTab[] = [
-      { key: 'custom', title: 'My custom images' },
+      { type: 'custom', title: 'My custom images' },
       ...(flags.privateImageSharing
         ? [
             {
-              key: 'shared' as ImagesSubTabType,
+              type: 'shared' as ImagesSubTabType,
               title: 'Shared with me',
               isBeta: true,
             },
           ]
         : []),
-      { key: 'recovery', title: 'Recovery images' },
+      { type: 'recovery', title: 'Recovery images' },
     ];
 
     return tabs;
   }, [flags.privateImageSharing]);
 
   const subTabIndex = useMemo(() => {
-    const keys = subTabs.map((t) => t.key);
-    const foundIndex = tab ? keys.indexOf(tab) : -1;
+    const types = subTabs.map((t) => t.type);
+    const foundIndex = tab ? types.indexOf(tab) : -1;
     return foundIndex >= 0 ? foundIndex : 0;
   }, [tab, subTabs]);
 

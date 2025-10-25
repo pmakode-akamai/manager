@@ -31,7 +31,7 @@ export const ImagesLandingEmptyState = () => {
               label: 'Create Image',
             });
             navigate({
-              to: '/images/create',
+              to: '/images/images/custom/create',
             });
           },
           tooltipText: canCreateImage

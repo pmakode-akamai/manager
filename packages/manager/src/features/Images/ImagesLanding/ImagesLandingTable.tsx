@@ -55,7 +55,11 @@ import {
   MANUAL_IMAGES_DEFAULT_ORDER_BY,
   MANUAL_IMAGES_PREFERENCE_KEY,
 } from '../constants';
-import { getEventsForImages, useImagesSubTabs } from '../utils';
+import {
+  DEFAULT_IMAGES_SUBTYPE,
+  getEventsForImages,
+  useImagesSubTabs,
+} from '../utils';
 import { DeleteImageDialog } from './DeleteImageDialog';
 import { EditImageDrawer } from './EditImageDrawer';
 import { ManageImageReplicasForm } from './ImageRegions/ManageImageRegionsForm';
@@ -85,17 +89,22 @@ const useStyles = makeStyles()((theme: Theme) => ({
 
 export const ImagesLandingTable = () => {
   const navigate = useNavigate();
-
   const { classes } = useStyles();
-  const params = useParams({
-    from: '/images/images/$imageId/$action',
+
+  const baseParams = useParams({
+    from: '/images/images/$subType',
     shouldThrow: false,
   });
+  const params = useParams({
+    from: '/images/images/$subType/$imageId/$action',
+    shouldThrow: false,
+  });
+
   const { data: permissions } = usePermissions('account', ['create_image']);
   const canCreateImage = permissions?.create_image;
 
   const search = useSearch({ from: '/images' });
-  const { subTabIndex, subTabs } = useImagesSubTabs(search.subType);
+  const { subTabIndex, subTabs } = useImagesSubTabs(baseParams?.subType);
 
   const { query } = search;
 
@@ -267,9 +276,13 @@ export const ImagesLandingTable = () => {
 
   const actionHandler = (image: Image, action: ImageAction) => {
     navigate({
-      params: { action, imageId: image.id },
+      params: {
+        action,
+        imageId: image.id,
+        subType: subTabs[subTabIndex]['type'],
+      },
       search: (prev) => prev,
-      to: '/images/images/$imageId/$action',
+      to: '/images/images/$subType/$imageId/$action',
     });
   };
 
@@ -286,7 +299,11 @@ export const ImagesLandingTable = () => {
   };
 
   const handleCloseDialog = () => {
-    navigate({ search: (prev) => prev, to: '/images' });
+    navigate({
+      search: (prev) => prev,
+      to: '/images/images/$subType',
+      params: { subType: baseParams?.subType ?? DEFAULT_IMAGES_SUBTYPE },
+    });
   };
 
   const handleManageRegions = (image: Image) => {
@@ -315,7 +332,8 @@ export const ImagesLandingTable = () => {
         page: undefined,
         query: query || undefined,
       }),
-      to: '/images/images',
+      params: { subType: subTabs[subTabIndex]['type'] },
+      to: '/images/images/$subType',
     });
   };
 
@@ -368,7 +386,10 @@ export const ImagesLandingTable = () => {
               buttonType="primary"
               disabled={!canCreateImage}
               onClick={() =>
-                navigate({ search: () => ({}), to: '/images/create' })
+                navigate({
+                  search: () => ({}),
+                  to: '/images/images/custom/create',
+                })
               }
               tooltipText={
                 !canCreateImage
@@ -549,10 +570,8 @@ export const ImagesLandingTable = () => {
   const onTabChange = (index: number) => {
     // Update the "subType" query param. (This switches between "My custom images", "Shared with me" and "Recovery images" tabs).
     navigate({
-      to: `/images/images`,
-      search: {
-        subType: subTabs[index]['key'],
-      },
+      params: { subType: subTabs[index]['type'] },
+      to: `/images/images/$subType`,
     });
   };
 
@@ -571,7 +590,7 @@ export const ImagesLandingTable = () => {
       <Tabs index={subTabIndex} onChange={onTabChange}>
         <TabList>
           {subTabs.map((tab) => (
-            <Tab key={`images-${tab.key}`}>
+            <Tab key={`images-${tab.type}`}>
               {tab.title} {tab.isBeta ? <BetaChip /> : null}
             </Tab>
           ))}
@@ -579,14 +598,14 @@ export const ImagesLandingTable = () => {
         <React.Suspense fallback={<SuspenseLoader />}>
           <TabPanels>
             {subTabs.map((tab, idx) => (
-              <SafeTabPanel index={idx} key={`images-${tab.key}-content`}>
-                {tab.key === 'custom' && customImages}
-                {tab.key === 'shared' && (
+              <SafeTabPanel index={idx} key={`images-${tab.type}-content`}>
+                {tab.type === 'custom' && customImages}
+                {tab.type === 'shared' && (
                   <Notice variant="info">
                     Share with me is coming soon...
                   </Notice>
                 )}
-                {tab.key === 'recovery' && recoveryImages}
+                {tab.type === 'recovery' && recoveryImages}
               </SafeTabPanel>
             ))}
           </TabPanels>

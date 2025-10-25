@@ -1,5 +1,7 @@
 import { createRoute, redirect } from '@tanstack/react-router';
 
+import { DEFAULT_IMAGES_SUBTYPE } from 'src/features/Images/utils';
+
 import { rootRoute } from '../root';
 import { ImagesRoute } from './ImagesRoute';
 
@@ -8,7 +10,6 @@ import type { ImagesSubTabType } from 'src/features/Images/utils';
 
 export interface ImagesSearchParams extends TableSearchParams {
   query?: string;
-  subType?: ImagesSubTabType;
 }
 
 export interface ImageCreateDiskSearchParams {
@@ -26,6 +27,10 @@ type ImageActionRouteParams = {
   imageId: string;
 };
 
+type ImageSubTypeRouteParams = {
+  subType: ImagesSubTabType;
+};
+
 const imageActions = {
   delete: 'delete',
   deploy: 'deploy',
@@ -36,6 +41,13 @@ const imageActions = {
 
 export type ImageAction = (typeof imageActions)[keyof typeof imageActions];
 
+const redirectToDefaultImageSubType = () => {
+  throw redirect({
+    params: { subType: DEFAULT_IMAGES_SUBTYPE },
+    to: '/images/images/$subType',
+  });
+};
+
 const imagesRoute = createRoute({
   component: ImagesRoute,
   getParentRoute: () => rootRoute,
@@ -44,23 +56,30 @@ const imagesRoute = createRoute({
 });
 
 const imagesIndexRoute = createRoute({
-  beforeLoad: () => {
-    throw redirect({
-      to: '/images/images',
-    });
-  },
+  beforeLoad: redirectToDefaultImageSubType,
   getParentRoute: () => imagesRoute,
   path: '/',
   validateSearch: (search: ImagesSearchParams) => search,
-}).lazy(() =>
-  import('src/features/Images/ImagesLanding/imagesLandingLazyRoute').then(
-    (m) => m.imagesLandingLazyRoute
-  )
-);
+});
 
 const imagesImagesRoute = createRoute({
+  beforeLoad: redirectToDefaultImageSubType,
   getParentRoute: () => imagesRoute,
   path: 'images',
+  validateSearch: (search: ImagesSearchParams) => search,
+});
+
+const imagesImagesSubTypeRoute = createRoute({
+  getParentRoute: () => imagesRoute,
+  params: {
+    parse: ({ subType }: ImageSubTypeRouteParams) => ({
+      subType,
+    }),
+    stringify: ({ subType }: ImageSubTypeRouteParams) => ({
+      subType,
+    }),
+  },
+  path: 'images/$subType',
   validateSearch: (search: ImagesSearchParams) => search,
 }).lazy(() =>
   import('src/features/Images/ImagesLanding/imagesLandingLazyRoute').then(
@@ -87,7 +106,7 @@ const imageActionRoute = createRoute({
       });
     }
   },
-  getParentRoute: () => imagesImagesRoute,
+  getParentRoute: () => imagesImagesSubTypeRoute,
   params: {
     parse: ({ action, imageId }: ImageActionRouteParams) => ({
       action,
@@ -108,7 +127,7 @@ const imageActionRoute = createRoute({
 
 const imagesCreateRoute = createRoute({
   getParentRoute: () => imagesRoute,
-  path: 'create',
+  path: 'images/custom/create',
 }).lazy(() =>
   import('src/features/Images/ImagesCreate/imagesCreateLazyRoute').then(
     (m) => m.imageCreateLazyRoute
@@ -118,7 +137,7 @@ const imagesCreateRoute = createRoute({
 const imagesCreateIndexRoute = createRoute({
   beforeLoad: () => {
     throw redirect({
-      to: '/images/create/disk',
+      to: '/images/images/custom/create/disk',
     });
   },
   getParentRoute: () => imagesCreateRoute,
@@ -147,7 +166,8 @@ const imagesCreateUploadRoute = createRoute({
 
 export const imagesRouteTree = imagesRoute.addChildren([
   imagesIndexRoute,
-  imagesImagesRoute.addChildren([imageActionRoute]),
+  imagesImagesRoute,
+  imagesImagesSubTypeRoute.addChildren([imageActionRoute]),
   imagesShareGroupsRoute,
   imagesCreateRoute.addChildren([
     imagesCreateIndexRoute,

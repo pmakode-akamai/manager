@@ -22,11 +22,11 @@ export const ImageCreate = () => {
   const { handleTabChange, tabIndex, tabs } = useTabs([
     {
       title: 'Capture Image',
-      to: '/images/create/disk',
+      to: '/images/images/custom/create/disk',
     },
     {
       title: 'Upload Image',
-      to: '/images/create/upload',
+      to: '/images/images/custom/create/upload',
     },
   ]);
 

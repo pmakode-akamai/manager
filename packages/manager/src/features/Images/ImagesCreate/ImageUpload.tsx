@@ -173,7 +173,7 @@ export const ImageUpload = () => {
 
       // Don't block navigation to the specific route
       const isNavigatingToAllowedRoute =
-        next.routeId === '/images/create/upload';
+        next.routeId === '/images/images/custom/create/upload';
 
       return !isNavigatingToAllowedRoute;
     },
