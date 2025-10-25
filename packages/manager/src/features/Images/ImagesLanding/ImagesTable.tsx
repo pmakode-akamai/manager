@@ -51,6 +51,7 @@ interface ImagesTableProps {
   handlers: ImageHandlers;
   headerProps?: HeaderProps;
   images: Image[];
+  isSelectableRow?: boolean;
   order: Order;
   orderBy: string;
   pagination: {
@@ -94,6 +95,7 @@ export const ImagesTable = (props: ImagesTableProps) => {
     pagination,
     eventCategory,
     emptyMessage,
+    isSelectableRow,
   } = props;
 
   const { classes } = useStyles();
@@ -138,6 +140,7 @@ export const ImagesTable = (props: ImagesTableProps) => {
       <Table>
         <TableHead>
           <TableRow>
+            {isSelectableRow && <TableCell />}
             {columns.map((col, idx) => {
               if (col.sortable && col.label) {
                 return (
@@ -180,6 +183,7 @@ export const ImagesTable = (props: ImagesTableProps) => {
               event={events[image.id]}
               handlers={handlers}
               image={image}
+              isSelectableRow={isSelectableRow}
               key={image.id}
             />
           ))}

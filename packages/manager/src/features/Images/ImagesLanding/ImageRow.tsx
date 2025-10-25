@@ -6,6 +6,7 @@ import React from 'react';
 
 import CloudInitIcon from 'src/assets/icons/cloud-init.svg';
 import UnlockIcon from 'src/assets/icons/unlock.svg';
+import { SelectableTableRow } from 'src/components/SelectableTableRow/SelectableTableRow';
 import { TableCell } from 'src/components/TableCell';
 import { TableRow } from 'src/components/TableRow';
 import { formatDate } from 'src/utilities/formatDate';
@@ -20,10 +21,11 @@ interface Props {
   event?: Event;
   handlers: Handlers;
   image: Image;
+  isSelectableRow?: boolean;
 }
 
 export const ImageRow = (props: Props) => {
-  const { event, handlers, image } = props;
+  const { event, handlers, image, isSelectableRow } = props;
 
   const {
     capabilities,
@@ -64,8 +66,8 @@ export const ImageRow = (props: Props) => {
     }
   };
 
-  return (
-    <TableRow data-qa-image-cell={id} key={id}>
+  const tableCells = (
+    <>
       <TableCell data-qa-image-label noWrap>
         <Stack
           alignItems="center"
@@ -154,6 +156,21 @@ export const ImageRow = (props: Props) => {
       <TableCell actionCell>
         <ImagesActionMenu {...props} />
       </TableCell>
+    </>
+  );
+
+  return isSelectableRow ? (
+    <SelectableTableRow
+      data-qa-image-cell={id}
+      handleToggleCheck={() => {}}
+      isChecked={false}
+      key={id}
+    >
+      {tableCells}
+    </SelectableTableRow>
+  ) : (
+    <TableRow data-qa-image-cell={id} key={id}>
+      {tableCells}
     </TableRow>
   );
 };

@@ -11,7 +11,7 @@ interface SelectableTableRowProps {
    * The content to be rendered inside the table row.
    * This should be an array of JSX elements.
    */
-  children: JSX.Element[];
+  children: JSX.Element[] | React.ReactNode;
   /**
    * An optional className to apply custom styles to the row.
    */
