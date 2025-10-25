@@ -1,7 +1,8 @@
-import { Hidden, Paper, Typography } from '@linode/ui';
+import { Box, Button, Hidden, Paper, Typography } from '@linode/ui';
 import React from 'react';
 import { makeStyles } from 'tss-react/mui';
 
+import { DocsLink } from 'src/components/DocsLink/DocsLink';
 import { PaginationFooter } from 'src/components/PaginationFooter/PaginationFooter';
 import { Table } from 'src/components/Table';
 import { TableBody } from 'src/components/TableBody';
@@ -27,7 +28,14 @@ interface ColumnConfig {
 }
 
 interface HeaderProps {
+  buttonProps?: {
+    buttonText: string;
+    disabled?: boolean;
+    onButtonClick: () => void;
+    tooltipText?: string;
+  };
   description?: React.ReactNode;
+  docsLink?: string;
   title: string;
 }
 
@@ -93,7 +101,33 @@ export const ImagesTable = (props: ImagesTableProps) => {
     <Paper className={classes.imageTable}>
       {headerProps && headerProps.title && (
         <div className={classes.imageTableHeader}>
-          <Typography variant="h3">{headerProps.title}</Typography>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}
+          >
+            <Typography variant="h3">{headerProps.title}</Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              {headerProps.docsLink && (
+                <DocsLink
+                  analyticsLabel={headerProps.title}
+                  href={headerProps.docsLink}
+                />
+              )}
+              {headerProps.buttonProps && (
+                <Button
+                  buttonType="primary"
+                  disabled={headerProps.buttonProps?.disabled}
+                  onClick={headerProps.buttonProps?.onButtonClick}
+                  tooltipText={headerProps.buttonProps?.tooltipText}
+                >
+                  {headerProps.buttonProps.buttonText}
+                </Button>
+              )}
+            </Box>
+          </Box>
           {headerProps.description && (
             <Typography className={classes.imageTableSubheader}>
               {headerProps.description}

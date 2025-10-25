@@ -21,7 +21,8 @@ import { Tab } from 'src/components/Tabs/Tab';
 import { TabList } from 'src/components/Tabs/TabList';
 import { TabPanels } from 'src/components/Tabs/TabPanels';
 import { Tabs } from 'src/components/Tabs/Tabs';
-// import { usePermissions } from 'src/features/IAM/hooks/usePermissions';
+import { getRestrictedResourceText } from 'src/features/Account/utils';
+import { usePermissions } from 'src/features/IAM/hooks/usePermissions';
 import { useOrderV2 } from 'src/hooks/useOrderV2';
 import { usePaginationV2 } from 'src/hooks/usePaginationV2';
 import {
@@ -66,8 +67,8 @@ export const ImagesLandingTable = () => {
     shouldThrow: false,
   });
 
-  // const { data: permissions } = usePermissions('account', ['create_image']);
-  // const canCreateImage = permissions?.create_image;
+  const { data: permissions } = usePermissions('account', ['create_image']);
+  const canCreateImage = permissions?.create_image;
 
   const search = useSearch({ from: '/images' });
   const { subTabIndex, subTabs } = useImagesSubTabs(baseParams?.subType);
@@ -325,7 +326,7 @@ export const ImagesLandingTable = () => {
     );
   }
 
-  // @todo - Check If we need ImagesLandingEmptyState
+  // @TODO - Check If we need ImagesLandingEmptyState
   // if (manualImages?.results === 0 && automaticImages?.results === 0 && !query) {
   //   return <ImagesLandingEmptyState />;
   // }
@@ -367,7 +368,24 @@ export const ImagesLandingTable = () => {
       handleOrderChange={handleManualImagesOrderChange}
       handlers={handlers}
       headerProps={{
-        title: 'Custom Images',
+        title: 'My Custom Images',
+        buttonProps: {
+          buttonText: 'Create Image',
+          onButtonClick: () =>
+            navigate({
+              search: () => ({}),
+              to: '/images/images/custom/create',
+            }),
+          tooltipText: !canCreateImage
+            ? getRestrictedResourceText({
+                action: 'create',
+                isSingular: false,
+                resourceType: 'Images',
+              })
+            : undefined,
+          disabled: !canCreateImage,
+        },
+        docsLink: 'https://techdocs.akamai.com/cloud-computing/docs/images',
         description: (
           <>
             These are{' '}
