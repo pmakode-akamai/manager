@@ -1,0 +1,164 @@
+import { Hidden, Paper, Typography } from '@linode/ui';
+import React from 'react';
+import { makeStyles } from 'tss-react/mui';
+
+import { PaginationFooter } from 'src/components/PaginationFooter/PaginationFooter';
+import { Table } from 'src/components/Table';
+import { TableBody } from 'src/components/TableBody';
+import { TableCell } from 'src/components/TableCell';
+import { TableHead } from 'src/components/TableHead';
+import { TableRow } from 'src/components/TableRow';
+import { TableRowEmpty } from 'src/components/TableRowEmpty/TableRowEmpty';
+import { TableRowError } from 'src/components/TableRowError/TableRowError';
+import { TableSortCell } from 'src/components/TableSortCell';
+
+import { ImageRow } from './ImageRow';
+
+import type { Handlers as ImageHandlers } from './ImagesActionMenu';
+import type { APIError, Event, Image } from '@linode/api-v4';
+import type { Theme } from '@mui/material/styles';
+import type { Order } from 'src/hooks/useOrderV2';
+
+interface ColumnConfig {
+  header: React.ReactNode | string;
+  hiddenProps?: React.ComponentProps<typeof Hidden>;
+  label?: string; // Field name (used for sorting)
+  sortable?: boolean;
+}
+
+interface HeaderProps {
+  description?: React.ReactNode;
+  title: string;
+}
+
+interface ImagesTableProps {
+  columns: ColumnConfig[];
+  emptyMessage: string;
+  error?: APIError[] | null;
+  eventCategory: string;
+  events: {
+    [k: string]: Event | undefined;
+  };
+  handleOrderChange: (newOrderBy: string, newOrder: Order) => void;
+  handlers: ImageHandlers;
+  headerProps?: HeaderProps;
+  images: Image[];
+  order: Order;
+  orderBy: string;
+  pagination: {
+    count: number;
+    handlePageChange: (newPage: number) => void;
+    handlePageSizeChange: (newSize: number) => void;
+    page: number;
+    pageSize: number;
+  };
+  query?: string;
+}
+
+const useStyles = makeStyles()((theme: Theme) => ({
+  imageTable: {
+    marginBottom: theme.spacingFunction(24),
+    padding: 0,
+  },
+  imageTableHeader: {
+    border: `1px solid ${theme.tokens.alias.Border.Normal}`,
+    borderBottom: 0,
+    padding: theme.spacingFunction(8),
+    paddingLeft: theme.spacingFunction(12),
+  },
+  imageTableSubheader: {
+    marginTop: theme.spacingFunction(8),
+  },
+}));
+
+export const ImagesTable = (props: ImagesTableProps) => {
+  const {
+    headerProps,
+    images,
+    orderBy,
+    order,
+    handleOrderChange,
+    columns,
+    events,
+    handlers,
+    error,
+    query,
+    pagination,
+    eventCategory,
+    emptyMessage,
+  } = props;
+
+  const { classes } = useStyles();
+  return (
+    <Paper className={classes.imageTable}>
+      {headerProps && headerProps.title && (
+        <div className={classes.imageTableHeader}>
+          <Typography variant="h3">{headerProps.title}</Typography>
+          {headerProps.description && (
+            <Typography className={classes.imageTableSubheader}>
+              {headerProps.description}
+            </Typography>
+          )}
+        </div>
+      )}
+      <Table>
+        <TableHead>
+          <TableRow>
+            {columns.map((col, idx) => {
+              if (col.sortable && col.label) {
+                return (
+                  <TableSortCell
+                    active={orderBy === col.label}
+                    direction={order}
+                    handleClick={handleOrderChange}
+                    key={idx}
+                    label={col.label}
+                  >
+                    {col.header}
+                  </TableSortCell>
+                );
+              } else {
+                return (
+                  <Hidden key={idx} {...col.hiddenProps}>
+                    <TableCell>{col.header}</TableCell>
+                  </Hidden>
+                );
+              }
+            })}
+            <TableCell />
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {images?.length === 0 && (
+            <TableRowEmpty
+              colSpan={columns.length + 1}
+              message={emptyMessage}
+            />
+          )}
+          {error && query && (
+            <TableRowError
+              colSpan={columns.length + 1}
+              message={error[0].reason}
+            />
+          )}
+          {images?.map((image) => (
+            <ImageRow
+              event={events[image.id]}
+              handlers={handlers}
+              image={image}
+              key={image.id}
+            />
+          ))}
+        </TableBody>
+      </Table>
+      <PaginationFooter
+        count={pagination.count}
+        eventCategory={eventCategory}
+        handlePageChange={pagination.handlePageChange}
+        handleSizeChange={pagination.handlePageSizeChange}
+        page={pagination.page}
+        pageSize={pagination.pageSize}
+      />
+    </Paper>
+  );
+};
