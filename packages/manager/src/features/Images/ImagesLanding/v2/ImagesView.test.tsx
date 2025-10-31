@@ -1,10 +1,8 @@
-import { waitForElementToBeRemoved } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import * as React from 'react';
 
 import { imageFactory } from 'src/factories';
 import { makeResourcePage } from 'src/mocks/serverHandlers';
-import { http, HttpResponse, server } from 'src/mocks/testServer';
 import { mockMatchMedia, renderWithTheme } from 'src/utilities/testHelpers';
 
 import { ImagesView } from './ImagesView';
@@ -47,9 +45,26 @@ const mockHandlers = {
   onManageReplicas: vi.fn(),
 };
 
-beforeAll(() => mockMatchMedia());
+const defaultProps = {
+  handleImagesOrderChange: vi.fn(),
+  handlers: mockHandlers,
+  images: undefined,
+  imagesError: null,
+  imagesIsFetching: false,
+  imagesLoading: false,
+  imagesOrder: 'asc' as const,
+  imagesOrderBy: '',
+  paginationForImages: {
+    handlePageChange: vi.fn(),
+    handlePageSizeChange: vi.fn(),
+    page: 1,
+    pageSize: 25,
+  },
+  searchErrorText: undefined,
+  variant: 'custom' as const,
+};
 
-const loadingTestId = 'circle-progress';
+beforeAll(() => mockMatchMedia());
 
 describe('ImagesView component', () => {
   beforeEach(() => {
@@ -66,39 +81,28 @@ describe('ImagesView component', () => {
     queryMocks.useLocation.mockReturnValue({
       pathname: '/images/images',
     });
+    queryMocks.useSearch.mockReturnValue({});
   });
 
   // For Custom Images
   describe('For Custom Images', () => {
-    beforeEach(() => {
-      queryMocks.useSearch.mockReturnValue({
-        subType: 'custom',
-      });
-    });
-
     it("should render 'My custom images' tab with items", async () => {
-      server.use(
-        http.get('*/images', () => {
-          const images = imageFactory.buildList(3, {
-            regions: [
-              { region: 'us-east', status: 'available' },
-              { region: 'us-southeast', status: 'pending' },
-            ],
-          });
-          return HttpResponse.json(makeResourcePage(images));
-        })
-      );
+      const images = imageFactory.buildList(3, {
+        regions: [
+          { region: 'us-east', status: 'available' },
+          { region: 'us-southeast', status: 'pending' },
+        ],
+      });
 
-      const { getByText, queryAllByTestId } = renderWithTheme(
-        <ImagesView handlers={mockHandlers} variant="custom" />,
-        {
-          initialRoute: '/images/images',
-          initialEntries: ['/images/images?subType=custom'],
-        }
-      );
+      const imagesResource = makeResourcePage(images);
 
-      const loadingElement = queryAllByTestId(loadingTestId);
-      await waitForElementToBeRemoved(loadingElement);
+      const { getByText } = renderWithTheme(
+        <ImagesView
+          {...defaultProps}
+          images={imagesResource}
+          variant="custom"
+        />
+      );
 
       // Custom Images table should render
       getByText('My Custom Images');
@@ -113,24 +117,14 @@ describe('ImagesView component', () => {
     });
 
     it("should render 'My custom images' (manual) empty state", async () => {
-      server.use(
-        http.get('*/images', ({ request }) => {
-          return HttpResponse.json(
-            makeResourcePage(
-              request.headers.get('x-filter')?.includes('automatic')
-                ? [imageFactory.build({ type: 'automatic' })]
-                : []
-            )
-          );
-        })
-      );
+      const imagesResourceEmpty = makeResourcePage([]);
 
       const { findByText } = renderWithTheme(
-        <ImagesView handlers={mockHandlers} variant="custom" />,
-        {
-          initialRoute: '/images/images',
-          initialEntries: ['/images/images?subType=custom'],
-        }
+        <ImagesView
+          {...defaultProps}
+          images={imagesResourceEmpty}
+          variant="custom"
+        />
       );
 
       expect(await findByText('No Custom Images to display.')).toBeVisible();
@@ -148,23 +142,14 @@ describe('ImagesView component', () => {
         availableLinodes: [],
       });
 
-      server.use(
-        http.get('*/images', ({ request }) => {
-          const filter = request.headers.get('x-filter');
-
-          if (filter?.includes('manual')) {
-            return HttpResponse.json(makeResourcePage([image]));
-          }
-          return HttpResponse.json(makeResourcePage([]));
-        })
-      );
+      const imagesResource = makeResourcePage([image]);
 
       const { findByLabelText } = renderWithTheme(
-        <ImagesView handlers={mockHandlers} variant="custom" />,
-        {
-          initialRoute: '/images/images',
-          initialEntries: ['/images/images?subType=custom'],
-        }
+        <ImagesView
+          {...defaultProps}
+          images={imagesResource}
+          variant="custom"
+        />
       );
 
       const actionMenu = await findByLabelText(
@@ -193,16 +178,9 @@ describe('ImagesView component', () => {
         data: { create_image: false },
       });
 
-      const { getByText, queryAllByTestId } = renderWithTheme(
-        <ImagesView handlers={mockHandlers} variant="custom" />,
-        {
-          initialRoute: '/images/images',
-          initialEntries: ['/images/images?subType=custom'],
-        }
+      const { getByText } = renderWithTheme(
+        <ImagesView {...defaultProps} variant="custom" />
       );
-
-      const loadingElement = queryAllByTestId(loadingTestId);
-      await waitForElementToBeRemoved(loadingElement);
 
       const createButton = getByText('Create Image');
       expect(createButton).toBeDisabled();
@@ -217,16 +195,9 @@ describe('ImagesView component', () => {
         data: { create_image: true },
       });
 
-      const { getByText, queryAllByTestId } = renderWithTheme(
-        <ImagesView handlers={mockHandlers} variant="custom" />,
-        {
-          initialRoute: '/images/images',
-          initialEntries: ['/images/images?subType=custom'],
-        }
+      const { getByText } = renderWithTheme(
+        <ImagesView {...defaultProps} variant="custom" />
       );
-
-      const loadingElement = queryAllByTestId(loadingTestId);
-      await waitForElementToBeRemoved(loadingElement);
 
       const createButton = getByText('Create Image');
       expect(createButton).toBeEnabled();
@@ -235,35 +206,23 @@ describe('ImagesView component', () => {
 
   // For Recovery Images
   describe('For Recovery Images', () => {
-    beforeEach(() => {
-      queryMocks.useSearch.mockReturnValue({
-        subType: 'recovery',
-      });
-    });
-
     it("should render 'Recovery images tab' with items", async () => {
-      server.use(
-        http.get('*/images', () => {
-          const images = imageFactory.buildList(3, {
-            regions: [
-              { region: 'us-east', status: 'available' },
-              { region: 'us-southeast', status: 'pending' },
-            ],
-          });
-          return HttpResponse.json(makeResourcePage(images));
-        })
-      );
+      const images = imageFactory.buildList(3, {
+        regions: [
+          { region: 'us-east', status: 'available' },
+          { region: 'us-southeast', status: 'pending' },
+        ],
+      });
 
-      const { getByText, queryAllByTestId } = renderWithTheme(
-        <ImagesView handlers={mockHandlers} variant="recovery" />,
-        {
-          initialRoute: '/images/images',
-          initialEntries: ['/images/images?subType=recovery'],
-        }
-      );
+      const imagesResource = makeResourcePage(images);
 
-      const loadingElement = queryAllByTestId(loadingTestId);
-      await waitForElementToBeRemoved(loadingElement);
+      const { getByText } = renderWithTheme(
+        <ImagesView
+          {...defaultProps}
+          images={imagesResource}
+          variant="recovery"
+        />
+      );
 
       // Recovery Images table should render
       getByText('Recovery Images');
@@ -277,28 +236,14 @@ describe('ImagesView component', () => {
     });
 
     it("should render 'Recovery images' (automatic) empty state", async () => {
-      queryMocks.useSearch.mockReturnValue({
-        subType: 'recovery',
-      });
-
-      server.use(
-        http.get('*/images', ({ request }) => {
-          return HttpResponse.json(
-            makeResourcePage(
-              request.headers.get('x-filter')?.includes('manual')
-                ? [imageFactory.build({ type: 'manual' })]
-                : []
-            )
-          );
-        })
-      );
+      const imagesResourceEmpty = makeResourcePage([]);
 
       const { findByText } = renderWithTheme(
-        <ImagesView handlers={mockHandlers} variant="recovery" />,
-        {
-          initialRoute: '/images/images',
-          initialEntries: ['/images/images?subType=recovery'],
-        }
+        <ImagesView
+          {...defaultProps}
+          images={imagesResourceEmpty}
+          variant="recovery"
+        />
       );
 
       expect(await findByText('No Recovery Images to display.')).toBeVisible();
@@ -311,28 +256,20 @@ describe('ImagesView component', () => {
       const image = imageFactory.build({
         id: 'private/99999',
         label: 'vi-test-image',
+        type: 'automatic',
       });
       queryMocks.useLinodesPermissionsCheck.mockReturnValue({
         availableLinodes: [],
       });
 
-      server.use(
-        http.get('*/images', ({ request }) => {
-          const filter = request.headers.get('x-filter');
-
-          if (filter?.includes('automatic')) {
-            return HttpResponse.json(makeResourcePage([image]));
-          }
-          return HttpResponse.json(makeResourcePage([]));
-        })
-      );
+      const imagesResource = makeResourcePage([image]);
 
       const { findByLabelText } = renderWithTheme(
-        <ImagesView handlers={mockHandlers} variant="recovery" />,
-        {
-          initialRoute: '/images/images',
-          initialEntries: ['/images/images?subType=recovery'],
-        }
+        <ImagesView
+          {...defaultProps}
+          images={imagesResource}
+          variant="recovery"
+        />
       );
 
       const actionMenu = await findByLabelText(

@@ -3,15 +3,6 @@ import * as React from 'react';
 import { Link } from 'src/components/Link';
 import { getRestrictedResourceText } from 'src/features/Account/utils';
 
-import {
-  AUTOMATIC_IMAGES_DEFAULT_ORDER,
-  AUTOMATIC_IMAGES_DEFAULT_ORDER_BY,
-  AUTOMATIC_IMAGES_PREFERENCE_KEY,
-  MANUAL_IMAGES_DEFAULT_ORDER,
-  MANUAL_IMAGES_DEFAULT_ORDER_BY,
-  MANUAL_IMAGES_PREFERENCE_KEY,
-} from '../../constants';
-
 import type { ImagesVariant, ImageViewTableColConfig } from '../../utils';
 import type { Image } from '@linode/api-v4';
 
@@ -26,10 +17,6 @@ export interface ImageConfig {
   docsLink?: string;
   emptyMessage: string;
   eventCategory: string;
-  isEnabled: (subType: ImagesVariant | undefined) => boolean;
-  orderByDefault: string;
-  orderDefault: 'asc' | 'desc';
-  preferenceKey: string;
   title: string;
   type: Image['type'];
 }
@@ -97,11 +84,7 @@ export const IMAGES_CONFIG: Omit<
       </>
     ),
     type: 'manual',
-    orderByDefault: MANUAL_IMAGES_DEFAULT_ORDER_BY,
-    orderDefault: MANUAL_IMAGES_DEFAULT_ORDER,
-    preferenceKey: MANUAL_IMAGES_PREFERENCE_KEY,
     docsLink: 'https://techdocs.akamai.com/cloud-computing/docs/images',
-    isEnabled: (subType) => subType === 'custom',
     columns: CUSTOM_IMAGES_TABLE_COLUMNS,
     buttonProps: {
       buttonText: 'Create Image',
@@ -124,10 +107,6 @@ export const IMAGES_CONFIG: Omit<
       </>
     ),
     type: 'automatic',
-    orderByDefault: AUTOMATIC_IMAGES_DEFAULT_ORDER_BY,
-    orderDefault: AUTOMATIC_IMAGES_DEFAULT_ORDER,
-    preferenceKey: AUTOMATIC_IMAGES_PREFERENCE_KEY,
-    isEnabled: (subType) => subType === 'recovery',
     columns: RECOVERY_IMAGES_TABLE_COLUMNS,
     eventCategory: 'Recovery Images Table',
     emptyMessage: 'No Recovery Images to display.',

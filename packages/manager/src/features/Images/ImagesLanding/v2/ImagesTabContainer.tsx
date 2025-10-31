@@ -1,4 +1,5 @@
-import { imageQueries, useImageQuery } from '@linode/queries';
+import { imageQueries, useImageQuery, useImagesQuery } from '@linode/queries';
+import { getAPIFilterFromQuery } from '@linode/search';
 import { BetaChip, Drawer, Notice, Stack } from '@linode/ui';
 import { useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams, useSearch } from '@tanstack/react-router';
@@ -10,17 +11,29 @@ import { Tab } from 'src/components/Tabs/Tab';
 import { TabList } from 'src/components/Tabs/TabList';
 import { TabPanels } from 'src/components/Tabs/TabPanels';
 import { Tabs } from 'src/components/Tabs/Tabs';
+import { useOrderV2 } from 'src/hooks/useOrderV2';
+import { usePaginationV2 } from 'src/hooks/usePaginationV2';
 
+import {
+  AUTOMATIC_IMAGES_DEFAULT_ORDER,
+  AUTOMATIC_IMAGES_DEFAULT_ORDER_BY,
+  AUTOMATIC_IMAGES_ORDER_PREFERENCE_KEY,
+  AUTOMATIC_IMAGES_PREFERENCE_KEY,
+  MANUAL_IMAGES_DEFAULT_ORDER,
+  MANUAL_IMAGES_DEFAULT_ORDER_BY,
+  MANUAL_IMAGES_PREFERENCE_KEY,
+} from '../../constants';
 import { getImagesSubTabIndex } from '../../utils';
 import { DeleteImageDialog } from '../DeleteImageDialog';
 import { EditImageDrawer } from '../EditImageDrawer';
 import { ManageImageReplicasForm } from '../ImageRegions/ManageImageRegionsForm';
+import { ImagesLandingEmptyState } from '../ImagesLandingEmptyState';
 import { RebuildImageDrawer } from '../RebuildImageDrawer';
 import { ImagesView } from './ImagesView';
 
 import type { ImagesSubTab } from '../../utils';
 import type { Handlers as ImageHandlers } from '../ImagesActionMenu';
-import type { Image } from '@linode/api-v4';
+import type { Filter, Image } from '@linode/api-v4';
 import type { ImageAction } from 'src/routes/images';
 
 export const ImagesTabContainer = () => {
@@ -34,6 +47,147 @@ export const ImagesTabContainer = () => {
   const search = useSearch({ from: '/images' });
 
   const queryClient = useQueryClient();
+
+  /**
+   * At the time of writing: `label`, `tags`, `size`, `status`, `region` are filterable.
+   *
+   * Some fields like `status` and `region` can't be used in complex filters using '+or' / '+and'
+   *
+   * Using `tags` in a '+or' is currently broken. See ARB-5792
+   */
+  const { error: searchParseError, filter } = getAPIFilterFromQuery(
+    search.query,
+    {
+      // Because Images have an array of region objects, we need to transform
+      // search queries like "region: us-east" to { regions: { region: "us-east" } }
+      // rather than the default behavior which is { region: { '+contains': "us-east" } }
+      filterShapeOverrides: {
+        '+contains': {
+          field: 'region',
+          filter: (value) => ({ regions: { region: value } }),
+        },
+        '+eq': {
+          field: 'region',
+          filter: (value) => ({ regions: { region: value } }),
+        },
+      },
+      searchableFieldsWithoutOperator: ['label', 'tags'],
+    }
+  );
+
+  const paginationForManualImages = usePaginationV2({
+    currentRoute: '/images/images',
+    preferenceKey: MANUAL_IMAGES_PREFERENCE_KEY,
+    searchParams: (prev) => ({
+      ...prev,
+      query: search.query,
+    }),
+  });
+
+  const {
+    handleOrderChange: handleManualImagesOrderChange,
+    order: manualImagesOrder,
+    orderBy: manualImagesOrderBy,
+  } = useOrderV2({
+    initialRoute: {
+      defaultOrder: {
+        order: MANUAL_IMAGES_DEFAULT_ORDER,
+        orderBy: MANUAL_IMAGES_DEFAULT_ORDER_BY,
+      },
+      from: '/images/images',
+    },
+    preferenceKey: MANUAL_IMAGES_PREFERENCE_KEY,
+    prefix: 'manual',
+  });
+
+  const manualImagesFilter: Filter = {
+    ['+order']: manualImagesOrder,
+    ['+order_by']: manualImagesOrderBy,
+    ...filter,
+  };
+
+  const {
+    data: manualImages,
+    error: manualImagesError,
+    isFetching: manualImagesIsFetching,
+    isLoading: manualImagesLoading,
+  } = useImagesQuery(
+    {
+      page: paginationForManualImages.page,
+      page_size: paginationForManualImages.pageSize,
+    },
+    {
+      ...manualImagesFilter,
+      is_public: false,
+      type: 'manual',
+    },
+    {
+      // Refetch custom images every 30 seconds.
+      // We do this because we have no /v4/account/events we can use
+      // to update Image region statuses. We should make the API
+      // team and Images team implement events for this.
+      refetchInterval: 30_000,
+      // If we have a search query, disable retries to keep the UI
+      // snappy if the user inputs an invalid X-Filter. Otherwise,
+      // pass undefined to use the default retry behavior.
+      retry: search.query ? false : undefined,
+    }
+  );
+
+  // Pagination, order, and query hooks for automatic/recovery images
+  const paginationForAutomaticImages = usePaginationV2({
+    currentRoute: '/images/images',
+    preferenceKey: AUTOMATIC_IMAGES_PREFERENCE_KEY,
+    searchParams: (prev) => ({
+      ...prev,
+      query: search.query,
+    }),
+  });
+
+  const {
+    handleOrderChange: handleAutomaticImagesOrderChange,
+    order: automaticImagesOrder,
+    orderBy: automaticImagesOrderBy,
+  } = useOrderV2({
+    initialRoute: {
+      defaultOrder: {
+        order: AUTOMATIC_IMAGES_DEFAULT_ORDER,
+        orderBy: AUTOMATIC_IMAGES_DEFAULT_ORDER_BY,
+      },
+      from: '/images/images',
+    },
+    preferenceKey: AUTOMATIC_IMAGES_ORDER_PREFERENCE_KEY,
+    prefix: 'automatic',
+  });
+
+  const automaticImagesFilter: Filter = {
+    ['+order']: automaticImagesOrder,
+    ['+order_by']: automaticImagesOrderBy,
+    ...filter,
+  };
+
+  const {
+    data: automaticImages,
+    error: automaticImagesError,
+    isFetching: automaticImagesIsFetching,
+    isLoading: automaticImagesLoading,
+  } = useImagesQuery(
+    {
+      page: paginationForAutomaticImages.page,
+      page_size: paginationForAutomaticImages.pageSize,
+    },
+    {
+      ...automaticImagesFilter,
+      is_public: false,
+      type: 'automatic',
+    },
+    {
+      // If we have a search query, disable retries to keep the UI
+      // snappy if the user inputs an invalid X-Filter. Otherwise,
+      // pass undefined to use the default retry behavior.
+      retry: search.query ? false : undefined,
+    }
+  );
 
   const {
     data: selectedImage,
@@ -128,6 +282,14 @@ export const ImagesTabContainer = () => {
     });
   };
 
+  if (
+    manualImages?.results === 0 &&
+    automaticImages?.results === 0 &&
+    !search.query
+  ) {
+    return <ImagesLandingEmptyState />;
+  }
+
   return (
     <Stack spacing={3}>
       <Tabs index={subTabIndex} onChange={onTabChange}>
@@ -143,7 +305,26 @@ export const ImagesTabContainer = () => {
             {subTabs.map((tab, idx) => (
               <SafeTabPanel index={idx} key={`images-${tab.variant}-content`}>
                 {tab.variant === 'custom' && (
-                  <ImagesView handlers={handlers} variant="custom" />
+                  <ImagesView
+                    handleImagesOrderChange={handleManualImagesOrderChange}
+                    handlers={handlers}
+                    images={manualImages}
+                    imagesError={manualImagesError}
+                    imagesIsFetching={manualImagesIsFetching}
+                    imagesLoading={manualImagesLoading}
+                    imagesOrder={manualImagesOrder}
+                    imagesOrderBy={manualImagesOrderBy}
+                    paginationForImages={{
+                      handlePageChange:
+                        paginationForManualImages.handlePageChange,
+                      handlePageSizeChange:
+                        paginationForManualImages.handlePageSizeChange,
+                      page: paginationForManualImages.page,
+                      pageSize: paginationForManualImages.pageSize,
+                    }}
+                    searchErrorText={searchParseError?.message}
+                    variant="custom"
+                  />
                 )}
                 {tab.variant === 'shared' && (
                   <Notice variant="info">
@@ -151,7 +332,26 @@ export const ImagesTabContainer = () => {
                   </Notice>
                 )}
                 {tab.variant === 'recovery' && (
-                  <ImagesView handlers={handlers} variant="recovery" />
+                  <ImagesView
+                    handleImagesOrderChange={handleAutomaticImagesOrderChange}
+                    handlers={handlers}
+                    images={automaticImages}
+                    imagesError={automaticImagesError}
+                    imagesIsFetching={automaticImagesIsFetching}
+                    imagesLoading={automaticImagesLoading}
+                    imagesOrder={automaticImagesOrder}
+                    imagesOrderBy={automaticImagesOrderBy}
+                    paginationForImages={{
+                      handlePageChange:
+                        paginationForAutomaticImages.handlePageChange,
+                      handlePageSizeChange:
+                        paginationForAutomaticImages.handlePageSizeChange,
+                      page: paginationForAutomaticImages.page,
+                      pageSize: paginationForAutomaticImages.pageSize,
+                    }}
+                    searchErrorText={searchParseError?.message}
+                    variant="recovery"
+                  />
                 )}
               </SafeTabPanel>
             ))}

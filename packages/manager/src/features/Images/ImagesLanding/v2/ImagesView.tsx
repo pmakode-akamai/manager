@@ -1,5 +1,3 @@
-import { useImagesQuery } from '@linode/queries';
-import { getAPIFilterFromQuery } from '@linode/search';
 import { CircleProgress, ErrorState } from '@linode/ui';
 import { useNavigate, useSearch } from '@tanstack/react-router';
 import * as React from 'react';
@@ -7,8 +5,6 @@ import * as React from 'react';
 import { DebouncedSearchTextField } from 'src/components/DebouncedSearchTextField';
 import { DocumentTitleSegment } from 'src/components/DocumentTitle';
 import { usePermissions } from 'src/features/IAM/hooks/usePermissions';
-import { useOrderV2 } from 'src/hooks/useOrderV2';
-import { usePaginationV2 } from 'src/hooks/usePaginationV2';
 import {
   isEventImageUpload,
   isEventInProgressDiskImagize,
@@ -20,15 +16,42 @@ import { IMAGES_CONFIG } from './imagesConfig';
 import { ImagesTable } from './ImagesTable';
 
 import type { Handlers as ImageHandlers } from '../ImagesActionMenu';
-import type { Filter } from '@linode/api-v4';
+import type { APIError, Image, ResourcePage } from '@linode/api-v4';
+import type { Order } from 'src/hooks/useOrderV2';
 
 interface Props {
+  handleImagesOrderChange: (newOrderBy: string, newOrder: Order) => void;
   handlers: ImageHandlers;
+  images: ResourcePage<Image> | undefined;
+  imagesError?: APIError[] | null;
+  imagesIsFetching?: boolean;
+  imagesLoading?: boolean;
+  imagesOrder: Order;
+  imagesOrderBy: string;
+  paginationForImages: {
+    handlePageChange: (newPage: number) => void;
+    handlePageSizeChange: (newSize: number) => void;
+    page: number;
+    pageSize: number;
+  };
+  searchErrorText?: string;
   variant: Exclude<ImagesVariant, 'shared'>;
 }
 
 export const ImagesView = (props: Props) => {
-  const { handlers, variant } = props;
+  const {
+    handlers,
+    variant,
+    imagesError,
+    handleImagesOrderChange,
+    images,
+    imagesOrder,
+    imagesOrderBy,
+    searchErrorText,
+    imagesIsFetching,
+    imagesLoading,
+    paginationForImages,
+  } = props;
 
   const config = IMAGES_CONFIG[variant];
 
@@ -38,93 +61,6 @@ export const ImagesView = (props: Props) => {
   const { data: permissions } = usePermissions('account', ['create_image']);
   const canCreateImage = permissions?.create_image;
 
-  /**
-   * At the time of writing: `label`, `tags`, `size`, `status`, `region` are filterable.
-   *
-   * Some fields like `status` and `region` can't be used in complex filters using '+or' / '+and'
-   *
-   * Using `tags` in a '+or' is currently broken. See ARB-5792
-   */
-  const { error: searchParseError, filter } = getAPIFilterFromQuery(
-    search.query,
-    {
-      // Because Images have an array of region objects, we need to transform
-      // search queries like "region: us-east" to { regions: { region: "us-east" } }
-      // rather than the default behavior which is { region: { '+contains': "us-east" } }
-      filterShapeOverrides: {
-        '+contains': {
-          field: 'region',
-          filter: (value) => ({ regions: { region: value } }),
-        },
-        '+eq': {
-          field: 'region',
-          filter: (value) => ({ regions: { region: value } }),
-        },
-      },
-      searchableFieldsWithoutOperator: ['label', 'tags'],
-    }
-  );
-
-  const pagination = usePaginationV2({
-    currentRoute: '/images/images',
-    preferenceKey: config.preferenceKey,
-    searchParams: (prev) => ({
-      ...prev,
-      query: search.query,
-    }),
-  });
-
-  const {
-    handleOrderChange: handleImagesOrderChange,
-    order: imagesOrder,
-    orderBy: imagesOrderBy,
-  } = useOrderV2({
-    initialRoute: {
-      defaultOrder: {
-        order: config.orderDefault,
-        orderBy: config.orderByDefault,
-      },
-      from: '/images/images',
-    },
-    preferenceKey: config.preferenceKey,
-    prefix: config.type,
-  });
-
-  const imagesFilter: Filter = {
-    ['+order']: imagesOrder,
-    ['+order_by']: imagesOrderBy,
-    ...filter,
-  };
-
-  const {
-    data: images,
-    error: imagesError,
-    isFetching: imagesIsFetching,
-    isLoading: imagesLoading,
-  } = useImagesQuery(
-    {
-      page: pagination.page,
-      page_size: pagination.pageSize,
-    },
-    {
-      ...imagesFilter,
-      is_public: false,
-      type: config.type,
-    },
-    {
-      enabled: config.isEnabled(search.subType),
-      // Refetch custom images every 30 seconds.
-      // We do this because we have no /v4/account/events we can use
-      // to update Image region statuses. We should make the API
-      // team and Images team implement events for this.
-      refetchInterval: 30_000,
-      // If we have a search query, disable retries to keep the UI
-      // snappy if the user inputs an invalid X-Filter. Otherwise,
-      // pass undefined to use the default retry behavior.
-      retry: search.query ? false : undefined,
-    }
-  );
-
   const { events } = useEventsInfiniteQuery();
 
   const imageEvents =
@@ -133,7 +69,7 @@ export const ImagesView = (props: Props) => {
         isEventInProgressDiskImagize(event) || isEventImageUpload(event)
     ) ?? [];
 
-  // Private images with the associated events tied in.
+  // Images with the associated events tied in.
   const imagesEvents = getEventsForImages(images?.data ?? [], imageEvents);
 
   const onSearch = (query: string) => {
@@ -169,7 +105,7 @@ export const ImagesView = (props: Props) => {
             mb: 2,
           },
         }}
-        errorText={searchParseError?.message}
+        errorText={searchErrorText}
         hideLabel
         isSearching={imagesIsFetching}
         label="Search"
@@ -208,11 +144,11 @@ export const ImagesView = (props: Props) => {
         order={imagesOrder}
         orderBy={imagesOrderBy}
         pagination={{
-          page: pagination.page,
-          pageSize: pagination.pageSize,
+          page: paginationForImages.page,
+          pageSize: paginationForImages.pageSize,
           count: images?.results ?? 0,
-          handlePageChange: pagination.handlePageChange,
-          handlePageSizeChange: pagination.handlePageSizeChange,
+          handlePageChange: paginationForImages.handlePageChange,
+          handlePageSizeChange: paginationForImages.handlePageSizeChange,
         }}
         query={search.query}
       />
