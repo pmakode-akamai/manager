@@ -122,6 +122,9 @@ export const ImagesTabContainer = () => {
       type: 'manual',
     },
     {
+      // Run this query only when subType is 'custom',
+      // OR if subType is undefined, run it by default with other queries to determine the global empty state.
+      enabled: search.subType === 'custom' || search.subType === undefined,
       // Refetch custom images every 30 seconds.
       // We do this because we have no /v4/account/events we can use
       // to update Image region statuses. We should make the API
@@ -182,6 +185,9 @@ export const ImagesTabContainer = () => {
       type: 'automatic',
     },
     {
+      // Run this query only when subType is 'recovery',
+      // OR if subType is undefined, run it by default with other queries to determine the global empty state.
+      enabled: search.subType === 'recovery' || search.subType === undefined,
       // If we have a search query, disable retries to keep the UI
       // snappy if the user inputs an invalid X-Filter. Otherwise,
       // pass undefined to use the default retry behavior.

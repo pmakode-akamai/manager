@@ -78,6 +78,9 @@ export const ImagesView = (props: Props) => {
         ...prev,
         page: undefined,
         query: query || undefined,
+        // Ensure there's a subType query when searching,
+        // so that only the individual sub-tab query executes using this subType.
+        subType: search.subType ?? 'custom',
       }),
       to: '/images/images',
     });

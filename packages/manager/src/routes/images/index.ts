@@ -44,11 +44,12 @@ const imagesRoute = createRoute({
 });
 
 const imagesIndexRoute = createRoute({
-  beforeLoad: ({ search, context }) => {
-    if (!search.subType && context.isPrivateImageSharingEnabled) {
+  beforeLoad: ({ context }) => {
+    // If private image sharing is enabled and the user tries to navigate to '/images',
+    // redirect them to '/images/images' so they land on the custom images sub-route.
+    if (context.isPrivateImageSharingEnabled) {
       throw redirect({
         to: '/images/images',
-        search: { subType: 'custom' },
       });
     }
   },
@@ -61,19 +62,17 @@ const imagesIndexRoute = createRoute({
   )
 );
 
+// Route for '/images/images' (only for private image sharing feature)
 const imagesImagesRoute = createRoute({
-  beforeLoad: ({ search, context }) => {
+  beforeLoad: ({ context }) => {
+    // If private image sharing is disabled and the user tries to navigate to '/images/images',
+    // redirect them back to '/images' and reset subType to undefined
+    // (note: subType must be reset to undefined when Private Image Sharing is disabled
+    // for cases where a user searches for images from the global app search).
     if (!context.isPrivateImageSharingEnabled) {
       throw redirect({
         to: '/images',
         search: (prev) => ({ ...prev, subType: undefined }),
-      });
-    }
-
-    if (!search.subType) {
-      throw redirect({
-        to: '/images/images',
-        search: { subType: 'custom' },
       });
     }
   },

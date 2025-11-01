@@ -14,12 +14,17 @@ export const ImagesRoute = () => {
 
   const { isPrivateImageSharingEnabled } = useIsPrivateImageSharingEnabled();
 
+  // Redirect users at runtime based on the private image sharing feature flag:
+  // - If enabled and the user is at '/images',
+  //   redirect them to '/images/images' (default sub-route for custom images).
+  // - If disabled and the user is on '/images/images',
+  //   redirect them back to '/images' since the custom images route is unavailable.
+  // This ensures the UI updates immediately if the feature flag changes while the user is already on the page.
   useEffect(() => {
     if (location.pathname.startsWith('/images')) {
       if (isPrivateImageSharingEnabled && location.pathname === '/images') {
         navigate({
           to: '/images/images',
-          search: { subType: 'custom' },
           replace: true,
         });
       } else if (
