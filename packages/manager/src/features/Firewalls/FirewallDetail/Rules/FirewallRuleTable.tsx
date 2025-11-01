@@ -501,10 +501,11 @@ const FirewallRuleSetTableRow = React.memo(
 
     return (
       <TableBody
+        key={id}
         ref={setNodeRef}
+        style={rowStyles}
         {...attributes}
         {...listeners}
-        style={rowStyles}
       >
         <StyledTableRow
           aria-label={label ?? `firewall ruleset ${id}`}
@@ -515,18 +516,71 @@ const FirewallRuleSetTableRow = React.memo(
           ruleIndex={index}
           status={status}
         >
-          <TableCell>
+          {/* First column merged vertically */}
+          <TableCell
+            rowSpan={rulesetResponse.rules.length}
+            sx={{ verticalAlign: 'top' }}
+          >
             <StyledDragIndicator aria-label="Drag indicator icon" />
-            {rulesetResponse.label} (Rule Set ID: {rulesetResponse.id})
+            {rulesetResponse.label}
+            <Box
+              style={{
+                fontSize: '0.85rem',
+                marginTop: '4px',
+                marginLeft: '22px',
+              }}
+            >
+              Rule Set ID: {rulesetResponse.id}
+            </Box>
           </TableCell>
-          <Hidden lgDown>
-            <TableCell colSpan={1} />
-          </Hidden>
-          <Hidden smDown>
-            <TableCell colSpan={2} />
-          </Hidden>
-          <TableCell colSpan={1} />
-          <TableCell>
+          {/* Columns from the first child row */}
+          {rulesetResponse.rules[0] && (
+            <>
+              <Hidden lgDown>
+                <TableCell
+                  aria-label={`Protocol: ${rulesetResponse.rules[0].protocol}`}
+                  sx={{ borderBottom: 'none' }}
+                >
+                  {rulesetResponse.rules[0].protocol}
+                  <ConditionalError errors={errors} formField="protocol" />
+                </TableCell>
+              </Hidden>
+              <Hidden smDown>
+                <TableCell
+                  aria-label={`Ports: ${rulesetResponse.rules[0].ports}`}
+                  sx={{ borderBottom: 'none' }}
+                >
+                  {rulesetResponse.rules[0].ports === '1-65535'
+                    ? 'All Ports'
+                    : rulesetResponse.rules[0].ports}
+                  <ConditionalError errors={errors} formField="ports" />
+                </TableCell>
+                <TableCell
+                  aria-label={`Addresses: ${generateAddressesLabel(rulesetResponse.rules[0].addresses)}`}
+                  sx={{ borderBottom: 'none' }}
+                >
+                  <MaskableText
+                    text={generateAddressesLabel(
+                      rulesetResponse.rules[0].addresses
+                    )}
+                  />
+                  <ConditionalError errors={errors} formField="addresses" />
+                </TableCell>
+              </Hidden>
+              <TableCell
+                aria-label={`Action: ${rulesetResponse.rules[0].action}`}
+                sx={{ borderBottom: 'none' }}
+              >
+                {capitalize(
+                  rulesetResponse.rules[0].action?.toLocaleLowerCase() ?? ''
+                )}
+              </TableCell>
+            </>
+          )}
+          <TableCell
+            rowSpan={rulesetResponse.rules.length}
+            sx={{ verticalAlign: 'top' }}
+          >
             <Box sx={{ float: 'right' }}>
               {status !== 'NOT_MODIFIED' ? (
                 <StyledButtonDiv>
@@ -546,41 +600,52 @@ const FirewallRuleSetTableRow = React.memo(
             </Box>
           </TableCell>
         </StyledTableRow>
-        {rulesetResponse.rules.map((rule, idx) => {
+
+        {/* Only the remaining child rows columns */}
+        {rulesetResponse.rules.slice(1).map((rule, idx) => {
           const addresses = generateAddressesLabel(rule.addresses);
-          const isLastRow = rulesetResponse.rules.length - 1 === idx;
+          const isLastRow = rulesetResponse.rules.length - 1 === idx + 1;
           return (
             <StyledTableRow
-              aria-label={label ?? `firewall ruleset rule ${id}`}
+              aria-label={label ?? `firewall ruleset rule ${idx + 1}`}
               disabled={disabled}
-              isLastRow={isLastRow}
-              key={idx}
+              key={idx + 1}
               originalIndex={originalIndex}
               rowType={rowType}
               ruleIndex={index}
               status={status}
             >
-              <TableCell aria-label={`Label: ${label}`} />
               <Hidden lgDown>
-                <TableCell aria-label={`Protocol: ${rule.protocol}`}>
+                <TableCell
+                  aria-label={`Protocol: ${rule.protocol}`}
+                  sx={{ borderBottom: isLastRow ? undefined : 'none' }}
+                >
                   {rule.protocol}
                   <ConditionalError errors={errors} formField="protocol" />
                 </TableCell>
               </Hidden>
               <Hidden smDown>
-                <TableCell aria-label={`Ports: ${rule.ports}`}>
+                <TableCell
+                  aria-label={`Ports: ${rule.ports}`}
+                  sx={{ borderBottom: isLastRow ? undefined : 'none' }}
+                >
                   {rule.ports === '1-65535' ? 'All Ports' : rule.ports}
                   <ConditionalError errors={errors} formField="ports" />
                 </TableCell>
-                <TableCell aria-label={`Addresses: ${addresses}`}>
+                <TableCell
+                  aria-label={`Addresses: ${addresses}`}
+                  sx={{ borderBottom: isLastRow ? undefined : 'none' }}
+                >
                   <MaskableText text={addresses} />
                   <ConditionalError errors={errors} formField="addresses" />
                 </TableCell>
               </Hidden>
-              <TableCell aria-label={`Action: ${rule.action}`}>
+              <TableCell
+                aria-label={`Action: ${rule.action}`}
+                sx={{ borderBottom: isLastRow ? undefined : 'none' }}
+              >
                 {capitalize(rule.action?.toLocaleLowerCase() ?? '')}
               </TableCell>
-              <TableCell />
             </StyledTableRow>
           );
         })}

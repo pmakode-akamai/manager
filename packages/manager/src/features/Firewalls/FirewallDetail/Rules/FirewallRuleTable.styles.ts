@@ -15,7 +15,6 @@ interface FirewallRuleTableRowPropsWithRuleIndex
 
 interface StyledFirewallRuleTableRowProps
   extends FirewallRuleTableRowPropsWithRuleIndex {
-  isLastRow?: boolean;
   rowType: FirewallRuleTableRowType;
   status: FirewallRuleTableRowProps['status'];
 }
@@ -25,15 +24,7 @@ export const StyledTableRow = styled('tr', {
   label: 'StyledTableRow',
   shouldForwardProp: omittedProps(['originalIndex', 'ruleIndex']),
 })<StyledFirewallRuleTableRowProps>(
-  ({
-    disabled,
-    originalIndex,
-    ruleIndex,
-    status,
-    rowType,
-    isLastRow,
-    theme,
-  }) => ({
+  ({ disabled, originalIndex, ruleIndex, status, rowType, theme }) => ({
     // Conditional styles
     // Highlight the row if it's been modified or reordered. ruleIndex is the current index,
     // so if it doesn't match the original index we know that the rule has been moved.
@@ -47,7 +38,8 @@ export const StyledTableRow = styled('tr', {
     ...(rowType === 'ruleset'
       ? {
           '& td': {
-            ...(!isLastRow && { borderBottom: 'none' }),
+            paddingTop: '10px',
+            paddingBottom: '10px',
           },
         }
       : {}),
