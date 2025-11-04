@@ -10,10 +10,8 @@ import {
 import {
   SortableContext,
   sortableKeyboardCoordinates,
-  useSortable,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
 import { Box, LinkButton, Typography } from '@linode/ui';
 import { Autocomplete } from '@linode/ui';
 import { Hidden } from '@linode/ui';
@@ -49,6 +47,7 @@ import {
   StyledTableRow,
 } from './FirewallRuleTable.styles';
 import { rulesetResponse, sortPortString } from './shared';
+import { SortableRow } from './SortableRow';
 
 import type { FirewallRuleDrawerMode } from './FirewallRuleDrawer.types';
 import type { ExtendedFirewallRule, RuleStatus } from './firewallRuleEditor';
@@ -132,8 +131,8 @@ export const FirewallRuleTable = (props: FirewallRuleTableProps) => {
 
   const zeroRulesMessage = `No ${category} rules have been added.`;
 
-  const screenReaderMessage =
-    'Some screen readers may require you to enter focus mode to interact with firewall rule list items. In focus mode, press spacebar to begin a drag or tab to access item actions.';
+  // const screenReaderMessage =
+  //   'Some screen readers may require you to enter focus mode to interact with firewall rule list items. In focus mode, press spacebar to begin a drag or tab to access item actions.';
 
   const getRowDataIndex = React.useMemo(() => {
     return (id: number) => rowData.findIndex((data) => data.id === id);
@@ -171,7 +170,7 @@ export const FirewallRuleTable = (props: FirewallRuleTableProps) => {
     }),
     useSensor(TouchSensor),
     useSensor(CustomKeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
+      coordinateGetter: sortableKeyboardCoordinates, // Check how to replace `sortableKeyboardCoordinates` to custom for variable row height
     })
   );
 
@@ -230,54 +229,37 @@ export const FirewallRuleTable = (props: FirewallRuleTableProps) => {
               </TableBody>
             ) : (
               <SortableContext
-                items={rowData}
+                items={rowData.map((r) => r.id)}
                 strategy={verticalListSortingStrategy}
               >
                 {rowData.map((thisRuleRow: RuleRow) => {
-                  // // Firewall Ruleset row
-                  if (thisRuleRow.rowType === 'ruleset') {
-                    return (
-                      <FirewallRuleSetTableRow
-                        aria-label={
-                          thisRuleRow.label ?? `firewall rule ${thisRuleRow.id}`
-                        }
-                        aria-roledescription={screenReaderMessage}
-                        aria-selected={false}
-                        disabled={disabled}
-                        handleCloneFirewallRule={handleCloneFirewallRule}
-                        handleDeleteFirewallRule={handleDeleteFirewallRule}
-                        handleOpenRuleDrawerForEditing={
-                          handleOpenRuleDrawerForEditing
-                        }
-                        handleUndo={handleUndo}
-                        key={thisRuleRow.id}
-                        {...thisRuleRow}
-                        id={thisRuleRow.id}
-                      />
-                    );
-                  }
+                  const commonProps = {
+                    disabled,
+                    handleDeleteFirewallRule,
+                    handleUndo,
+                    ...thisRuleRow,
+                    id: thisRuleRow.id,
+                    rowType: thisRuleRow.rowType,
+                  };
 
-                  // Firewall Rule row
+                  const rulesProps: FirewallRuleTableRowProps = {
+                    ...commonProps,
+                    handleOpenRuleDrawerForEditing,
+                    handleCloneFirewallRule,
+                  };
+
+                  const rulesetProps: FirewallRuleSetTableRowProps = {
+                    ...commonProps,
+                  };
+
                   return (
-                    <TableBody key={thisRuleRow.id}>
-                      <FirewallRuleTableRow
-                        aria-label={
-                          thisRuleRow.label ?? `firewall rule ${thisRuleRow.id}`
-                        }
-                        aria-roledescription={screenReaderMessage}
-                        aria-selected={false}
-                        disabled={disabled}
-                        handleCloneFirewallRule={handleCloneFirewallRule}
-                        handleDeleteFirewallRule={handleDeleteFirewallRule}
-                        handleOpenRuleDrawerForEditing={
-                          handleOpenRuleDrawerForEditing
-                        }
-                        handleUndo={handleUndo}
-                        key={thisRuleRow.id}
-                        {...thisRuleRow}
-                        id={thisRuleRow.id}
-                      />
-                    </TableBody>
+                    <SortableRow id={thisRuleRow.id} key={thisRuleRow.id}>
+                      {thisRuleRow.rowType === 'ruleset' ? (
+                        <FirewallRuleSetTableRow {...rulesetProps} />
+                      ) : (
+                        <FirewallRuleTableRow {...rulesProps} />
+                      )}
+                    </SortableRow>
                   );
                 })}
               </SortableContext>
@@ -311,6 +293,12 @@ export interface FirewallRuleTableRowProps extends RuleRow {
   handleUndo: RowActionHandlersWithDisabled['handleUndo'];
 }
 
+export interface FirewallRuleSetTableRowProps
+  extends Omit<
+    FirewallRuleTableRowProps,
+    'handleCloneFirewallRule' | 'handleOpenRuleDrawerForEditing'
+  > {}
+
 const FirewallRuleTableRow = React.memo((props: FirewallRuleTableRowProps) => {
   const {
     action,
@@ -321,14 +309,14 @@ const FirewallRuleTableRow = React.memo((props: FirewallRuleTableRowProps) => {
     handleDeleteFirewallRule,
     handleOpenRuleDrawerForEditing,
     handleUndo,
-    id,
     index,
     label,
-    originalIndex,
     ports,
     protocol,
     rowType,
     status,
+    id,
+    originalIndex,
   } = props;
 
   const actionMenuProps = {
@@ -340,53 +328,15 @@ const FirewallRuleTableRow = React.memo((props: FirewallRuleTableRowProps) => {
     rowType,
   };
 
-  const theme = useTheme();
-
-  const {
-    active,
-    attributes,
-    isDragging,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-  } = useSortable({ id });
-
-  const isActive = Boolean(active);
-
-  // dnd-kit styles
-  const rowStyles = {
-    '& td': {
-      // Highly recommend to set the `touch-action: none` for all the draggable elements-
-      // in order to prevent scrolling on mobile devices.
-      // refer to https://docs.dndkit.com/api-documentation/sensors/pointer#touch-action
-      touchAction: 'none',
-    },
-    ':focus': {
-      backgroundColor: isActive
-        ? theme.tokens.alias.Background.Neutralsubtle
-        : theme.tokens.alias.Background.Normal,
-    },
-    cursor: isActive ? 'grabbing' : 'grab',
-    position: 'relative',
-    transform: CSS.Translate.toString(transform),
-    transition: isActive ? transition : 'none',
-    zIndex: isDragging ? 9999 : 0,
-  } as const;
-
   return (
     <StyledTableRow
       aria-label={label ?? `firewall rule ${id}`}
       disabled={disabled}
       key={id}
       originalIndex={originalIndex}
-      ref={setNodeRef}
       rowType={rowType}
       ruleIndex={index}
       status={status}
-      sx={rowStyles}
-      {...attributes}
-      {...listeners}
     >
       <TableCell aria-label={`Label: ${label}`}>
         <StyledDragIndicator aria-label="Drag indicator icon" />
@@ -442,7 +392,7 @@ const FirewallRuleTableRow = React.memo((props: FirewallRuleTableRowProps) => {
 });
 
 const FirewallRuleSetTableRow = React.memo(
-  (props: FirewallRuleTableRowProps) => {
+  (props: FirewallRuleSetTableRowProps) => {
     const {
       disabled,
       errors,
@@ -463,50 +413,10 @@ const FirewallRuleSetTableRow = React.memo(
       rowType,
     };
 
-    const theme = useTheme();
-
-    const {
-      active,
-      attributes,
-      isDragging,
-      listeners,
-      setNodeRef,
-      transform,
-      transition,
-    } = useSortable({ id });
-
-    const isActive = Boolean(active);
-
-    // dnd-kit styles
-    const rowStyles = {
-      '& td': {
-        // Highly recommend to set the `touch-action: none` for all the draggable elements-
-        // in order to prevent scrolling on mobile devices.
-        // refer to https://docs.dndkit.com/api-documentation/sensors/pointer#touch-action
-        touchAction: 'none',
-      },
-      ':focus': {
-        backgroundColor: isActive
-          ? theme.tokens.alias.Background.Neutralsubtle
-          : theme.tokens.alias.Background.Normal,
-      },
-      cursor: isActive ? 'grabbing' : 'grab',
-      position: 'relative',
-      transform: CSS.Translate.toString(transform),
-      transition: isActive ? transition : 'none',
-      zIndex: isDragging ? 9999 : 0,
-    } as const;
-
     // Call ruleset api using ruleset id here.
 
     return (
-      <TableBody
-        key={id}
-        ref={setNodeRef}
-        style={rowStyles}
-        {...attributes}
-        {...listeners}
-      >
+      <>
         <StyledTableRow
           aria-label={label ?? `firewall ruleset ${id}`}
           disabled={disabled}
@@ -649,7 +559,7 @@ const FirewallRuleSetTableRow = React.memo(
             </StyledTableRow>
           );
         })}
-      </TableBody>
+      </>
     );
   }
 );
