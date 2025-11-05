@@ -9,8 +9,6 @@ export type FirewallDeviceEntityType =
 
 export type FirewallPolicyType = 'ACCEPT' | 'DROP';
 
-// export type FirewallRuleType = 'inbound' | 'outbound'
-
 export interface Firewall {
   created: string;
   entities: FirewallDeviceEntity[];
