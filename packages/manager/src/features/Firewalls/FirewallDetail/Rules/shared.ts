@@ -168,3 +168,16 @@ export const rulesetResponse = {
   updated: '2019-01-01T00:01:01',
   deleted: null,
 };
+
+export const firewallRuleCreateOptions = [
+  {
+    label: 'Create a Rule',
+    purpose: 'rule',
+    description: 'Create a new firewall rule',
+  },
+  {
+    label: 'Reference ruleset',
+    purpose: 'ruleset',
+    description: 'Reference a ruleset to the firewall',
+  },
+] as const;

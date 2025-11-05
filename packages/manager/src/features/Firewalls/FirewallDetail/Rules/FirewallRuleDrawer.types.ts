@@ -26,14 +26,23 @@ export interface FormState {
   label: string;
   ports?: string;
   protocol?: null | string;
+  ruleset?: number;
   type: string;
 }
+
+export type CreateMode = 'rule' | 'ruleset';
 
 export interface FirewallRuleFormProps extends FormikProps<FormState> {
   addressesLabel: string;
   category: Category;
+  createMode?: CreateMode;
   ips: ExtendedIP[];
   mode: FirewallRuleDrawerMode;
+  /**
+   * Optional callback to notify parent of current create mode.
+   * Called when the user switches between 'rule' and 'ruleset'.
+   */
+  onCreateModeChange?: (mode: CreateMode) => void;
   presetPorts: FirewallOptionItem<string>[];
   ruleErrors?: FirewallRuleError[];
   setIPs: (ips: ExtendedIP[]) => void;

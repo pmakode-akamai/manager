@@ -16,6 +16,7 @@ import { FirewallRuleForm } from './FirewallRuleForm';
 
 import type { FirewallOptionItem } from '../../shared';
 import type {
+  CreateMode,
   FirewallRuleDrawerProps,
   FormState,
 } from './FirewallRuleDrawer.types';
@@ -45,6 +46,13 @@ export const FirewallRuleDrawer = React.memo(
       FirewallOptionItem<string>[]
     >([]);
 
+    /**
+     * State for create mode: either creating a firewall 'rule' or referencing a 'ruleset' to the firewall.
+     * Only relevant when `mode === 'create'`.
+     * Optional: undefined in edit flow.
+     */
+    const [createMode, setCreateMode] = React.useState<CreateMode>('rule');
+
     // Reset state. If we're in EDIT mode, set IPs to the addresses of the rule we're modifying
     // (along with any errors we may have).
     React.useEffect(() => {
@@ -69,7 +77,17 @@ export const FirewallRuleDrawer = React.memo(
       label,
       ports,
       protocol,
+      ruleset,
     }: FormState) => {
+      // If we're in "create ruleset" mode, only validate the ruleset field
+      if (mode === 'create' && createMode === 'ruleset') {
+        const errors: Record<string, string> = {};
+        if (ruleset === undefined || ruleset === null || isNaN(ruleset)) {
+          errors.ruleset = 'Ruleset is required';
+        }
+        return errors;
+      }
+
       // The validated IPs may have errors, so set them to state so we see the errors.
       const validatedIPs = validateIPs(ips, {
         allowEmptyAddress: addresses !== 'ip/netmask',
@@ -94,22 +112,32 @@ export const FirewallRuleDrawer = React.memo(
     };
 
     const onSubmit = (values: FormState) => {
-      const ports = itemsToPortString(presetPorts, values.ports);
-      const protocol = values.protocol as FirewallRuleProtocol;
-      const addresses = formValueToIPs(values.addresses, ips);
+      const isCreateRuleSetMode = mode === 'create' && createMode === 'ruleset';
 
-      const payload: FirewallRuleType = {
-        action: values.action,
-        addresses,
-        ports,
-        protocol,
-      };
+      if (isCreateRuleSetMode) {
+        const payload: Pick<FirewallRuleType, 'ruleset'> = {
+          ruleset: values.ruleset,
+        };
+        props.onSubmit(category, payload);
+      } else {
+        const ports = itemsToPortString(presetPorts, values.ports);
+        const protocol = values.protocol as FirewallRuleProtocol;
+        const addresses = formValueToIPs(values.addresses, ips);
 
-      payload.label = values.label === '' ? null : values.label;
-      payload.description =
-        values.description === '' ? null : values.description;
+        const payload: FirewallRuleType = {
+          action: values.action,
+          addresses,
+          ports,
+          protocol,
+        };
 
-      props.onSubmit(category, payload);
+        payload.label = values.label === '' ? null : values.label;
+        payload.description =
+          values.description === '' ? null : values.description;
+
+        props.onSubmit(category, payload);
+      }
+
       onClose();
     };
 
@@ -127,8 +155,10 @@ export const FirewallRuleDrawer = React.memo(
               <FirewallRuleForm
                 addressesLabel={addressesLabel}
                 category={category}
+                createMode={createMode}
                 ips={ips}
                 mode={mode}
+                onCreateModeChange={setCreateMode}
                 presetPorts={presetPorts}
                 ruleErrors={ruleToModify?.errors}
                 setIPs={setIPs}
