@@ -12,6 +12,7 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
+import { useFirewallRuleSetQuery } from '@linode/queries';
 import { Box, LinkButton, Typography } from '@linode/ui';
 import { Autocomplete } from '@linode/ui';
 import { Hidden } from '@linode/ui';
@@ -46,7 +47,7 @@ import {
   StyledHeaderDiv,
   StyledTableRow,
 } from './FirewallRuleTable.styles';
-import { rulesetResponse, sortPortString } from './shared';
+import { sortPortString } from './shared';
 import { SortableRow } from './SortableRow';
 
 import type { FirewallRuleDrawerMode } from './FirewallRuleDrawer.types';
@@ -404,6 +405,7 @@ const FirewallRuleSetTableRow = React.memo(
       originalIndex,
       rowType,
       status,
+      ruleset,
     } = props;
 
     const actionMenuProps = {
@@ -414,6 +416,10 @@ const FirewallRuleSetTableRow = React.memo(
     };
 
     // Call ruleset api using ruleset id here.
+    const { data: ruleSetDetails } = useFirewallRuleSetQuery(
+      ruleset ?? -1,
+      ruleset !== undefined
+    );
 
     return (
       <>
@@ -428,11 +434,11 @@ const FirewallRuleSetTableRow = React.memo(
         >
           {/* First column merged vertically */}
           <TableCell
-            rowSpan={rulesetResponse.rules.length}
+            rowSpan={ruleSetDetails?.rules.length}
             sx={{ verticalAlign: 'top' }}
           >
             <StyledDragIndicator aria-label="Drag indicator icon" />
-            {rulesetResponse.label}
+            {ruleSetDetails?.label}
             <Box
               style={{
                 fontSize: '0.85rem',
@@ -440,55 +446,55 @@ const FirewallRuleSetTableRow = React.memo(
                 marginLeft: '22px',
               }}
             >
-              Rule Set ID: {rulesetResponse.id}
+              Rule Set ID: {ruleSetDetails?.id}
             </Box>
           </TableCell>
           {/* Columns from the first child row */}
-          {rulesetResponse.rules[0] && (
+          {ruleSetDetails?.rules[0] && (
             <>
               <Hidden lgDown>
                 <TableCell
-                  aria-label={`Protocol: ${rulesetResponse.rules[0].protocol}`}
+                  aria-label={`Protocol: ${ruleSetDetails.rules[0].protocol}`}
                   sx={{ borderBottom: 'none' }}
                 >
-                  {rulesetResponse.rules[0].protocol}
+                  {ruleSetDetails.rules[0].protocol}
                   <ConditionalError errors={errors} formField="protocol" />
                 </TableCell>
               </Hidden>
               <Hidden smDown>
                 <TableCell
-                  aria-label={`Ports: ${rulesetResponse.rules[0].ports}`}
+                  aria-label={`Ports: ${ruleSetDetails.rules[0].ports}`}
                   sx={{ borderBottom: 'none' }}
                 >
-                  {rulesetResponse.rules[0].ports === '1-65535'
+                  {ruleSetDetails.rules[0].ports === '1-65535'
                     ? 'All Ports'
-                    : rulesetResponse.rules[0].ports}
+                    : ruleSetDetails.rules[0].ports}
                   <ConditionalError errors={errors} formField="ports" />
                 </TableCell>
                 <TableCell
-                  aria-label={`Addresses: ${generateAddressesLabel(rulesetResponse.rules[0].addresses)}`}
+                  aria-label={`Addresses: ${generateAddressesLabel(ruleSetDetails.rules[0].addresses)}`}
                   sx={{ borderBottom: 'none' }}
                 >
                   <MaskableText
                     text={generateAddressesLabel(
-                      rulesetResponse.rules[0].addresses
+                      ruleSetDetails.rules[0].addresses
                     )}
                   />
                   <ConditionalError errors={errors} formField="addresses" />
                 </TableCell>
               </Hidden>
               <TableCell
-                aria-label={`Action: ${rulesetResponse.rules[0].action}`}
+                aria-label={`Action: ${ruleSetDetails.rules[0].action}`}
                 sx={{ borderBottom: 'none' }}
               >
                 {capitalize(
-                  rulesetResponse.rules[0].action?.toLocaleLowerCase() ?? ''
+                  ruleSetDetails.rules[0].action?.toLocaleLowerCase() ?? ''
                 )}
               </TableCell>
             </>
           )}
           <TableCell
-            rowSpan={rulesetResponse.rules.length}
+            rowSpan={ruleSetDetails?.rules.length}
             sx={{ verticalAlign: 'top' }}
           >
             <Box sx={{ float: 'right' }}>
@@ -512,9 +518,9 @@ const FirewallRuleSetTableRow = React.memo(
         </StyledTableRow>
 
         {/* Only the remaining child rows columns */}
-        {rulesetResponse.rules.slice(1).map((rule, idx) => {
+        {ruleSetDetails?.rules.slice(1).map((rule, idx) => {
           const addresses = generateAddressesLabel(rule.addresses);
-          const isLastRow = rulesetResponse.rules.length - 1 === idx + 1;
+          const isLastRow = ruleSetDetails.rules.length - 1 === idx + 1;
           return (
             <StyledTableRow
               aria-label={label ?? `firewall ruleset rule ${idx + 1}`}
