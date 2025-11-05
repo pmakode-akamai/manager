@@ -60,6 +60,8 @@ import {
   firewallFactory,
   firewallMetricDefinitionsResponse,
   firewallMetricRulesFactory,
+  firewallPrefixListFactory,
+  firewallRuleSetFactory,
   imageFactory,
   incidentResponseFactory,
   invoiceFactory,
@@ -1246,6 +1248,14 @@ export const handlers = [
     ];
     firewallFactory.resetSequenceNumber();
     return HttpResponse.json(makeResourcePage(firewalls));
+  }),
+  http.get('*/v4beta/networking/firewalls/rulesets', () => {
+    const rulesets = firewallRuleSetFactory.buildList(10);
+    return HttpResponse.json(makeResourcePage(rulesets));
+  }),
+  http.get('*/v4beta/networking/prefixlists', () => {
+    const prefixlists = firewallPrefixListFactory.buildList(10);
+    return HttpResponse.json(makeResourcePage(prefixlists));
   }),
   http.get('*/v4beta/networking/firewalls/*/devices', () => {
     const devices = firewallDeviceFactory.buildList(10);

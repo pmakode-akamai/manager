@@ -9,6 +9,8 @@ export type FirewallDeviceEntityType =
 
 export type FirewallPolicyType = 'ACCEPT' | 'DROP';
 
+// export type FirewallRuleType = 'inbound' | 'outbound'
+
 export interface Firewall {
   created: string;
   entities: FirewallDeviceEntity[];
@@ -120,6 +122,8 @@ export interface FirewallRuleSet {
   version: number;
 }
 
+export type FirewallPrefixListVisibility = 'private' | 'public' | 'restricted';
+
 export interface FirewallPrefixList {
   created: string;
   description: string;
@@ -129,5 +133,5 @@ export interface FirewallPrefixList {
   name: string;
   updated: string;
   version: number;
-  visibility: string;
+  visibility: FirewallPrefixListVisibility;
 }
