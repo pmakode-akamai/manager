@@ -1,5 +1,6 @@
-import { Box, Button, omittedProps } from '@linode/ui';
+import { Box, Button, omittedProps, Theme } from '@linode/ui';
 import { styled } from '@mui/material/styles';
+import { makeStyles } from 'tss-react/mui';
 
 import DragIndicator from 'src/assets/icons/drag-indicator.svg';
 
@@ -101,4 +102,16 @@ export const StyledDragIndicator = styled(DragIndicator, {
   marginRight: theme.spacing(1.5),
   position: 'relative',
   top: 2,
+}));
+
+export const useStyles = makeStyles()((theme: Theme) => ({
+  copyIcon: {
+    '& svg': {
+      height: '1em',
+      width: '1em',
+    },
+    color: theme.palette.primary.main,
+    display: 'inline-block',
+    position: 'relative',
+  },
 }));

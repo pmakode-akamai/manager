@@ -23,6 +23,7 @@ import { prop, uniqBy } from 'ramda';
 import * as React from 'react';
 
 import Undo from 'src/assets/icons/undo.svg';
+import { CopyTooltip } from 'src/components/CopyTooltip/CopyTooltip';
 import { MaskableText } from 'src/components/MaskableText/MaskableText';
 import { Table } from 'src/components/Table';
 import { TableBody } from 'src/components/TableBody';
@@ -46,6 +47,7 @@ import {
   StyledFirewallTableButton,
   StyledHeaderDiv,
   StyledTableRow,
+  useStyles,
 } from './FirewallRuleTable.styles';
 import { sortPortString } from './shared';
 import { SortableRow } from './SortableRow';
@@ -415,6 +417,8 @@ const FirewallRuleSetTableRow = React.memo(
       rowType,
     };
 
+    const { classes } = useStyles();
+
     // Call ruleset api using ruleset id here.
     const { data: ruleSetDetails } = useFirewallRuleSetQuery(
       ruleset ?? -1,
@@ -444,9 +448,14 @@ const FirewallRuleSetTableRow = React.memo(
                 fontSize: '0.85rem',
                 marginTop: '4px',
                 marginLeft: '22px',
+                display: 'flex',
               }}
             >
               Rule Set ID: {ruleSetDetails?.id}
+              <CopyTooltip
+                className={classes.copyIcon}
+                text={String(ruleSetDetails?.id)}
+              />
             </Box>
           </TableCell>
           {/* Columns from the first child row */}

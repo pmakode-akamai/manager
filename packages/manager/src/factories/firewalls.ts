@@ -111,6 +111,7 @@ export const firewallRuleSetFactory = Factory.Sync.makeFactory<FirewallRuleSet>(
     type: 'inbound',
     rules: firewallRuleFactory.buildList(3).map((prev, i) => ({
       ...prev,
+      action: 'ACCEPT',
       addresses: {
         ipv4: [`198.51.100.${i}`, `139.144.101.${i * 2}`],
         ipv6: [`pl:system:test-${i}`],
