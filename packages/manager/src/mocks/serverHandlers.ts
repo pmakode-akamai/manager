@@ -61,7 +61,9 @@ import {
   firewallMetricDefinitionsResponse,
   firewallMetricRulesFactory,
   firewallPrefixListFactory,
+  firewallRuleFactory,
   firewallRuleSetFactory,
+  firewallRulesFactory,
   imageFactory,
   incidentResponseFactory,
   invoiceFactory,
@@ -1245,6 +1247,17 @@ export const handlers = [
           }),
         ],
       }),
+      // Firewall with the Rule and RuleSet
+      firewallFactory.build({
+        id: 1001,
+        label: 'firewall with rule and ruleset',
+        rules: firewallRulesFactory.build({
+          inbound: [
+            ...firewallRuleSetFactory.buildList(1),
+            ...firewallRuleFactory.buildList(1),
+          ],
+        }),
+      }),
     ];
     firewallFactory.resetSequenceNumber();
     return HttpResponse.json(makeResourcePage(firewalls));
@@ -1261,8 +1274,18 @@ export const handlers = [
     const devices = firewallDeviceFactory.buildList(10);
     return HttpResponse.json(makeResourcePage(devices));
   }),
-  http.get('*/v4beta/networking/firewalls/:firewallId', () => {
-    const firewall = firewallFactory.build();
+  http.get('*/v4beta/networking/firewalls/:firewallId', ({ params }) => {
+    const firewall =
+      params.firewallId === '1001'
+        ? firewallFactory.build({
+            rules: firewallRulesFactory.build({
+              inbound: [
+                ...firewallRuleSetFactory.buildList(1),
+                ...firewallRuleFactory.buildList(1),
+              ],
+            }),
+          })
+        : firewallFactory.build();
     return HttpResponse.json(firewall);
   }),
   http.put<{}, { status: FirewallStatus }>(

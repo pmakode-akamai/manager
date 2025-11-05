@@ -1,7 +1,10 @@
+/* eslint-disable sonarjs/no-hardcoded-ip */
+
 import { prop, sortBy } from 'ramda';
 
 import type { APIError } from '@linode/api-v4/lib/types';
 export type Category = 'inbound' | 'outbound';
+export type FirewallRuleTableRowType = 'rule' | 'ruleset';
 
 export interface FirewallRuleError {
   category: string;
@@ -114,4 +117,54 @@ export const sortString = (_a: string, _b: string) => {
 // If a port range is included (80-1000) return the first element of the range
 const stripHyphen = (str: string) => {
   return str.match(/-/) ? str.split('-')[0] : str;
+};
+
+//  API response using rulesetid
+export const rulesetResponse = {
+  created: '2018-01-01T00:01:01',
+  id: 123,
+  version: 2,
+  label: 'ruleset123',
+  description: 'An example Rule Set description',
+  type: 'inbound',
+  is_service_defined: false,
+  rules: [
+    {
+      action: 'ACCEPT',
+      addresses: {
+        ipv6: [
+          'pl:system:resolvers:us-iad:staging',
+          '2001:DB8::/128',
+          'pl:system:object-storage:no-osl-1',
+        ],
+      },
+      description: 'An example firewall rule description',
+      label: 'ruleset rule-1',
+      ports: '22-24, 80, 443, 6443',
+      protocol: 'TCP',
+    },
+    {
+      action: 'ACCEPT',
+      addresses: {
+        ipv4: ['198.51.100.2/32'],
+        ipv6: ['pl::vpcs:1234', '2001:DB8::/128', '2001:DB8::/256'],
+      },
+      description: 'An example firewall rule 2 description',
+      label: 'ruleset rule-2',
+      ports: '80, 443, 6443',
+      protocol: 'UDP',
+    },
+    {
+      action: 'ACCEPT',
+      addresses: {
+        ipv4: ['198.51.100.2/32'],
+      },
+      description: 'An example firewall rule 3 description',
+      label: 'ruleset rule-3',
+      ports: '80, 443, 6443',
+      protocol: 'UDP',
+    },
+  ],
+  updated: '2019-01-01T00:01:01',
+  deleted: null,
 };

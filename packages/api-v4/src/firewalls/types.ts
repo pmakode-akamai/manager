@@ -37,7 +37,7 @@ export type UpdateFirewallRules = Omit<
 export type FirewallTemplateRules = UpdateFirewallRules;
 
 export interface FirewallRuleType {
-  action: FirewallPolicyType;
+  action?: FirewallPolicyType | null;
   addresses?: null | {
     ipv4?: null | string[];
     ipv6?: null | string[];
@@ -45,7 +45,9 @@ export interface FirewallRuleType {
   description?: null | string;
   label?: null | string;
   ports?: string;
-  protocol: FirewallRuleProtocol;
+  protocol?: FirewallRuleProtocol | null;
+  // If firewall rule is a ruleset
+  ruleset?: null | number;
 }
 
 export interface FirewallDeviceEntity {

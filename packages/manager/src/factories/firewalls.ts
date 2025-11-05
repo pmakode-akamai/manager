@@ -1,19 +1,17 @@
-import {
-  type Firewall,
-  type FirewallDevice,
-  type FirewallDeviceEntityType,
-  type FirewallRules,
-  type FirewallRuleType,
-  type FirewallSettings,
-  type FirewallTemplate,
-  type FirewallTemplateRules,
-} from '@linode/api-v4/lib/firewalls/types';
 import { Factory } from '@linode/utilities';
 
 import type {
+  Firewall,
+  FirewallDevice,
   FirewallDeviceEntity,
+  FirewallDeviceEntityType,
   FirewallPrefixList,
+  FirewallRules,
   FirewallRuleSet,
+  FirewallRuleType,
+  FirewallSettings,
+  FirewallTemplate,
+  FirewallTemplateRules,
 } from '@linode/api-v4/lib/firewalls/types';
 
 export const firewallRuleFactory = Factory.Sync.makeFactory<FirewallRuleType>({

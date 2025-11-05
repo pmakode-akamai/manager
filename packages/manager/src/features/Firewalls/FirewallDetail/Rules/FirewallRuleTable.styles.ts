@@ -4,6 +4,7 @@ import { styled } from '@mui/material/styles';
 import DragIndicator from 'src/assets/icons/drag-indicator.svg';
 
 import type { FirewallRuleTableRowProps } from './FirewallRuleTable';
+import type { FirewallRuleTableRowType } from './shared';
 
 type StyledFirewallRuleButtonProps = Pick<FirewallRuleTableRowProps, 'status'>;
 
@@ -14,6 +15,7 @@ interface FirewallRuleTableRowPropsWithRuleIndex
 
 interface StyledFirewallRuleTableRowProps
   extends FirewallRuleTableRowPropsWithRuleIndex {
+  rowType: FirewallRuleTableRowType;
   status: FirewallRuleTableRowProps['status'];
 }
 
@@ -22,7 +24,7 @@ export const StyledTableRow = styled('tr', {
   label: 'StyledTableRow',
   shouldForwardProp: omittedProps(['originalIndex', 'ruleIndex']),
 })<StyledFirewallRuleTableRowProps>(
-  ({ disabled, originalIndex, ruleIndex, status, theme }) => ({
+  ({ disabled, originalIndex, ruleIndex, status, rowType, theme }) => ({
     // Conditional styles
     // Highlight the row if it's been modified or reordered. ruleIndex is the current index,
     // so if it doesn't match the original index we know that the rule has been moved.
@@ -33,6 +35,14 @@ export const StyledTableRow = styled('tr', {
       ? { backgroundColor: theme.bg.lightBlue1 }
       : {}),
     ...(status === 'NOT_MODIFIED' ? { backgroundColor: theme.bg.bgPaper } : {}),
+    ...(rowType === 'ruleset'
+      ? {
+          '& td': {
+            paddingTop: '10px',
+            paddingBottom: '10px',
+          },
+        }
+      : {}),
   })
 );
 

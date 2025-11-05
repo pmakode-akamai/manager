@@ -60,7 +60,7 @@ export const deriveTypeFromValuesAndIPs = (
   if (predefinedFirewall) {
     return predefinedFirewall;
   } else if (
-    values.protocol?.length > 0 ||
+    (values.protocol ?? '').length > 0 ||
     (values.ports && values.ports?.length > 0) ||
     values.addresses?.length > 0
   ) {

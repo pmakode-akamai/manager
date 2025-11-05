@@ -20,12 +20,12 @@ export interface FirewallRuleDrawerProps {
 }
 
 export interface FormState {
-  action: FirewallPolicyType;
+  action?: FirewallPolicyType | null;
   addresses: string;
   description: string;
   label: string;
   ports?: string;
-  protocol: string;
+  protocol?: null | string;
   type: string;
 }
 
