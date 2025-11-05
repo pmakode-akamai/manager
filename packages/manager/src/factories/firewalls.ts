@@ -109,7 +109,13 @@ export const firewallRuleSetFactory = Factory.Sync.makeFactory<FirewallRuleSet>(
     is_service_defined: false,
     id: Factory.each((i) => i),
     type: 'inbound',
-    rules: firewallRuleFactory.buildList(3),
+    rules: firewallRuleFactory.buildList(3).map((prev, i) => ({
+      ...prev,
+      addresses: {
+        ipv4: [`198.51.100.${i}`, `139.144.101.${i * 2}`],
+        ipv6: [`pl:system:test-${i}`],
+      },
+    })),
     updated: '2025-11-05T00:00:00',
     version: 1,
   }

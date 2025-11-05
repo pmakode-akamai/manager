@@ -1253,7 +1253,7 @@ export const handlers = [
         label: 'firewall with rule and ruleset',
         rules: firewallRulesFactory.build({
           inbound: [
-            ...firewallRuleSetFactory.buildList(1),
+            firewallRuleFactory.build({ ruleset: 123 }), // Referenced Ruleset to the Firewall
             ...firewallRuleFactory.buildList(1),
           ],
         }),
@@ -1274,13 +1274,25 @@ export const handlers = [
     const devices = firewallDeviceFactory.buildList(10);
     return HttpResponse.json(makeResourcePage(devices));
   }),
+  http.get(
+    '*/v4beta/networking/firewalls/rulesets/:rulesetId',
+    ({ params }) => {
+      const firewallRuleSet =
+        params.rulesetId === '123'
+          ? firewallRuleSetFactory.build({
+              id: 123,
+            })
+          : firewallRuleSetFactory.build();
+      return HttpResponse.json(firewallRuleSet);
+    }
+  ),
   http.get('*/v4beta/networking/firewalls/:firewallId', ({ params }) => {
     const firewall =
       params.firewallId === '1001'
         ? firewallFactory.build({
             rules: firewallRulesFactory.build({
               inbound: [
-                ...firewallRuleSetFactory.buildList(1),
+                firewallRuleFactory.build({ ruleset: 123 }), // Referenced Ruleset to the Firewall
                 ...firewallRuleFactory.buildList(1),
               ],
             }),
