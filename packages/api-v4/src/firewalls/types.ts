@@ -46,7 +46,7 @@ export interface FirewallRuleType {
   label?: null | string;
   ports?: string;
   protocol?: FirewallRuleProtocol | null;
-  // If firewall rule is a ruleset
+  // If firewall rule is a ruleset, provide only ruleset
   ruleset?: null | number;
 }
 

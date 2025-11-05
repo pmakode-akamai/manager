@@ -253,12 +253,19 @@ const removeEmptyAddressArrays = (rules: ExtendedFirewallRule[]) => {
     const keepIPv4 = rule.addresses?.ipv4 && rule.addresses.ipv4.length > 0;
     const keepIPv6 = rule.addresses?.ipv6 && rule.addresses.ipv6.length > 0;
 
+    // Do not pass `addresses` key in the case of rulesets
+    const doNotKeepAddresses = !keepIPv4 && !keepIPv6;
+
     return {
       ...rule,
-      addresses: {
-        ipv4: keepIPv4 ? rule.addresses?.ipv4 : undefined,
-        ipv6: keepIPv6 ? rule.addresses?.ipv6 : undefined,
-      },
+      ...(doNotKeepAddresses
+        ? {} // completely omit 'addresses' key
+        : {
+            addresses: {
+              ipv4: keepIPv4 ? rule.addresses?.ipv4 : undefined,
+              ipv6: keepIPv6 ? rule.addresses?.ipv6 : undefined,
+            },
+          }),
     };
   });
 };
