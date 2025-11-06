@@ -30,6 +30,7 @@ import { TableCell } from 'src/components/TableCell';
 import { TableHead } from 'src/components/TableHead';
 import { TableRow } from 'src/components/TableRow';
 import { TableRowEmpty } from 'src/components/TableRowEmpty/TableRowEmpty';
+import { TableRowLoading } from 'src/components/TableRowLoading/TableRowLoading';
 import {
   generateAddressesLabel,
   generateRuleLabel,
@@ -408,6 +409,10 @@ const FirewallRuleSetTableRow = React.memo(
       ruleset,
     } = props;
 
+    const theme = useTheme();
+    const smDown = useMediaQuery(theme.breakpoints.down('sm'));
+    const lgDown = useMediaQuery(theme.breakpoints.down('lg'));
+
     const actionMenuProps = {
       disabled: status === 'PENDING_DELETION' || disabled,
       handleDeleteFirewallRule,
@@ -416,10 +421,14 @@ const FirewallRuleSetTableRow = React.memo(
     };
 
     // Call ruleset api using ruleset id here.
-    const { data: ruleSetDetails } = useFirewallRuleSetQuery(
+    const { data: ruleSetDetails, isLoading } = useFirewallRuleSetQuery(
       ruleset ?? -1,
       ruleset !== undefined
     );
+
+    if (isLoading) {
+      return <TableRowLoading columns={smDown ? 3 : lgDown ? 5 : 6} />;
+    }
 
     return (
       <>
@@ -432,7 +441,7 @@ const FirewallRuleSetTableRow = React.memo(
           ruleIndex={index}
           status={status}
         >
-          {/* First column merged vertically */}
+          {/* First & last column merged vertically */}
           <TableCell
             rowSpan={ruleSetDetails?.rules.length}
             sx={{ verticalAlign: 'top' }}
