@@ -7,7 +7,12 @@ import {
 import { ActionsPanel, Notice, Typography } from '@linode/ui';
 import { styled } from '@mui/material/styles';
 import { useQueryClient } from '@tanstack/react-query';
-import { useBlocker, useLocation, useNavigate } from '@tanstack/react-router';
+import {
+  useBlocker,
+  useLocation,
+  useNavigate,
+  useParams,
+} from '@tanstack/react-router';
 import { useSnackbar } from 'notistack';
 import * as React from 'react';
 
@@ -59,6 +64,31 @@ export const FirewallRulesLanding = React.memo((props: Props) => {
   const location = useLocation();
   const { enqueueSnackbar } = useSnackbar();
 
+  const defaultCategoryFromPathName = location.pathname.includes('/inbound')
+    ? 'inbound'
+    : 'outbound';
+
+  const defaultModeFromPathName = location.pathname.includes('/edit')
+    ? 'edit'
+    : location.pathname.includes('/view')
+      ? 'view'
+      : 'create';
+
+  const viewModeparams = useParams({
+    from: `/firewalls/$id/rules/view/$category/$ruleId`,
+    shouldThrow: false,
+  });
+  const editModeParams = useParams({
+    from: '/firewalls/$id/rules/edit/$category/$ruleId',
+    shouldThrow: false,
+  });
+
+  const defaultRuleIdxFromParams = viewModeparams?.ruleId
+    ? Number(viewModeparams.ruleId)
+    : editModeParams?.ruleId
+      ? Number(editModeParams.ruleId)
+      : undefined;
+
   /**
    * inbound and outbound policy aren't part of any particular rule
    * so they are managed separately rather than through the reducer.
@@ -84,8 +114,9 @@ export const FirewallRulesLanding = React.memo((props: Props) => {
    * Component state and handlers
    */
   const [ruleDrawer, setRuleDrawer] = React.useState<Drawer>({
-    category: 'inbound',
-    mode: 'create',
+    category: defaultCategoryFromPathName,
+    mode: defaultModeFromPathName,
+    ruleIdx: defaultRuleIdxFromParams,
   });
   const [submitting, setSubmitting] = React.useState<boolean>(false);
   // @todo fine-grained error handling.
@@ -296,8 +327,7 @@ export const FirewallRulesLanding = React.memo((props: Props) => {
         next.routeId === '/firewalls/$id/rules' ||
         next.routeId === '/firewalls/$id/rules/add/inbound' ||
         next.routeId === '/firewalls/$id/rules/add/outbound' ||
-        next.routeId === '/firewalls/$id/rules/edit/inbound/$ruleId' ||
-        next.routeId === '/firewalls/$id/rules/edit/outbound/$ruleId';
+        next.routeId === '/firewalls/$id/rules/edit/$category/$ruleId';
 
       return !isNavigatingToAllowedRoute;
     },
@@ -411,8 +441,8 @@ export const FirewallRulesLanding = React.memo((props: Props) => {
           handleOpenRuleDrawerForEditing={(idx: number) =>
             openRuleDrawer('outbound', 'edit', idx)
           }
-          handleOpenRuleSetDrawerForViewing={(ruleset: number) =>
-            openRuleDrawer('outbound', 'view', ruleset)
+          handleOpenRuleSetDrawerForViewing={(idx: number) =>
+            openRuleDrawer('outbound', 'view', idx)
           }
           handlePolicyChange={handlePolicyChange}
           handleReorder={(startIdx: number, endIdx: number) =>

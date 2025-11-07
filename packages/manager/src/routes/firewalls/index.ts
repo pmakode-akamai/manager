@@ -68,6 +68,15 @@ const firewallDetailRulesRoute = createRoute({
   )
 );
 
+const firewallDetailRulesViewRuleSetRoute = createRoute({
+  getParentRoute: () => firewallDetailRulesRoute,
+  path: 'view/$category/$ruleId',
+}).lazy(() =>
+  import('src/features/Firewalls/FirewallDetail/firewallDetailLazyRoute').then(
+    (m) => m.firewallDetailLazyRoute
+  )
+);
+
 const firewallDetailRulesAddRuleRoute = createRoute({
   getParentRoute: () => firewallDetailRulesRoute,
   path: 'add',
@@ -77,23 +86,23 @@ const firewallDetailRulesAddRuleRoute = createRoute({
   )
 );
 
-const firewallDetailRulesEditInboundRuleRoute = createRoute({
+const firewallDetailRulesEditRuleRoute = createRoute({
   getParentRoute: () => firewallDetailRulesRoute,
-  path: 'edit/inbound/$ruleId',
+  path: 'edit/$category/$ruleId',
 }).lazy(() =>
   import('src/features/Firewalls/FirewallDetail/firewallDetailLazyRoute').then(
     (m) => m.firewallDetailLazyRoute
   )
 );
 
-const firewallDetailRulesEditOutboundRuleRoute = createRoute({
-  getParentRoute: () => firewallDetailRulesRoute,
-  path: 'edit/outbound/$ruleId',
-}).lazy(() =>
-  import('src/features/Firewalls/FirewallDetail/firewallDetailLazyRoute').then(
-    (m) => m.firewallDetailLazyRoute
-  )
-);
+// const firewallDetailRulesEditOutboundRuleRoute = createRoute({
+//   getParentRoute: () => firewallDetailRulesRoute,
+//   path: 'edit/outbound/$ruleId',
+// }).lazy(() =>
+//   import('src/features/Firewalls/FirewallDetail/firewallDetailLazyRoute').then(
+//     (m) => m.firewallDetailLazyRoute
+//   )
+// );
 
 const firewallDetailRulesAddInboundRuleRoute = createRoute({
   getParentRoute: () => firewallDetailRulesAddRuleRoute,
@@ -176,10 +185,10 @@ export const firewallsRouteTree = firewallsRoute.addChildren([
     ]),
     firewallDetailRulesRoute.addChildren([
       firewallDetailRulesAddRuleRoute,
-      firewallDetailRulesEditInboundRuleRoute,
-      firewallDetailRulesEditOutboundRuleRoute,
       firewallDetailRulesAddInboundRuleRoute,
       firewallDetailRulesAddOutboundRuleRoute,
+      firewallDetailRulesEditRuleRoute,
+      firewallDetailRulesViewRuleSetRoute,
     ]),
     firewallDetailNodebalancersRoute.addChildren([
       firewallDetailNodebalancersAddNodebalancerRoute,
