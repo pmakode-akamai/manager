@@ -64,11 +64,13 @@ export const FirewallRulesLanding = React.memo((props: Props) => {
   const location = useLocation();
   const { enqueueSnackbar } = useSnackbar();
 
-  const defaultCategoryFromPathName = location.pathname.includes('/inbound')
+  const defaultDrawerCategoryFromPathName = location.pathname.includes(
+    '/inbound'
+  )
     ? 'inbound'
     : 'outbound';
 
-  const defaultModeFromPathName = location.pathname.includes('/edit')
+  const defaultDrawerModeFromPathName = location.pathname.includes('/edit')
     ? 'edit'
     : location.pathname.includes('/view')
       ? 'view'
@@ -83,7 +85,7 @@ export const FirewallRulesLanding = React.memo((props: Props) => {
     shouldThrow: false,
   });
 
-  const defaultRuleIdxFromParams = viewModeparams?.ruleId
+  const defaultDrawerRuleIdxFromParams = viewModeparams?.ruleId
     ? Number(viewModeparams.ruleId)
     : editModeParams?.ruleId
       ? Number(editModeParams.ruleId)
@@ -114,9 +116,9 @@ export const FirewallRulesLanding = React.memo((props: Props) => {
    * Component state and handlers
    */
   const [ruleDrawer, setRuleDrawer] = React.useState<Drawer>({
-    category: defaultCategoryFromPathName,
-    mode: defaultModeFromPathName,
-    ruleIdx: defaultRuleIdxFromParams,
+    category: defaultDrawerCategoryFromPathName,
+    mode: defaultDrawerModeFromPathName,
+    ruleIdx: defaultDrawerRuleIdxFromParams,
   });
   const [submitting, setSubmitting] = React.useState<boolean>(false);
   // @todo fine-grained error handling.
