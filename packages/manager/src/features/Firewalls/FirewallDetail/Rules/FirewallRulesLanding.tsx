@@ -4,7 +4,7 @@ import {
   useAllFirewallDevicesQuery,
   useUpdateFirewallRulesMutation,
 } from '@linode/queries';
-import { ActionsPanel, Notice, Typography } from '@linode/ui';
+import { ActionsPanel, Drawer, Notice, Typography } from '@linode/ui';
 import { styled } from '@mui/material/styles';
 import { useQueryClient } from '@tanstack/react-query';
 import {
@@ -19,6 +19,7 @@ import * as React from 'react';
 import { ConfirmationDialog } from 'src/components/ConfirmationDialog/ConfirmationDialog';
 import { getAPIErrorOrDefault } from 'src/utilities/errorUtils';
 
+import { FirewallPrefixListDrawer } from './FirewallPrefixListDrawer';
 import { FirewallRuleDrawer } from './FirewallRuleDrawer';
 import {
   hasModified as _hasModified,
@@ -46,7 +47,7 @@ interface Props {
   rules: FirewallRules;
 }
 
-interface Drawer {
+export interface Drawer {
   category: Category;
   mode: FirewallRuleDrawerMode;
   ruleIdx?: number;
@@ -90,6 +91,12 @@ export const FirewallRulesLanding = React.memo((props: Props) => {
     : editModeParams?.ruleId
       ? Number(editModeParams.ruleId)
       : undefined;
+
+  const [isPrefixListDrawerOpen, setIsPrefixListDrawerOpen] =
+    React.useState(false);
+  const [selectedPrefixListLabel, setSelectedPrefixListLabel] = React.useState<
+    string | undefined
+  >(undefined);
 
   /**
    * inbound and outbound policy aren't part of any particular rule
@@ -368,6 +375,18 @@ export const FirewallRulesLanding = React.memo((props: Props) => {
         : outboundRules[ruleDrawer.ruleIdx]
       : undefined;
 
+  const handleClosePrefixListDrawer = React.useCallback(() => {
+    setIsPrefixListDrawerOpen(false);
+  }, []);
+
+  const handleOpenPrefixListDrawer = React.useCallback(
+    (prefixListLabel: string) => {
+      setSelectedPrefixListLabel(prefixListLabel);
+      setIsPrefixListDrawerOpen(true);
+    },
+    []
+  );
+
   return (
     <>
       <ConfirmationDialog
@@ -416,6 +435,13 @@ export const FirewallRulesLanding = React.memo((props: Props) => {
             handleCloneRule('inbound', idx)
           }
           handleDeleteFirewallRule={(idx) => handleDeleteRule('inbound', idx)}
+          handleOpenPrefixListDrawer={(prefixListLabel) => {
+            // Clear ruleset drawer
+            setRuleDrawer({ ...ruleDrawer, ruleIdx: undefined });
+
+            setSelectedPrefixListLabel(prefixListLabel);
+            setIsPrefixListDrawerOpen(true);
+          }}
           handleOpenRuleDrawerForEditing={(idx: number) =>
             openRuleDrawer('inbound', 'edit', idx)
           }
@@ -468,6 +494,7 @@ export const FirewallRulesLanding = React.memo((props: Props) => {
         }
         mode={ruleDrawer.mode}
         onClose={closeRuleDrawer}
+        onOpenPrefixListDrawer={handleOpenPrefixListDrawer}
         onSubmit={
           ruleDrawer.mode === 'create'
             ? handleAddRule
@@ -477,6 +504,14 @@ export const FirewallRulesLanding = React.memo((props: Props) => {
         }
         ruleToModifyOrView={ruleToModifyOrView}
       />
+
+      <FirewallPrefixListDrawer
+        isOpen={isPrefixListDrawerOpen}
+        onClose={handleClosePrefixListDrawer}
+        prevRuleDrawerData={ruleDrawer}
+        selectedPrefixListLabel={selectedPrefixListLabel}
+      />
+
       <StyledActionsPanel
         primaryButtonProps={{
           disabled: !hasUnsavedChanges || disabled,

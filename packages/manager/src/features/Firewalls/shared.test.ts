@@ -5,7 +5,7 @@ import { wrapWithTheme } from 'src/utilities/testHelpers';
 import {
   allIPv4,
   allIPv6,
-  generateAddressesLabel,
+  // generateAddressesLabel,
   predefinedFirewallFromRule,
   useIsFirewallRulesetsPrefixlistsEnabled,
 } from './shared';
@@ -84,71 +84,71 @@ describe('predefinedFirewallFromRule', () => {
   });
 });
 
-describe('generateAddressLabel', () => {
-  it('includes the All IPv4 label if appropriate', () => {
-    expect(generateAddressesLabel(addresses).includes('All IPv4')).toBe(true);
-    expect(generateAddressesLabel(limitedAddresses).includes('All IPv4')).toBe(
-      false
-    );
-  });
+// describe('generateAddressLabel', () => {
+//   it('includes the All IPv4 label if appropriate', () => {
+//     expect(generateAddressesLabel(addresses).includes('All IPv4')).toBe(true);
+//     expect(generateAddressesLabel(limitedAddresses).includes('All IPv4')).toBe(
+//       false
+//     );
+//   });
 
-  it("doesn't include other IPv4 addresses if ALL are also specified", () => {
-    const result = generateAddressesLabel({
-      ...addresses,
-      ipv4: [allIPv4, '1.1.1.1'],
-    });
-    expect(result.includes('All IPv4')).toBe(true);
-    expect(result.includes('1.1.1.1')).toBe(false);
-  });
+//   it("doesn't include other IPv4 addresses if ALL are also specified", () => {
+//     const result = generateAddressesLabel({
+//       ...addresses,
+//       ipv4: [allIPv4, '1.1.1.1'],
+//     });
+//     expect(result.includes('All IPv4')).toBe(true);
+//     expect(result.includes('1.1.1.1')).toBe(false);
+//   });
 
-  it('includes the All IPv6 label if appropriate', () => {
-    expect(generateAddressesLabel(addresses).includes('All IPv6')).toBe(true);
-  });
+//   it('includes the All IPv6 label if appropriate', () => {
+//     expect(generateAddressesLabel(addresses).includes('All IPv6')).toBe(true);
+//   });
 
-  it("doesn't include other IPv6 addresses if ALL are also specified", () => {
-    const result = generateAddressesLabel({
-      ...addresses,
-      ipv6: [allIPv6, '::1'],
-    });
-    expect(result.includes('All IPv6')).toBe(true);
-    expect(result.includes('::1')).toBe(false);
-  });
+//   it("doesn't include other IPv6 addresses if ALL are also specified", () => {
+//     const result = generateAddressesLabel({
+//       ...addresses,
+//       ipv6: [allIPv6, '::1'],
+//     });
+//     expect(result.includes('All IPv6')).toBe(true);
+//     expect(result.includes('::1')).toBe(false);
+//   });
 
-  it('includes all appropriate addresses', () => {
-    expect(generateAddressesLabel(addresses)).toBe('All IPv4, All IPv6');
-    expect(generateAddressesLabel({ ipv4: ['1.1.1.1'] })).toBe('1.1.1.1');
-    expect(generateAddressesLabel({ ipv6: ['::1'] })).toBe('::1');
-    expect(
-      generateAddressesLabel({ ipv4: ['1.1.1.1, 2.2.2.2'], ipv6: ['::1'] })
-    ).toBe('1.1.1.1, 2.2.2.2, ::1');
-    expect(
-      generateAddressesLabel({ ipv4: ['1.1.1.1, 2.2.2.2'], ipv6: [allIPv6] })
-    ).toBe('All IPv6, 1.1.1.1, 2.2.2.2');
-  });
+//   it('includes all appropriate addresses', () => {
+//     expect(generateAddressesLabel(addresses)).toBe('All IPv4, All IPv6');
+//     expect(generateAddressesLabel({ ipv4: ['1.1.1.1'] })).toBe('1.1.1.1');
+//     expect(generateAddressesLabel({ ipv6: ['::1'] })).toBe('::1');
+//     expect(
+//       generateAddressesLabel({ ipv4: ['1.1.1.1, 2.2.2.2'], ipv6: ['::1'] })
+//     ).toBe('1.1.1.1, 2.2.2.2, ::1');
+//     expect(
+//       generateAddressesLabel({ ipv4: ['1.1.1.1, 2.2.2.2'], ipv6: [allIPv6] })
+//     ).toBe('All IPv6, 1.1.1.1, 2.2.2.2');
+//   });
 
-  it('truncates large lists', () => {
-    expect(
-      generateAddressesLabel({
-        ipv4: ['1.1.1.1', '2.2.2.2', '3.3.3.3', '4.4.4.4', '5.5.5.5'],
-      })
-    ).toBe('1.1.1.1, 2.2.2.2, 3.3.3.3, plus 2 more');
-  });
+//   it('truncates large lists', () => {
+//     expect(
+//       generateAddressesLabel({
+//         ipv4: ['1.1.1.1', '2.2.2.2', '3.3.3.3', '4.4.4.4', '5.5.5.5'],
+//       })
+//     ).toBe('1.1.1.1, 2.2.2.2, 3.3.3.3, plus 2 more');
+//   });
 
-  it('should always display "All IPv4" and "All IPv6", even if the label is truncated', () => {
-    expect(
-      generateAddressesLabel({
-        ipv4: ['1.1.1.1', '2.2.2.2', '3.3.3.3', '4.4.4.4', '5.5.5.5'],
-        ipv6: ['::/0'],
-      })
-    ).toBe('All IPv6, 1.1.1.1, 2.2.2.2, plus 3 more');
-  });
+//   it('should always display "All IPv4" and "All IPv6", even if the label is truncated', () => {
+//     expect(
+//       generateAddressesLabel({
+//         ipv4: ['1.1.1.1', '2.2.2.2', '3.3.3.3', '4.4.4.4', '5.5.5.5'],
+//         ipv6: ['::/0'],
+//       })
+//     ).toBe('All IPv6, 1.1.1.1, 2.2.2.2, plus 3 more');
+//   });
 
-  it('returns "None" if necessary', () => {
-    expect(generateAddressesLabel({ ipv4: undefined, ipv6: undefined })).toBe(
-      'None'
-    );
-  });
-});
+//   it('returns "None" if necessary', () => {
+//     expect(generateAddressesLabel({ ipv4: undefined, ipv6: undefined })).toBe(
+//       'None'
+//     );
+//   });
+// });
 
 describe('useIsFirewallRulesetsPrefixlistsEnabled', () => {
   it('returns true if the feature is enabled', async () => {

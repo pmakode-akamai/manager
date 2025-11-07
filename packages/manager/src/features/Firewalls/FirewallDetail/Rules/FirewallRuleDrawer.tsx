@@ -1,7 +1,9 @@
-import { Drawer, Typography } from '@linode/ui';
+import { Box, Drawer, Typography } from '@linode/ui';
 import { capitalize } from '@linode/utilities';
 import { Formik } from 'formik';
 import * as React from 'react';
+
+import { Link } from 'src/components/Link';
 
 import {
   formValueToIPs,
@@ -30,7 +32,19 @@ import type { ExtendedIP } from 'src/utilities/ipUtils';
 // =============================================================================
 export const FirewallRuleDrawer = React.memo(
   (props: FirewallRuleDrawerProps) => {
-    const { category, isOpen, mode, onClose, ruleToModifyOrView } = props;
+    const {
+      category,
+      isOpen,
+      mode,
+      onClose,
+      ruleToModifyOrView,
+      onOpenPrefixListDrawer,
+    } = props;
+
+    // const paramsFromViewMode = useParams({
+    //   from: '/firewalls/$id/rules/view/$category/$ruleId',
+    //   shouldThrow: false,
+    // });
 
     // Custom IPs are tracked separately from the form. The <MultipleIPs />
     // component consumes this state. We use this on form submission if the
@@ -117,7 +131,7 @@ export const FirewallRuleDrawer = React.memo(
       onClose();
     };
 
-    const CreateOrEditView = (
+    const CreateOrEditContainer = (
       <>
         <Formik
           initialValues={getInitialFormValues(ruleToModifyOrView)}
@@ -149,11 +163,29 @@ export const FirewallRuleDrawer = React.memo(
       </>
     );
 
-    const detailsView = <>Ruleset details {ruleToModifyOrView?.ruleset}</>;
+    const DetailViewContainer = () => {
+      const prefixLists = ['pl:system:1', 'pl:system:2'];
+
+      return (
+        <>
+          RuleSet ID: {ruleToModifyOrView?.ruleset}
+          <Box marginTop={4}>
+            {prefixLists.map((pl) => (
+              <>
+                <Link key={pl} onClick={() => onOpenPrefixListDrawer?.(pl)}>
+                  {pl}
+                </Link>
+                &nbsp;
+              </>
+            ))}
+          </Box>
+        </>
+      );
+    };
 
     return (
       <Drawer onClose={onClose} open={isOpen} title={title}>
-        {mode === 'view' ? detailsView : CreateOrEditView}
+        {mode === 'view' ? DetailViewContainer() : CreateOrEditContainer}
       </Drawer>
     );
   }

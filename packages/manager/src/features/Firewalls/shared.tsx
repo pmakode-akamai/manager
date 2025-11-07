@@ -1,6 +1,8 @@
-import { truncateAndJoinList } from '@linode/utilities';
+// import { truncateAndJoinList } from '@linode/utilities';
 import { capitalize } from '@linode/utilities';
+import React from 'react';
 
+import { Link } from 'src/components/Link';
 import { useFlags } from 'src/hooks/useFlags';
 
 import type { PORT_PRESETS } from './FirewallDetail/Rules/shared';
@@ -212,9 +214,10 @@ export const generateRuleLabel = (ruleType?: FirewallPreset) =>
   ruleType ? predefinedFirewalls[ruleType].label : 'Custom';
 
 export const generateAddressesLabel = (
-  addresses: FirewallRuleType['addresses']
+  addresses: FirewallRuleType['addresses'],
+  onPrefixListClick?: (prefixListLabel: string) => void
 ) => {
-  const strBuilder: string[] = [];
+  const elements: React.ReactNode[] = [];
 
   const allowedAllIPv4 = allowAllIPv4(addresses);
   const allowedAllIPv6 = allowAllIPv6(addresses);
@@ -222,32 +225,52 @@ export const generateAddressesLabel = (
   // First add the "All IPvX" strings so they always appear, even if the list
   // ends up being truncated.
   if (allowedAllIPv4) {
-    strBuilder.push('All IPv4');
+    elements.push('All IPv4');
   }
 
   if (allowedAllIPv6) {
-    strBuilder.push('All IPv6');
+    elements.push('All IPv6');
   }
 
   // Now we can look at the rest of the rules:
   if (!allowedAllIPv4) {
-    addresses?.ipv4?.forEach((thisIP) => {
-      strBuilder.push(thisIP);
+    addresses?.ipv4?.forEach((ip) => {
+      elements.push(
+        ip.startsWith('pl:') ? (
+          <Link key={ip} onClick={() => onPrefixListClick?.(ip)}>
+            {ip}
+          </Link>
+        ) : (
+          <span key={ip}>{ip}</span>
+        )
+      );
     });
   }
 
   if (!allowedAllIPv6) {
     addresses?.ipv6?.forEach((thisIP) => {
-      strBuilder.push(thisIP);
+      elements.push(thisIP);
     });
   }
 
-  if (strBuilder.length > 0) {
-    return truncateAndJoinList(strBuilder, 3);
-  }
+  // If no IPs are allowed
+  if (elements.length === 0) return 'None';
 
-  // If no IPs are allowed.
-  return 'None';
+  // Truncate to 2 visible items (like before)
+  const truncated = elements.slice(0, 2);
+  const hasMore = elements.length > 2;
+
+  return (
+    <>
+      {truncated.map((el, idx) => (
+        <React.Fragment key={idx}>
+          {el}
+          {idx < truncated.length - 1 && ', '}
+        </React.Fragment>
+      ))}
+      {hasMore && ', …'}
+    </>
+  );
 };
 
 export const getFirewallDescription = (firewall: Firewall) => {

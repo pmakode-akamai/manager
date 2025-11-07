@@ -15,7 +15,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { useFirewallRuleSetQuery } from '@linode/queries';
-import { Box, LinkButton, Theme, Typography } from '@linode/ui';
+import { Box, LinkButton, Typography } from '@linode/ui';
 import { Autocomplete } from '@linode/ui';
 import { Hidden } from '@linode/ui';
 import { capitalize } from '@linode/utilities';
@@ -28,20 +28,20 @@ import { makeStyles } from 'tss-react/mui';
 import Undo from 'src/assets/icons/undo.svg';
 import { CopyTooltip } from 'src/components/CopyTooltip/CopyTooltip';
 import { Link } from 'src/components/Link';
-import { MaskableText } from 'src/components/MaskableText/MaskableText';
+// import { MaskableText } from 'src/components/MaskableText/MaskableText';
 import { Table } from 'src/components/Table';
 import { TableBody } from 'src/components/TableBody';
 import { TableCell } from 'src/components/TableCell';
 import { TableHead } from 'src/components/TableHead';
 import { TableRow } from 'src/components/TableRow';
 import { TableRowEmpty } from 'src/components/TableRowEmpty/TableRowEmpty';
+import { CustomKeyboardSensor } from 'src/utilities/CustomKeyboardSensor';
+
 import {
   generateAddressesLabel,
   generateRuleLabel,
   predefinedFirewallFromRule as ruleToPredefinedFirewall,
-} from 'src/features/Firewalls/shared';
-import { CustomKeyboardSensor } from 'src/utilities/CustomKeyboardSensor';
-
+} from '../../shared';
 import { FirewallRuleActionMenu } from './FirewallRuleActionMenu';
 import {
   StyledButtonDiv,
@@ -54,16 +54,17 @@ import {
 } from './FirewallRuleTable.styles';
 import { sortPortString } from './shared';
 
+import type { FirewallOptionItem } from '../../shared';
 import type { FirewallRuleDrawerMode } from './FirewallRuleDrawer.types';
 import type { ExtendedFirewallRule, RuleStatus } from './firewallRuleEditor';
 import type { Category, FirewallRuleError } from './shared';
 import type { DragEndEvent } from '@dnd-kit/core';
 import type { FirewallPolicyType } from '@linode/api-v4/lib/firewalls/types';
-import type { FirewallOptionItem } from 'src/features/Firewalls/shared';
+import type { Theme } from '@linode/ui';
 
 interface RuleRow {
   action?: string;
-  addresses: string;
+  addresses: React.ReactNode | string;
   description?: null | string;
   errors?: FirewallRuleError[];
   id: number;
@@ -93,6 +94,7 @@ interface RowActionHandlers {
 interface FirewallRuleTableProps extends RowActionHandlers {
   category: Category;
   disabled: boolean;
+  handleOpenPrefixListDrawer?: (prefixListLabel: string) => void;
   handlePolicyChange: (
     category: Category,
     newPolicy: FirewallPolicyType
@@ -110,6 +112,7 @@ export const FirewallRuleTable = (props: FirewallRuleTableProps) => {
     handleDeleteFirewallRule,
     handleOpenRuleDrawerForEditing,
     handleOpenRuleSetDrawerForViewing,
+    handleOpenPrefixListDrawer,
     handlePolicyChange,
     handleReorder,
     handleUndo,
@@ -126,7 +129,9 @@ export const FirewallRuleTable = (props: FirewallRuleTableProps) => {
   const addressColumnLabel =
     category === 'inbound' ? 'sources' : 'destinations';
 
-  const rowData = firewallRuleToRowData(rulesWithStatus);
+  const rowData = firewallRuleToRowData(rulesWithStatus, (prefixListLabel) => {
+    handleOpenPrefixListDrawer?.(prefixListLabel);
+  });
 
   const openDrawerForCreating = React.useCallback(() => {
     openRuleDrawer(category, 'create');
@@ -418,7 +423,8 @@ const FirewallRuleTableRow = React.memo((props: FirewallRuleTableRowProps) => {
               <ConditionalError errors={errors} formField="ports" />
             </TableCell>
             <TableCell aria-label={`Addresses: ${addresses}`}>
-              <MaskableText text={addresses} />
+              {/* <MaskableText text={addresses} /> */}
+              {addresses}
               <ConditionalError errors={errors} formField="addresses" />
             </TableCell>
           </Hidden>
@@ -617,14 +623,15 @@ export const ConditionalError = React.memo((props: ConditionalErrorProps) => {
  * of data. This also allows us to sort each column of the RuleTable.
  */
 export const firewallRuleToRowData = (
-  firewallRules: ExtendedFirewallRule[]
+  firewallRules: ExtendedFirewallRule[],
+  onPrefixListClick?: (prefixListLabel: string) => void
 ): RuleRow[] => {
   return firewallRules.map((thisRule, idx) => {
     const ruleType = ruleToPredefinedFirewall(thisRule);
 
     return {
       ...thisRule,
-      addresses: generateAddressesLabel(thisRule.addresses),
+      addresses: generateAddressesLabel(thisRule.addresses, onPrefixListClick),
       id: idx + 1, // ids are 1-indexed, as id given to the useSortable hook cannot be 0
       index: idx,
       ports: sortPortString(thisRule.ports || ''),

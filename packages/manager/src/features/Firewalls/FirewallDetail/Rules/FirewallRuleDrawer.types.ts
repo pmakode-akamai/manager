@@ -15,6 +15,7 @@ export interface FirewallRuleDrawerProps {
   isOpen: boolean;
   mode: FirewallRuleDrawerMode;
   onClose: () => void;
+  onOpenPrefixListDrawer?: (prefixListLabel: string) => void;
   onSubmit: (category: 'inbound' | 'outbound', rule: FirewallRuleType) => void;
   ruleToModifyOrView?: ExtendedFirewallRule;
 }

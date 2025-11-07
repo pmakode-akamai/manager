@@ -61,7 +61,9 @@ import {
   firewallMetricDefinitionsResponse,
   firewallMetricRulesFactory,
   firewallPrefixListFactory,
+  firewallRuleFactory,
   firewallRuleSetFactory,
+  firewallRulesFactory,
   imageFactory,
   incidentResponseFactory,
   invoiceFactory,
@@ -1245,6 +1247,21 @@ export const handlers = [
           }),
         ],
       }),
+      // Firewall with the Rule and RuleSet
+      firewallFactory.build({
+        id: 1001,
+        label: 'firewall with rule and ruleset',
+        rules: firewallRulesFactory.build({
+          inbound: [
+            firewallRuleFactory.build({ ruleset: 123 }), // Referenced Ruleset to the Firewall
+            ...firewallRuleFactory.buildList(1, {
+              addresses: {
+                ipv4: ['pl:system:1234', 'pl:system:1235', '139.144.100.20'],
+              },
+            }),
+          ],
+        }),
+      }),
     ];
     firewallFactory.resetSequenceNumber();
     return HttpResponse.json(makeResourcePage(firewalls));
@@ -1260,6 +1277,40 @@ export const handlers = [
   http.get('*/v4beta/networking/firewalls/*/devices', () => {
     const devices = firewallDeviceFactory.buildList(10);
     return HttpResponse.json(makeResourcePage(devices));
+  }),
+  http.get(
+    '*/v4beta/networking/firewalls/rulesets/:rulesetId',
+    ({ params }) => {
+      const firewallRuleSet =
+        params.rulesetId === '123'
+          ? firewallRuleSetFactory.build({
+              id: 123,
+            })
+          : firewallRuleSetFactory.build();
+      return HttpResponse.json(firewallRuleSet);
+    }
+  ),
+  http.get('*/v4beta/networking/firewalls/:firewallId', ({ params }) => {
+    const firewall =
+      params.firewallId === '1001'
+        ? firewallFactory.build({
+            rules: firewallRulesFactory.build({
+              inbound: [
+                firewallRuleFactory.build({ ruleset: 123 }), // Referenced Ruleset to the Firewall
+                ...firewallRuleFactory.buildList(1, {
+                  addresses: {
+                    ipv4: [
+                      'pl:system:1234',
+                      'pl:system:1235',
+                      '139.144.100.20',
+                    ],
+                  },
+                }),
+              ],
+            }),
+          })
+        : firewallFactory.build();
+    return HttpResponse.json(firewall);
   }),
   http.get('*/v4beta/networking/firewalls/:firewallId', () => {
     const firewall = firewallFactory.build();
