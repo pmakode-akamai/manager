@@ -14,7 +14,8 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Box, LinkButton, Typography } from '@linode/ui';
+import { useFirewallRuleSetQuery } from '@linode/queries';
+import { Box, LinkButton, Theme, Typography } from '@linode/ui';
 import { Autocomplete } from '@linode/ui';
 import { Hidden } from '@linode/ui';
 import { capitalize } from '@linode/utilities';
@@ -22,8 +23,11 @@ import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { prop, uniqBy } from 'ramda';
 import * as React from 'react';
+import { makeStyles } from 'tss-react/mui';
 
 import Undo from 'src/assets/icons/undo.svg';
+import { CopyTooltip } from 'src/components/CopyTooltip/CopyTooltip';
+import { Link } from 'src/components/Link';
 import { MaskableText } from 'src/components/MaskableText/MaskableText';
 import { Table } from 'src/components/Table';
 import { TableBody } from 'src/components/TableBody';
@@ -68,6 +72,7 @@ interface RuleRow {
   originalIndex: number;
   ports: string;
   protocol: string;
+  ruleset?: null | number;
   status: RuleStatus;
   type: string;
 }
@@ -80,6 +85,7 @@ interface RowActionHandlers {
   handleCloneFirewallRule: (idx: number) => void;
   handleDeleteFirewallRule: (idx: number) => void;
   handleOpenRuleDrawerForEditing: (idx: number) => void;
+  handleOpenRuleSetDrawerForViewing?: (ruleset: number) => void;
   handleReorder: (startIdx: number, endIdx: number) => void;
   handleUndo: (idx: number) => void;
 }
@@ -103,6 +109,7 @@ export const FirewallRuleTable = (props: FirewallRuleTableProps) => {
     handleCloneFirewallRule,
     handleDeleteFirewallRule,
     handleOpenRuleDrawerForEditing,
+    handleOpenRuleSetDrawerForViewing,
     handlePolicyChange,
     handleReorder,
     handleUndo,
@@ -245,6 +252,9 @@ export const FirewallRuleTable = (props: FirewallRuleTableProps) => {
                       handleOpenRuleDrawerForEditing={
                         handleOpenRuleDrawerForEditing
                       }
+                      handleOpenRuleSetDrawerForViewing={
+                        handleOpenRuleSetDrawerForViewing
+                      }
                       handleUndo={handleUndo}
                       key={thisRuleRow.id}
                       {...thisRuleRow}
@@ -280,6 +290,7 @@ export interface FirewallRuleTableRowProps extends RuleRow {
   handleCloneFirewallRule: RowActionHandlersWithDisabled['handleCloneFirewallRule'];
   handleDeleteFirewallRule: RowActionHandlersWithDisabled['handleDeleteFirewallRule'];
   handleOpenRuleDrawerForEditing: RowActionHandlersWithDisabled['handleOpenRuleDrawerForEditing'];
+  handleOpenRuleSetDrawerForViewing?: RowActionHandlersWithDisabled['handleOpenRuleSetDrawerForViewing'];
   handleUndo: RowActionHandlersWithDisabled['handleUndo'];
 }
 
@@ -292,6 +303,7 @@ const FirewallRuleTableRow = React.memo((props: FirewallRuleTableRowProps) => {
     handleCloneFirewallRule,
     handleDeleteFirewallRule,
     handleOpenRuleDrawerForEditing,
+    handleOpenRuleSetDrawerForViewing,
     handleUndo,
     id,
     index,
@@ -300,6 +312,7 @@ const FirewallRuleTableRow = React.memo((props: FirewallRuleTableRowProps) => {
     ports,
     protocol,
     status,
+    ruleset,
   } = props;
 
   const actionMenuProps = {
@@ -308,9 +321,12 @@ const FirewallRuleTableRow = React.memo((props: FirewallRuleTableRowProps) => {
     handleDeleteFirewallRule,
     handleOpenRuleDrawerForEditing,
     idx: index,
+    isRuleSet: Boolean(ruleset),
   };
 
   const theme = useTheme();
+  const lgDown = useMediaQuery(theme.breakpoints.down('lg'));
+  const smDown = useMediaQuery(theme.breakpoints.down('sm'));
 
   const {
     active,
@@ -344,6 +360,26 @@ const FirewallRuleTableRow = React.memo((props: FirewallRuleTableRowProps) => {
     zIndex: isDragging ? 9999 : 0,
   } as const;
 
+  const isRuleSetRow = Boolean(ruleset);
+  const { data: rulesetDetails, error } = useFirewallRuleSetQuery(
+    ruleset ?? -1,
+    ruleset !== undefined && isRuleSetRow
+  );
+
+  const useStyles = makeStyles()((theme: Theme) => ({
+    copyIcon: {
+      '& svg': {
+        height: '1em',
+        width: '1em',
+      },
+      color: theme.palette.primary.main,
+      display: 'inline-block',
+      position: 'relative',
+    },
+  }));
+
+  const { classes } = useStyles();
+
   return (
     <StyledTableRow
       aria-label={label ?? `firewall rule ${id}`}
@@ -357,36 +393,66 @@ const FirewallRuleTableRow = React.memo((props: FirewallRuleTableRowProps) => {
       {...listeners}
       sx={rowStyles}
     >
-      <TableCell aria-label={`Label: ${label}`}>
-        <StyledDragIndicator aria-label="Drag indicator icon" />
-        {label || (
-          <LinkButton
-            disabled={disabled}
-            onClick={() => handleOpenRuleDrawerForEditing(index)}
-          >
-            Add a label
-          </LinkButton>
-        )}
-      </TableCell>
-      <Hidden lgDown>
-        <TableCell aria-label={`Protocol: ${protocol}`}>
-          {protocol}
-          <ConditionalError errors={errors} formField="protocol" />
-        </TableCell>
-      </Hidden>
-      <Hidden smDown>
-        <TableCell aria-label={`Ports: ${ports}`}>
-          {ports === '1-65535' ? 'All Ports' : ports}
-          <ConditionalError errors={errors} formField="ports" />
-        </TableCell>
-        <TableCell aria-label={`Addresses: ${addresses}`}>
-          <MaskableText text={addresses} />
-          <ConditionalError errors={errors} formField="addresses" />
-        </TableCell>
-      </Hidden>
-      <TableCell aria-label={`Action: ${action}`}>
-        {capitalize(action?.toLocaleLowerCase() ?? '')}
-      </TableCell>
+      {!isRuleSetRow && (
+        <>
+          <TableCell aria-label={`Label: ${label}`}>
+            <StyledDragIndicator aria-label="Drag indicator icon" />
+            {label || (
+              <LinkButton
+                disabled={disabled}
+                onClick={() => handleOpenRuleDrawerForEditing(index)}
+              >
+                Add a label
+              </LinkButton>
+            )}
+          </TableCell>
+          <Hidden lgDown>
+            <TableCell aria-label={`Protocol: ${protocol}`}>
+              {protocol}
+              <ConditionalError errors={errors} formField="protocol" />
+            </TableCell>
+          </Hidden>
+          <Hidden smDown>
+            <TableCell aria-label={`Ports: ${ports}`}>
+              {ports === '1-65535' ? 'All Ports' : ports}
+              <ConditionalError errors={errors} formField="ports" />
+            </TableCell>
+            <TableCell aria-label={`Addresses: ${addresses}`}>
+              <MaskableText text={addresses} />
+              <ConditionalError errors={errors} formField="addresses" />
+            </TableCell>
+          </Hidden>
+          <TableCell aria-label={`Action: ${action}`}>
+            {capitalize(action?.toLocaleLowerCase() ?? '')}
+          </TableCell>
+        </>
+      )}
+
+      {isRuleSetRow && handleOpenRuleSetDrawerForViewing && (
+        <>
+          <TableCell aria-label={`Label: ${label}`}>
+            <StyledDragIndicator aria-label="Drag indicator icon" />
+            {rulesetDetails && (
+              <Link onClick={() => handleOpenRuleSetDrawerForViewing(index)}>
+                {rulesetDetails?.label}
+              </Link>
+            )}
+            <span style={{ marginLeft: theme.spacingFunction(16) }}>
+              ID: {ruleset}
+              <CopyTooltip
+                className={classes.copyIcon}
+                text={String(ruleset)}
+              />
+            </span>
+          </TableCell>
+          <TableCell colSpan={smDown ? 0 : lgDown ? 3 : 4}>
+            {error && error[0].reason === 'Not found' && (
+              <p>Mark for Deletion</p>
+            )}
+          </TableCell>
+        </>
+      )}
+
       <TableCell>
         <Box sx={{ float: 'right' }}>
           {status !== 'NOT_MODIFIED' ? (

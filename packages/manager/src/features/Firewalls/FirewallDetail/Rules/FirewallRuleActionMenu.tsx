@@ -13,10 +13,12 @@ import type {
 
 export interface FirewallRuleActionMenuProps extends Partial<ActionMenuProps> {
   disabled: boolean;
+  // @TODO - Check if we should make clone & editing handlers prop optional in the case of rulesets
   handleCloneFirewallRule: (idx: number) => void;
   handleDeleteFirewallRule: (idx: number) => void;
   handleOpenRuleDrawerForEditing: (idx: number) => void;
   idx: number;
+  isRuleSet: boolean;
 }
 
 export const FirewallRuleActionMenu = React.memo(
@@ -24,30 +26,39 @@ export const FirewallRuleActionMenu = React.memo(
     const theme = useTheme<Theme>();
     const matchesSmDown = useMediaQuery(theme.breakpoints.down('md'));
 
+    const rulesetEditActionToolTipText =
+      'Edit your custom Rule Set\u2019s label, description, or rules, using the API. Rule Sets that are defined by a managed-service can only be updated by service accounts.';
+
     const {
       disabled,
       handleCloneFirewallRule,
       handleDeleteFirewallRule,
       handleOpenRuleDrawerForEditing,
       idx,
+      isRuleSet,
       ...actionMenuProps
     } = props;
 
     const actions: Action[] = [
       {
-        disabled,
+        disabled: disabled || isRuleSet,
         onClick: () => {
           handleOpenRuleDrawerForEditing(idx);
         },
         title: 'Edit',
+        tooltip: isRuleSet ? rulesetEditActionToolTipText : undefined,
       },
-      {
-        disabled,
-        onClick: () => {
-          handleCloneFirewallRule(idx);
-        },
-        title: 'Clone',
-      },
+      ...(!isRuleSet
+        ? [
+            {
+              disabled,
+              onClick: () => {
+                handleCloneFirewallRule(idx);
+              },
+              title: 'Clone',
+            },
+          ]
+        : []),
       {
         disabled,
         onClick: () => {
@@ -67,6 +78,7 @@ export const FirewallRuleActionMenu = React.memo(
                 disabled={action.disabled}
                 key={action.title}
                 onClick={action.onClick}
+                tooltip={action.tooltip}
               />
             );
           })}

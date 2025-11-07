@@ -46,6 +46,8 @@ export interface FirewallRuleType {
   label?: null | string;
   ports?: string;
   protocol: FirewallRuleProtocol;
+  // If firewall rule is a ruleset, provide only ruleset
+  ruleset?: null | number;
 }
 
 export interface FirewallDeviceEntity {

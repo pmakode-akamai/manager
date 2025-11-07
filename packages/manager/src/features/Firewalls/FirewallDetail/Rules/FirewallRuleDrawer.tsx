@@ -30,7 +30,7 @@ import type { ExtendedIP } from 'src/utilities/ipUtils';
 // =============================================================================
 export const FirewallRuleDrawer = React.memo(
   (props: FirewallRuleDrawerProps) => {
-    const { category, isOpen, mode, onClose, ruleToModify } = props;
+    const { category, isOpen, mode, onClose, ruleToModifyOrView } = props;
 
     // Custom IPs are tracked separately from the form. The <MultipleIPs />
     // component consumes this state. We use this on form submission if the
@@ -48,18 +48,22 @@ export const FirewallRuleDrawer = React.memo(
     // Reset state. If we're in EDIT mode, set IPs to the addresses of the rule we're modifying
     // (along with any errors we may have).
     React.useEffect(() => {
-      if (mode === 'edit' && ruleToModify) {
-        setIPs(getInitialIPs(ruleToModify));
-        setPresetPorts(portStringToItems(ruleToModify.ports)[0]);
+      if (mode === 'edit' && ruleToModifyOrView) {
+        setIPs(getInitialIPs(ruleToModifyOrView));
+        setPresetPorts(portStringToItems(ruleToModifyOrView.ports)[0]);
       } else if (isOpen) {
         setPresetPorts([]);
       } else {
         setIPs([{ address: '' }]);
       }
-    }, [mode, isOpen, ruleToModify]);
+    }, [mode, isOpen, ruleToModifyOrView]);
 
     const title =
-      mode === 'create' ? `Add an ${capitalize(category)} Rule` : 'Edit Rule';
+      mode === 'create'
+        ? `Add an ${capitalize(category)} Rule`
+        : mode === 'edit'
+          ? 'Edit Rule'
+          : `${capitalize(category)} Ruleset details`;
 
     const addressesLabel = category === 'inbound' ? 'source' : 'destination';
 
@@ -113,10 +117,10 @@ export const FirewallRuleDrawer = React.memo(
       onClose();
     };
 
-    return (
-      <Drawer onClose={onClose} open={isOpen} title={title}>
+    const CreateOrEditView = (
+      <>
         <Formik
-          initialValues={getInitialFormValues(ruleToModify)}
+          initialValues={getInitialFormValues(ruleToModifyOrView)}
           onSubmit={onSubmit}
           validate={onValidate}
           validateOnBlur={false}
@@ -130,7 +134,7 @@ export const FirewallRuleDrawer = React.memo(
                 ips={ips}
                 mode={mode}
                 presetPorts={presetPorts}
-                ruleErrors={ruleToModify?.errors}
+                ruleErrors={ruleToModifyOrView?.errors}
                 setIPs={setIPs}
                 setPresetPorts={setPresetPorts}
                 {...formikProps}
@@ -142,6 +146,14 @@ export const FirewallRuleDrawer = React.memo(
           Rule changes don&rsquo;t take effect immediately. You can add or
           delete rules before saving all your changes to this Firewall.
         </Typography>
+      </>
+    );
+
+    const detailsView = <>Ruleset details {ruleToModifyOrView?.ruleset}</>;
+
+    return (
+      <Drawer onClose={onClose} open={isOpen} title={title}>
+        {mode === 'view' ? detailsView : CreateOrEditView}
       </Drawer>
     );
   }
