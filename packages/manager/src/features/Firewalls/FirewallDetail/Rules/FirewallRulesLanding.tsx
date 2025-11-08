@@ -336,7 +336,8 @@ export const FirewallRulesLanding = React.memo((props: Props) => {
         next.routeId === '/firewalls/$id/rules' ||
         next.routeId === '/firewalls/$id/rules/add/inbound' ||
         next.routeId === '/firewalls/$id/rules/add/outbound' ||
-        next.routeId === '/firewalls/$id/rules/edit/$category/$ruleId';
+        next.routeId === '/firewalls/$id/rules/edit/$category/$ruleId' ||
+        next.routeId === '/firewalls/$id/rules/view/$category/$ruleId';
 
       return !isNavigatingToAllowedRoute;
     },
