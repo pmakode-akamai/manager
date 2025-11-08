@@ -45,7 +45,8 @@ export const FirewallPrefixListDrawer = React.memo(
               }
             }}
           >
-            Back
+            Back{' '}
+            {prevRuleDrawerData.ruleIdx !== undefined ? 'To Ruleset' : null}
           </Button>
         </Box>
       </Drawer>
