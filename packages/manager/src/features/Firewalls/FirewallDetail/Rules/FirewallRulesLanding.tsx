@@ -446,8 +446,8 @@ export const FirewallRulesLanding = React.memo((props: Props) => {
           handleOpenRuleDrawerForEditing={(idx: number) =>
             openRuleDrawer('inbound', 'edit', idx)
           }
-          handleOpenRuleSetDrawerForViewing={(ruleset: number) =>
-            openRuleDrawer('inbound', 'view', ruleset)
+          handleOpenRuleSetDrawerForViewing={(idx: number) =>
+            openRuleDrawer('inbound', 'view', idx)
           }
           handlePolicyChange={handlePolicyChange}
           handleReorder={(startIdx: number, endIdx: number) =>
