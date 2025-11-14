@@ -77,6 +77,24 @@ const firewallDetailRulesViewRuleSetRoute = createRoute({
   )
 );
 
+const firewallDetailRulesViewRuleSetPrefixListRoute = createRoute({
+  getParentRoute: () => firewallDetailRulesViewRuleSetRoute,
+  path: 'prefixlist/$prefixlistId',
+}).lazy(() =>
+  import('src/features/Firewalls/FirewallDetail/firewallDetailLazyRoute').then(
+    (m) => m.firewallDetailLazyRoute
+  )
+);
+
+const firewallDetailRulesViewPrefixListRoute = createRoute({
+  getParentRoute: () => firewallDetailRulesRoute,
+  path: 'view/$category/$ruleId/prefixlist/$prefixlistId',
+}).lazy(() =>
+  import('src/features/Firewalls/FirewallDetail/firewallDetailLazyRoute').then(
+    (m) => m.firewallDetailLazyRoute
+  )
+);
+
 const firewallDetailRulesAddRuleRoute = createRoute({
   getParentRoute: () => firewallDetailRulesRoute,
   path: 'add',
@@ -188,7 +206,10 @@ export const firewallsRouteTree = firewallsRoute.addChildren([
       firewallDetailRulesAddInboundRuleRoute,
       firewallDetailRulesAddOutboundRuleRoute,
       firewallDetailRulesEditRuleRoute,
-      firewallDetailRulesViewRuleSetRoute,
+      firewallDetailRulesViewRuleSetRoute.addChildren([
+        firewallDetailRulesViewRuleSetPrefixListRoute,
+      ]),
+      firewallDetailRulesViewPrefixListRoute,
     ]),
     firewallDetailNodebalancersRoute.addChildren([
       firewallDetailNodebalancersAddNodebalancerRoute,

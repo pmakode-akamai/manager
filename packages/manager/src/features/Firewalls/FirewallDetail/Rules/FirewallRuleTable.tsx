@@ -86,7 +86,7 @@ interface RowActionHandlers {
   handleCloneFirewallRule: (idx: number) => void;
   handleDeleteFirewallRule: (idx: number) => void;
   handleOpenRuleDrawerForEditing: (idx: number) => void;
-  handleOpenRuleSetDrawerForViewing?: (ruleset: number) => void;
+  handleOpenRuleSetDrawerForViewing?: (idx: number) => void;
   handleReorder: (startIdx: number, endIdx: number) => void;
   handleUndo: (idx: number) => void;
 }
@@ -94,7 +94,7 @@ interface RowActionHandlers {
 interface FirewallRuleTableProps extends RowActionHandlers {
   category: Category;
   disabled: boolean;
-  handleOpenPrefixListDrawer?: (prefixListLabel: string) => void;
+  handleOpenPrefixListDrawer?: (idx: number, prefixListLabel: string) => void;
   handlePolicyChange: (
     category: Category,
     newPolicy: FirewallPolicyType
@@ -129,9 +129,12 @@ export const FirewallRuleTable = (props: FirewallRuleTableProps) => {
   const addressColumnLabel =
     category === 'inbound' ? 'sources' : 'destinations';
 
-  const rowData = firewallRuleToRowData(rulesWithStatus, (prefixListLabel) => {
-    handleOpenPrefixListDrawer?.(prefixListLabel);
-  });
+  const rowData = firewallRuleToRowData(
+    rulesWithStatus,
+    (idx, prefixListLabel) => {
+      handleOpenPrefixListDrawer?.(idx, prefixListLabel);
+    }
+  );
 
   const openDrawerForCreating = React.useCallback(() => {
     openRuleDrawer(category, 'create');
@@ -624,14 +627,18 @@ export const ConditionalError = React.memo((props: ConditionalErrorProps) => {
  */
 export const firewallRuleToRowData = (
   firewallRules: ExtendedFirewallRule[],
-  onPrefixListClick?: (prefixListLabel: string) => void
+  onPrefixListClick?: (idx: number, prefixListLabel: string) => void
 ): RuleRow[] => {
   return firewallRules.map((thisRule, idx) => {
     const ruleType = ruleToPredefinedFirewall(thisRule);
 
     return {
       ...thisRule,
-      addresses: generateAddressesLabel(thisRule.addresses, onPrefixListClick),
+      addresses: generateAddressesLabel(
+        thisRule.addresses,
+        onPrefixListClick,
+        idx
+      ),
       id: idx + 1, // ids are 1-indexed, as id given to the useSortable hook cannot be 0
       index: idx,
       ports: sortPortString(thisRule.ports || ''),

@@ -4,7 +4,7 @@ import {
   useAllFirewallDevicesQuery,
   useUpdateFirewallRulesMutation,
 } from '@linode/queries';
-import { ActionsPanel, Drawer, Notice, Typography } from '@linode/ui';
+import { ActionsPanel, Notice, Typography } from '@linode/ui';
 import { styled } from '@mui/material/styles';
 import { useQueryClient } from '@tanstack/react-query';
 import {
@@ -40,6 +40,7 @@ import type {
   FirewallRuleType,
 } from '@linode/api-v4/lib/firewalls';
 import type { APIError } from '@linode/api-v4/lib/types';
+import type { Drawer } from '@linode/ui';
 
 interface Props {
   disabled: boolean;
@@ -65,35 +66,14 @@ export const FirewallRulesLanding = React.memo((props: Props) => {
   const location = useLocation();
   const { enqueueSnackbar } = useSnackbar();
 
-  const defaultDrawerCategoryFromPathName = location.pathname.includes(
-    '/inbound'
-  )
-    ? 'inbound'
-    : 'outbound';
-
   const defaultDrawerModeFromPathName = location.pathname.includes('/edit')
     ? 'edit'
     : location.pathname.includes('/view')
       ? 'view'
       : 'create';
 
-  const viewModeparams = useParams({
-    from: `/firewalls/$id/rules/view/$category/ruleset/$ruleId`,
-    shouldThrow: false,
-  });
-  const editModeParams = useParams({
-    from: '/firewalls/$id/rules/edit/$category/$ruleId',
-    shouldThrow: false,
-  });
+  const params = useParams({ strict: false });
 
-  const defaultDrawerRuleIdxFromParams = viewModeparams?.ruleId
-    ? Number(viewModeparams.ruleId)
-    : editModeParams?.ruleId
-      ? Number(editModeParams.ruleId)
-      : undefined;
-
-  const [isPrefixListDrawerOpen, setIsPrefixListDrawerOpen] =
-    React.useState(false);
   const [selectedPrefixListLabel, setSelectedPrefixListLabel] = React.useState<
     string | undefined
   >(undefined);
@@ -123,9 +103,9 @@ export const FirewallRulesLanding = React.memo((props: Props) => {
    * Component state and handlers
    */
   const [ruleDrawer, setRuleDrawer] = React.useState<Drawer>({
-    category: defaultDrawerCategoryFromPathName,
+    category: (params.category ?? 'inbound') as Category,
     mode: defaultDrawerModeFromPathName,
-    ruleIdx: defaultDrawerRuleIdxFromParams,
+    ruleIdx: Number(params.ruleId),
   });
   const [submitting, setSubmitting] = React.useState<boolean>(false);
   // @todo fine-grained error handling.
@@ -159,7 +139,39 @@ export const FirewallRulesLanding = React.memo((props: Props) => {
     }
 
     navigate({
-      params: { id: String(firewallID), ruleId: String(idx) },
+      params: {
+        id: String(firewallID),
+        ruleId: String(idx),
+      },
+      to: path,
+    });
+  };
+
+  const openPrefixListDrawer = ({
+    category,
+    hasRulsetContext,
+    idx,
+    prefixListId,
+  }: {
+    category: Category;
+    hasRulsetContext: boolean;
+    idx?: number;
+    prefixListId?: string;
+  }) => {
+    let path: string;
+
+    if (hasRulsetContext) {
+      path = `/firewalls/$id/rules/view/${category}/ruleset/$ruleId/prefixlist/$prefixlistId`;
+    } else {
+      path = `/firewalls/$id/rules/view/${category}/$ruleId/prefixlist/$prefixlistId`;
+    }
+
+    navigate({
+      params: {
+        id: String(firewallID),
+        ruleId: String(idx),
+        prefixlistId: prefixListId,
+      },
       to: path,
     });
   };
@@ -378,18 +390,6 @@ export const FirewallRulesLanding = React.memo((props: Props) => {
         : outboundRules[ruleDrawer.ruleIdx]
       : undefined;
 
-  const handleClosePrefixListDrawer = React.useCallback(() => {
-    setIsPrefixListDrawerOpen(false);
-  }, []);
-
-  const handleOpenPrefixListDrawer = React.useCallback(
-    (prefixListLabel: string) => {
-      setSelectedPrefixListLabel(prefixListLabel);
-      setIsPrefixListDrawerOpen(true);
-    },
-    []
-  );
-
   return (
     <>
       <ConfirmationDialog
@@ -438,12 +438,17 @@ export const FirewallRulesLanding = React.memo((props: Props) => {
             handleCloneRule('inbound', idx)
           }
           handleDeleteFirewallRule={(idx) => handleDeleteRule('inbound', idx)}
-          handleOpenPrefixListDrawer={(prefixListLabel) => {
-            // Clear ruleset drawer
+          handleOpenPrefixListDrawer={(idx, prefixListLabel) => {
+            // Clear ruleset drawer (to make sure that the previously visited rulset details drawer data don't persist for this action)
             setRuleDrawer({ ...ruleDrawer, ruleIdx: undefined });
 
             setSelectedPrefixListLabel(prefixListLabel);
-            setIsPrefixListDrawerOpen(true);
+            openPrefixListDrawer({
+              category: ruleDrawer.category,
+              hasRulsetContext: false,
+              idx,
+              prefixListId: prefixListLabel,
+            });
           }}
           handleOpenRuleDrawerForEditing={(idx: number) =>
             openRuleDrawer('inbound', 'edit', idx)
@@ -469,6 +474,22 @@ export const FirewallRulesLanding = React.memo((props: Props) => {
             handleCloneRule('outbound', idx)
           }
           handleDeleteFirewallRule={(idx) => handleDeleteRule('outbound', idx)}
+          handleOpenPrefixListDrawer={(idx, prefixListLabel) => {
+            // Clear ruleset drawer (to make sure that the previously visited rulset details drawer data don't persist for this action)
+            setRuleDrawer({ ...ruleDrawer, ruleIdx: undefined });
+
+            setSelectedPrefixListLabel(prefixListLabel);
+
+            // We are passing idx = undefined her because, we don't want this prefixlist drawer as of rules drawer context
+            // Since we are opening this from table rules row and not from ruleset details drawer.
+
+            openPrefixListDrawer({
+              category: ruleDrawer.category,
+              hasRulsetContext: false,
+              idx,
+              prefixListId: prefixListLabel,
+            });
+          }}
           handleOpenRuleDrawerForEditing={(idx: number) =>
             openRuleDrawer('outbound', 'edit', idx)
           }
@@ -501,7 +522,16 @@ export const FirewallRulesLanding = React.memo((props: Props) => {
         }
         mode={ruleDrawer.mode}
         onClose={closeRuleDrawer}
-        onOpenPrefixListDrawer={handleOpenPrefixListDrawer}
+        onOpenPrefixListDrawer={(prefixListLabel) => {
+          setSelectedPrefixListLabel(prefixListLabel);
+
+          openPrefixListDrawer({
+            category: ruleDrawer.category,
+            hasRulsetContext: true,
+            idx: ruleDrawer.ruleIdx,
+            prefixListId: prefixListLabel,
+          });
+        }}
         onSubmit={
           ruleDrawer.mode === 'create'
             ? handleAddRule
@@ -513,9 +543,26 @@ export const FirewallRulesLanding = React.memo((props: Props) => {
       />
 
       <FirewallPrefixListDrawer
-        isOpen={isPrefixListDrawerOpen}
-        onClose={handleClosePrefixListDrawer}
-        prevRuleDrawerData={ruleDrawer}
+        isOpen={
+          location.pathname.endsWith(
+            `view/inbound/ruleset/${params?.ruleId}/prefixlist/${encodeURIComponent(selectedPrefixListLabel as string)}`
+          ) ||
+          location.pathname.endsWith(
+            `view/outbound/ruleset/${params?.ruleId}/prefixlist/${encodeURIComponent(selectedPrefixListLabel as string)}`
+          ) ||
+          location.pathname.endsWith(
+            `view/inbound/${params?.ruleId}/prefixlist/${encodeURIComponent(selectedPrefixListLabel as string)}`
+          ) ||
+          location.pathname.endsWith(
+            `view/outbound/${params?.ruleId}/prefixlist/${encodeURIComponent(selectedPrefixListLabel as string)}`
+          )
+        }
+        onClose={() => {
+          navigate({
+            params: { id: String(firewallID) },
+            to: '/firewalls/$id/rules',
+          });
+        }}
         selectedPrefixListLabel={selectedPrefixListLabel}
       />
 

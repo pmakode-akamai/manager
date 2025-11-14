@@ -41,11 +41,6 @@ export const FirewallRuleDrawer = React.memo(
       onOpenPrefixListDrawer,
     } = props;
 
-    // const paramsFromViewMode = useParams({
-    //   from: '/firewalls/$id/rules/view/$category/$ruleId',
-    //   shouldThrow: false,
-    // });
-
     // Custom IPs are tracked separately from the form. The <MultipleIPs />
     // component consumes this state. We use this on form submission if the
     // `addresses` form value is "ip/netmask", which indicates the user has
@@ -172,7 +167,13 @@ export const FirewallRuleDrawer = React.memo(
           <Box marginTop={4}>
             {prefixLists.map((pl) => (
               <>
-                <Link key={pl} onClick={() => onOpenPrefixListDrawer?.(pl)}>
+                <Link
+                  key={pl}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    onOpenPrefixListDrawer?.(pl);
+                  }}
+                >
                   {pl}
                 </Link>
                 &nbsp;

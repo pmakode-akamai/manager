@@ -2,21 +2,19 @@ import { Box, Button, Drawer } from '@linode/ui';
 import { useNavigate, useParams } from '@tanstack/react-router';
 import * as React from 'react';
 
-import type { Drawer as RuleDrawerType } from './FirewallRulesLanding';
-
 export interface FirewallPrefixListDrawerProps {
   isOpen: boolean;
   onClose: () => void;
-  prevRuleDrawerData: RuleDrawerType;
   selectedPrefixListLabel: string | undefined;
 }
 
 export const FirewallPrefixListDrawer = React.memo(
   (props: FirewallPrefixListDrawerProps) => {
-    const { onClose, isOpen, selectedPrefixListLabel, prevRuleDrawerData } =
-      props;
+    const { onClose, isOpen, selectedPrefixListLabel } = props;
     const navigate = useNavigate();
-    const params = useParams({ from: '/firewalls/$id/rules' });
+    const params = useParams({ strict: false });
+
+    const hasRuleSetContext = location.pathname.includes('/ruleset');
 
     // Call APi to get PrefixList by label here
 
@@ -33,20 +31,19 @@ export const FirewallPrefixListDrawer = React.memo(
             onClick={() => {
               onClose();
 
-              if (prevRuleDrawerData.ruleIdx !== undefined) {
+              if (hasRuleSetContext) {
                 navigate({
                   to: '/firewalls/$id/rules/view/$category/ruleset/$ruleId',
                   params: {
-                    category: prevRuleDrawerData.category,
-                    id: params.id,
-                    ruleId: String(prevRuleDrawerData.ruleIdx),
+                    category: params.category as string,
+                    id: params.id as string,
+                    ruleId: String(params.ruleId),
                   },
                 });
               }
             }}
           >
-            Back{' '}
-            {prevRuleDrawerData.ruleIdx !== undefined ? 'To Ruleset' : null}
+            Back {hasRuleSetContext ? 'To Ruleset' : null}
           </Button>
         </Box>
       </Drawer>

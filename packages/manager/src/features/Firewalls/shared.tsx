@@ -216,7 +216,8 @@ export const generateRuleLabel = (ruleType?: FirewallPreset) =>
 
 export const generateAddressesLabel = (
   addresses: FirewallRuleType['addresses'],
-  onPrefixListClick?: (prefixListLabel: string) => void
+  onPrefixListClick?: (idx: number, prefixListLabel: string) => void,
+  rulesRowIndex?: number
 ) => {
   const elements: React.ReactNode[] = [];
 
@@ -232,7 +233,10 @@ export const generateAddressesLabel = (
     addresses?.ipv4?.forEach((ip) => {
       elements.push(
         ip.startsWith('pl:') ? (
-          <Link key={ip} onClick={() => onPrefixListClick?.(ip)}>
+          <Link
+            key={ip}
+            onClick={() => onPrefixListClick?.(rulesRowIndex ?? -1, ip)}
+          >
             {ip}
           </Link>
         ) : (
@@ -247,7 +251,10 @@ export const generateAddressesLabel = (
     addresses?.ipv6?.forEach((ip) => {
       elements.push(
         ip.startsWith('pl:') ? (
-          <Link key={ip} onClick={() => onPrefixListClick?.(ip)}>
+          <Link
+            key={ip}
+            onClick={() => onPrefixListClick?.(rulesRowIndex ?? -1, ip)}
+          >
             {ip}
           </Link>
         ) : (
