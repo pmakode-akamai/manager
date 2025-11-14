@@ -1,3 +1,4 @@
+import { Chip, Tooltip } from '@linode/ui';
 // import { truncateAndJoinList } from '@linode/utilities';
 import { capitalize } from '@linode/utilities';
 import React from 'react';
@@ -222,17 +223,11 @@ export const generateAddressesLabel = (
   const allowedAllIPv4 = allowAllIPv4(addresses);
   const allowedAllIPv6 = allowAllIPv6(addresses);
 
-  // First add the "All IPvX" strings so they always appear, even if the list
-  // ends up being truncated.
-  if (allowedAllIPv4) {
-    elements.push('All IPv4');
-  }
+  // First add "All IPvX" items
+  if (allowedAllIPv4) elements.push('All IPv4');
+  if (allowedAllIPv6) elements.push('All IPv6');
 
-  if (allowedAllIPv6) {
-    elements.push('All IPv6');
-  }
-
-  // Now we can look at the rest of the rules:
+  // Add IPv4s
   if (!allowedAllIPv4) {
     addresses?.ipv4?.forEach((ip) => {
       elements.push(
@@ -247,18 +242,52 @@ export const generateAddressesLabel = (
     });
   }
 
+  // Add IPv6s
   if (!allowedAllIPv6) {
-    addresses?.ipv6?.forEach((thisIP) => {
-      elements.push(thisIP);
+    addresses?.ipv6?.forEach((ip) => {
+      elements.push(
+        ip.startsWith('pl:') ? (
+          <Link key={ip} onClick={() => onPrefixListClick?.(ip)}>
+            {ip}
+          </Link>
+        ) : (
+          <span key={ip}>{ip}</span>
+        )
+      );
     });
   }
 
-  // If no IPs are allowed
   if (elements.length === 0) return 'None';
 
-  // Truncate to 2 visible items (like before)
-  const truncated = elements.slice(0, 2);
-  const hasMore = elements.length > 2;
+  const truncated = elements.slice(0, 1);
+  const hidden = elements.length - 1;
+  const hasMore = elements.length > 1;
+
+  const fullTooltip = (
+    <div
+      style={{
+        maxHeight: 200, // adjust as needed
+        overflowY: 'auto',
+        paddingRight: 8, // avoids content hiding behind scrollbar
+      }}
+    >
+      <ul
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 4,
+          paddingLeft: 20,
+          margin: 0,
+        }}
+      >
+        {elements.map((el, i) => (
+          <li key={i} style={{ listStyleType: 'disc' }}>
+            {el}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
 
   return (
     <>
@@ -268,7 +297,21 @@ export const generateAddressesLabel = (
           {idx < truncated.length - 1 && ', '}
         </React.Fragment>
       ))}
-      {hasMore && ', …'}
+
+      {hasMore && (
+        <Tooltip arrow placement="top" title={fullTooltip}>
+          <Chip
+            label={`+${hidden}`}
+            size="small"
+            style={{
+              cursor: 'pointer',
+              marginLeft: 4,
+            }}
+            variant="outlined"
+            // Optional: allow clicking the chip to open expanded UI instead of relying on hover
+          />
+        </Tooltip>
+      )}
     </>
   );
 };
