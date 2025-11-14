@@ -76,7 +76,7 @@ export const FirewallRulesLanding = React.memo((props: Props) => {
 
   const [selectedPrefixListLabel, setSelectedPrefixListLabel] = React.useState<
     string | undefined
-  >(undefined);
+  >(params.prefixlistId);
 
   /**
    * inbound and outbound policy aren't part of any particular rule
@@ -545,16 +545,16 @@ export const FirewallRulesLanding = React.memo((props: Props) => {
       <FirewallPrefixListDrawer
         isOpen={
           location.pathname.endsWith(
-            `view/inbound/ruleset/${params?.ruleId}/prefixlist/${encodeURIComponent(selectedPrefixListLabel as string)}`
+            `view/inbound/ruleset/${params?.ruleId}/prefixlist/${encodeURIComponent(params.prefixlistId as string)}`
           ) ||
           location.pathname.endsWith(
-            `view/outbound/ruleset/${params?.ruleId}/prefixlist/${encodeURIComponent(selectedPrefixListLabel as string)}`
+            `view/outbound/ruleset/${params?.ruleId}/prefixlist/${encodeURIComponent(params.prefixlistId as string)}`
           ) ||
           location.pathname.endsWith(
-            `view/inbound/${params?.ruleId}/prefixlist/${encodeURIComponent(selectedPrefixListLabel as string)}`
+            `view/inbound/${params?.ruleId}/prefixlist/${encodeURIComponent(params.prefixlistId as string)}`
           ) ||
           location.pathname.endsWith(
-            `view/outbound/${params?.ruleId}/prefixlist/${encodeURIComponent(selectedPrefixListLabel as string)}`
+            `view/outbound/${params?.ruleId}/prefixlist/${encodeURIComponent(params.prefixlistId as string)}`
           )
         }
         onClose={() => {
