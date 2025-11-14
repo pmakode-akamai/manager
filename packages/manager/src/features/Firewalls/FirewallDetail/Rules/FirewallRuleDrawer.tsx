@@ -183,8 +183,18 @@ export const FirewallRuleDrawer = React.memo(
       );
     };
 
+    const drawerViewOrEditNotFoundError =
+      mode !== 'create' && ruleToModifyOrView === undefined
+        ? 'Not Found'
+        : null;
+
     return (
-      <Drawer onClose={onClose} open={isOpen} title={title}>
+      <Drawer
+        error={drawerViewOrEditNotFoundError}
+        onClose={onClose}
+        open={isOpen}
+        title={title}
+      >
         {mode === 'view' ? DetailViewContainer() : CreateOrEditContainer}
       </Drawer>
     );
