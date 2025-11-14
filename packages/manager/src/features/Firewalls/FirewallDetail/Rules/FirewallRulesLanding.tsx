@@ -78,7 +78,7 @@ export const FirewallRulesLanding = React.memo((props: Props) => {
       : 'create';
 
   const viewModeparams = useParams({
-    from: `/firewalls/$id/rules/view/$category/$ruleId`,
+    from: `/firewalls/$id/rules/view/$category/ruleset/$ruleId`,
     shouldThrow: false,
   });
   const editModeParams = useParams({
@@ -150,8 +150,10 @@ export const FirewallRulesLanding = React.memo((props: Props) => {
 
     if (mode === 'create') {
       path = `/firewalls/$id/rules/add/${category}`;
-    } else if (mode === 'edit' || mode === 'view') {
+    } else if (mode === 'edit') {
       path = `/firewalls/$id/rules/${mode}/${category}/$ruleId`;
+    } else if (mode === 'view') {
+      path = `/firewalls/$id/rules/${mode}/${category}/ruleset/$ruleId`;
     } else {
       throw new Error(`Unknown mode: ${mode}`);
     }
@@ -337,7 +339,7 @@ export const FirewallRulesLanding = React.memo((props: Props) => {
         next.routeId === '/firewalls/$id/rules/add/inbound' ||
         next.routeId === '/firewalls/$id/rules/add/outbound' ||
         next.routeId === '/firewalls/$id/rules/edit/$category/$ruleId' ||
-        next.routeId === '/firewalls/$id/rules/view/$category/$ruleId';
+        next.routeId === '/firewalls/$id/rules/view/$category/ruleset/$ruleId';
 
       return !isNavigatingToAllowedRoute;
     },
@@ -490,8 +492,12 @@ export const FirewallRulesLanding = React.memo((props: Props) => {
           location.pathname.endsWith('add/outbound') ||
           location.pathname.endsWith(`edit/inbound/${ruleDrawer.ruleIdx}`) ||
           location.pathname.endsWith(`edit/outbound/${ruleDrawer.ruleIdx}`) ||
-          location.pathname.endsWith(`view/inbound/${ruleDrawer.ruleIdx}`) ||
-          location.pathname.endsWith(`view/outbound/${ruleDrawer.ruleIdx}`)
+          location.pathname.endsWith(
+            `view/inbound/ruleset/${ruleDrawer.ruleIdx}`
+          ) ||
+          location.pathname.endsWith(
+            `view/outbound/ruleset/${ruleDrawer.ruleIdx}`
+          )
         }
         mode={ruleDrawer.mode}
         onClose={closeRuleDrawer}

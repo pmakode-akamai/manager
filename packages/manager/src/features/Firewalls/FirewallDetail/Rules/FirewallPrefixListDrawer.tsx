@@ -35,7 +35,7 @@ export const FirewallPrefixListDrawer = React.memo(
 
               if (prevRuleDrawerData.ruleIdx !== undefined) {
                 navigate({
-                  to: '/firewalls/$id/rules/view/$category/$ruleId',
+                  to: '/firewalls/$id/rules/view/$category/ruleset/$ruleId',
                   params: {
                     category: prevRuleDrawerData.category,
                     id: params.id,

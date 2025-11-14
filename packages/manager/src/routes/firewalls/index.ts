@@ -70,7 +70,7 @@ const firewallDetailRulesRoute = createRoute({
 
 const firewallDetailRulesViewRuleSetRoute = createRoute({
   getParentRoute: () => firewallDetailRulesRoute,
-  path: 'view/$category/$ruleId',
+  path: 'view/$category/ruleset/$ruleId',
 }).lazy(() =>
   import('src/features/Firewalls/FirewallDetail/firewallDetailLazyRoute').then(
     (m) => m.firewallDetailLazyRoute
