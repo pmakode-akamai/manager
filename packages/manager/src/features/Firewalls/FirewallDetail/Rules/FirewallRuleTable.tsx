@@ -28,7 +28,7 @@ import { makeStyles } from 'tss-react/mui';
 import Undo from 'src/assets/icons/undo.svg';
 import { CopyTooltip } from 'src/components/CopyTooltip/CopyTooltip';
 import { Link } from 'src/components/Link';
-import { MaskableText } from 'src/components/MaskableText/MaskableText';
+// import { MaskableText } from 'src/components/MaskableText/MaskableText';
 import { Table } from 'src/components/Table';
 import { TableBody } from 'src/components/TableBody';
 import { TableCell } from 'src/components/TableCell';
@@ -37,7 +37,7 @@ import { TableRow } from 'src/components/TableRow';
 import { TableRowEmpty } from 'src/components/TableRowEmpty/TableRowEmpty';
 import { TableRowLoading } from 'src/components/TableRowLoading/TableRowLoading';
 import {
-  generateAddressesLabel,
+  generateAddressesLabelV2,
   generateRuleLabel,
   predefinedFirewallFromRule as ruleToPredefinedFirewall,
   useIsFirewallRulesetsPrefixlistsEnabled,
@@ -66,7 +66,7 @@ import type { FirewallOptionItem } from 'src/features/Firewalls/shared';
 
 interface RuleRow {
   action?: null | string;
-  addresses?: null | string;
+  addresses?: null | React.ReactNode | string;
   description?: null | string;
   errors?: FirewallRuleError[];
   id: number;
@@ -426,7 +426,8 @@ const FirewallRuleTableRow = React.memo((props: FirewallRuleTableRowProps) => {
               <ConditionalError errors={errors} formField="ports" />
             </TableCell>
             <TableCell aria-label={`Addresses: ${addresses}`}>
-              <MaskableText text={addresses ?? ''} />
+              {/* <MaskableText text={addresses ?? ''} /> */}
+              {addresses}
               <ConditionalError errors={errors} formField="addresses" />
             </TableCell>
           </Hidden>
@@ -638,14 +639,19 @@ export const ConditionalError = React.memo((props: ConditionalErrorProps) => {
  * of data. This also allows us to sort each column of the RuleTable.
  */
 export const firewallRuleToRowData = (
-  firewallRules: ExtendedFirewallRule[]
+  firewallRules: ExtendedFirewallRule[],
+  onPrefixListClick?: (idx: number, prefixListLabel: string) => void
 ): RuleRow[] => {
   return firewallRules.map((thisRule, idx) => {
     const ruleType = ruleToPredefinedFirewall(thisRule);
 
     return {
       ...thisRule,
-      addresses: generateAddressesLabel(thisRule.addresses),
+      addresses: generateAddressesLabelV2(
+        thisRule.addresses,
+        onPrefixListClick,
+        idx
+      ),
       id: idx + 1, // ids are 1-indexed, as id given to the useSortable hook cannot be 0
       index: idx,
       ports: sortPortString(thisRule.ports || ''),

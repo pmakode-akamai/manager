@@ -1,6 +1,9 @@
+import { Chip, Tooltip } from '@linode/ui';
 import { truncateAndJoinList } from '@linode/utilities';
 import { capitalize } from '@linode/utilities';
+import React from 'react';
 
+import { Link } from 'src/components/Link';
 import { useFlags } from 'src/hooks/useFlags';
 
 import type { PORT_PRESETS } from './FirewallDetail/Rules/shared';
@@ -248,6 +251,115 @@ export const generateAddressesLabel = (
 
   // If no IPs are allowed.
   return 'None';
+};
+
+export const generateAddressesLabelV2 = (
+  addresses: FirewallRuleType['addresses'],
+  onPrefixListClick?: (idx: number, prefixListLabel: string) => void,
+  rulesRowIndex?: number
+) => {
+  const elements: React.ReactNode[] = [];
+
+  const allowedAllIPv4 = allowAllIPv4(addresses);
+  const allowedAllIPv6 = allowAllIPv6(addresses);
+
+  // First add "All IPvX" items
+  if (allowedAllIPv4) elements.push('All IPv4');
+  if (allowedAllIPv6) elements.push('All IPv6');
+
+  // Add IPv4s
+  if (!allowedAllIPv4) {
+    addresses?.ipv4?.forEach((ip) => {
+      elements.push(
+        ip.startsWith('pl:') ? (
+          <Link
+            key={ip}
+            onClick={() => onPrefixListClick?.(rulesRowIndex ?? -1, ip)}
+          >
+            {ip}
+          </Link>
+        ) : (
+          <span key={ip}>{ip}</span>
+        )
+      );
+    });
+  }
+
+  // Add IPv6s
+  if (!allowedAllIPv6) {
+    addresses?.ipv6?.forEach((ip) => {
+      elements.push(
+        ip.startsWith('pl:') ? (
+          <Link
+            key={ip}
+            onClick={() => onPrefixListClick?.(rulesRowIndex ?? -1, ip)}
+          >
+            {ip}
+          </Link>
+        ) : (
+          <span key={ip}>{ip}</span>
+        )
+      );
+    });
+  }
+
+  if (elements.length === 0) return 'None';
+
+  const truncated = elements.slice(0, 1);
+  const hidden = elements.length - 1;
+  const hasMore = elements.length > 1;
+
+  const fullTooltip = (
+    <div
+      style={{
+        maxHeight: 200, // adjust as needed
+        overflowY: 'auto',
+        paddingRight: 8, // avoids content hiding behind scrollbar
+      }}
+    >
+      <ul
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 4,
+          paddingLeft: 20,
+          margin: 0,
+        }}
+      >
+        {elements.map((el, i) => (
+          <li key={i} style={{ listStyleType: 'disc' }}>
+            {el}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+
+  return (
+    <>
+      {truncated.map((el, idx) => (
+        <React.Fragment key={idx}>
+          {el}
+          {idx < truncated.length - 1 && ', '}
+        </React.Fragment>
+      ))}
+
+      {hasMore && (
+        <Tooltip arrow placement="top" title={fullTooltip}>
+          <Chip
+            label={`+${hidden}`}
+            size="small"
+            style={{
+              cursor: 'pointer',
+              marginLeft: 4,
+            }}
+            variant="outlined"
+            // Optional: allow clicking the chip to open expanded UI instead of relying on hover
+          />
+        </Tooltip>
+      )}
+    </>
+  );
 };
 
 export const getFirewallDescription = (firewall: Firewall) => {
