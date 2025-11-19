@@ -253,11 +253,24 @@ export const generateAddressesLabel = (
   return 'None';
 };
 
+interface GenerateAddressesLabelV2Options {
+  addresses: FirewallRuleType['addresses'];
+  onPrefixListClick?: (idx: number, prefixListLabel: string) => void;
+  rulesRowIndex?: number;
+  showTruncateChip?: boolean; // default true
+  truncateAt?: number; // default 1
+}
+
 export const generateAddressesLabelV2 = (
-  addresses: FirewallRuleType['addresses'],
-  onPrefixListClick?: (idx: number, prefixListLabel: string) => void,
-  rulesRowIndex?: number
+  options: GenerateAddressesLabelV2Options
 ) => {
+  const {
+    addresses,
+    onPrefixListClick,
+    rulesRowIndex,
+    showTruncateChip = true,
+    truncateAt = 1,
+  } = options;
   const elements: React.ReactNode[] = [];
 
   const allowedAllIPv4 = allowAllIPv4(addresses);
@@ -321,9 +334,9 @@ export const generateAddressesLabelV2 = (
 
   if (elements.length === 0) return 'None';
 
-  const truncated = elements.slice(0, 1);
-  const hidden = elements.length - 1;
-  const hasMore = elements.length > 1;
+  const truncated = showTruncateChip ? elements.slice(0, truncateAt) : elements;
+  const hidden = elements.length - truncateAt;
+  const hasMore = showTruncateChip && elements.length > truncateAt;
 
   const fullTooltip = (
     <div

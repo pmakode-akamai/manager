@@ -1312,7 +1312,7 @@ export const handlers = [
           inbound: [
             firewallRuleFactory.build({ ruleset: 123 }), // Referenced Ruleset to the Firewall (ID 123)
             firewallRuleFactory.build({ ruleset: 123456789 }), // Referenced Ruleset to the Firewall (ID 123456789)
-            ...firewallRuleFactory.buildList(2),
+            ...firewallRuleFactory.buildList(1),
           ],
         }),
       }),
@@ -1347,6 +1347,21 @@ export const handlers = [
             return firewallRuleSetFactory.build({
               id: 123456789,
               label: 'ruleset-with-a-longer-32ch-label',
+              rules: [
+                ...firewallRuleFactory.buildList(1, {
+                  addresses: {
+                    ipv4: [
+                      'pl:system:test-1',
+                      'pl:system:test-2',
+                      '192.168.1.213',
+                    ],
+                    ipv6: [
+                      'pl:system:test-2',
+                      '2001:db8:85a3::8a2e:370:7334/128',
+                    ],
+                  },
+                }),
+              ],
             });
           default:
             return firewallRuleSetFactory.build();

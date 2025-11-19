@@ -7,7 +7,7 @@ import { CopyTooltip } from 'src/components/CopyTooltip/CopyTooltip';
 import { DateTimeDisplay } from 'src/components/DateTimeDisplay';
 
 import {
-  generateAddressesLabel,
+  generateAddressesLabelV2,
   useIsFirewallRulesetsPrefixlistsEnabled,
 } from '../../shared';
 import {
@@ -146,8 +146,13 @@ export const FirewallRuleSetDetailsView = (
                 flexShrink: 0,
               })}
             />
-            {rule.protocol};&nbsp;{rule.ports};&nbsp;
-            {generateAddressesLabel(rule.addresses)}
+            <Box>
+              {rule.protocol};&nbsp;{rule.ports};&nbsp;
+              {generateAddressesLabelV2({
+                addresses: rule.addresses,
+                showTruncateChip: false,
+              })}
+            </Box>
           </StyledListItem>
         ))}
       </Paper>

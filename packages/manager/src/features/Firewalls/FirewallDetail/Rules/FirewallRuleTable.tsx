@@ -647,11 +647,11 @@ export const firewallRuleToRowData = (
 
     return {
       ...thisRule,
-      addresses: generateAddressesLabelV2(
-        thisRule.addresses,
+      addresses: generateAddressesLabelV2({
+        addresses: thisRule.addresses,
         onPrefixListClick,
-        idx
-      ),
+        rulesRowIndex: idx,
+      }),
       id: idx + 1, // ids are 1-indexed, as id given to the useSortable hook cannot be 0
       index: idx,
       ports: sortPortString(thisRule.ports || ''),
