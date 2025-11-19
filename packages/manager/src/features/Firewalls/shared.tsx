@@ -267,39 +267,55 @@ export const generateAddressesLabelV2 = (
   if (allowedAllIPv4) elements.push('All IPv4');
   if (allowedAllIPv6) elements.push('All IPv6');
 
-  // Add IPv4s
+  // Build a map of prefix lists
+  const prefixMap: Record<string, { ipv4: boolean; ipv6: boolean }> = {};
+
   if (!allowedAllIPv4) {
     addresses?.ipv4?.forEach((ip) => {
-      elements.push(
-        ip.startsWith('pl:') ? (
-          <Link
-            key={ip}
-            onClick={() => onPrefixListClick?.(rulesRowIndex ?? -1, ip)}
-          >
-            {ip}
-          </Link>
-        ) : (
-          <span key={ip}>{ip}</span>
-        )
-      );
+      if (ip.startsWith('pl:')) {
+        if (!prefixMap[ip]) prefixMap[ip] = { ipv4: false, ipv6: false };
+        prefixMap[ip].ipv4 = true;
+      }
     });
   }
 
-  // Add IPv6s
   if (!allowedAllIPv6) {
     addresses?.ipv6?.forEach((ip) => {
-      elements.push(
-        ip.startsWith('pl:') ? (
-          <Link
-            key={ip}
-            onClick={() => onPrefixListClick?.(rulesRowIndex ?? -1, ip)}
-          >
-            {ip}
-          </Link>
-        ) : (
-          <span key={ip}>{ip}</span>
-        )
-      );
+      if (ip.startsWith('pl:')) {
+        if (!prefixMap[ip]) prefixMap[ip] = { ipv4: false, ipv6: false };
+        prefixMap[ip].ipv6 = true;
+      }
+    });
+  }
+
+  // Add prefix list links with merged labels
+  Object.entries(prefixMap).forEach(([pl, presence]) => {
+    let suffix = '';
+    if (presence.ipv4 && presence.ipv6) suffix = ' (IPv4 + IPv6)';
+    else if (presence.ipv4) suffix = ' (IPv4)';
+    else if (presence.ipv6) suffix = ' (IPv6)';
+
+    elements.push(
+      <Link
+        key={pl}
+        onClick={() => onPrefixListClick?.(rulesRowIndex ?? -1, pl)}
+      >
+        {pl + suffix}
+      </Link>
+    );
+  });
+
+  // Add remaining IPv4 addresses that are not prefix lists
+  if (!allowedAllIPv4) {
+    addresses?.ipv4?.forEach((ip) => {
+      if (!ip.startsWith('pl:')) elements.push(<span key={ip}>{ip}</span>);
+    });
+  }
+
+  // Add remaining IPv6 addresses that are not prefix lists
+  if (!allowedAllIPv6) {
+    addresses?.ipv6?.forEach((ip) => {
+      if (!ip.startsWith('pl:')) elements.push(<span key={ip}>{ip}</span>);
     });
   }
 
@@ -312,10 +328,9 @@ export const generateAddressesLabelV2 = (
   const fullTooltip = (
     <div
       style={{
-        maxHeight: 200, // adjust as needed
+        maxHeight: 200,
         overflowY: 'auto',
-        paddingRight: 8, // avoids content hiding behind scrollbar
-        minWidth: '248px',
+        paddingRight: 8,
       }}
     >
       <ul
@@ -346,16 +361,28 @@ export const generateAddressesLabelV2 = (
       ))}
 
       {hasMore && (
-        <Tooltip arrow placement="bottom" title={fullTooltip}>
+        <Tooltip
+          arrow
+          componentsProps={{
+            tooltip: {
+              sx: {
+                minWidth: '248px',
+              },
+            },
+          }}
+          placement="bottom"
+          title={fullTooltip}
+        >
           <Chip
             label={`+${hidden}`}
             size="small"
-            style={{
+            sx={(theme) => ({
               cursor: 'pointer',
-              marginLeft: 4,
-            }}
+              marginLeft: theme.spacingFunction(8),
+              borderRadius: '12px',
+              minWidth: '33px',
+            })}
             variant="outlined"
-            // Optional: allow clicking the chip to open expanded UI instead of relying on hover
           />
         </Tooltip>
       )}

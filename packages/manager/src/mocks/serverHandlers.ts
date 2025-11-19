@@ -1307,10 +1307,18 @@ export const handlers = [
                 firewallRuleFactory.build({ ruleset: 123456789 }), // Referenced Ruleset to the Firewall (ID 123456789)
                 ...firewallRuleFactory.buildList(1, {
                   addresses: {
-                    ipv4: ['192.168.1.213', '172.31.255.255'],
+                    ipv4: [
+                      'pl:system:resolvers:test-1',
+                      'pl:system:resolvers:test-2',
+                      '192.168.1.213',
+                      '172.31.255.255',
+                    ],
                     ipv6: [
+                      'pl:system:resolvers:test-2',
                       '2001:db8:85a3::8a2e:370:7334/128',
                       '2001:db8:85a3::8a2e:371:7335/128',
+                      '2001:db8:85a3::8a2e:372:7336/128',
+                      '2001:db8:85a3::8a2e:373:7337/128',
                     ],
                   },
                   ports: '22, 53, 80, 100, 443, 3306',
