@@ -89,7 +89,7 @@ export const FirewallRuleSetForm = React.memo(
               setFieldValue('ruleset', selectedRuleSet?.value);
             }}
             options={ruleSetDropdownOptions}
-            placeholder="Select a Rule Set"
+            placeholder="Type to search or select a Rule Set"
             renderOption={(props, option, { selected }) => {
               const { key, ...rest } = props;
               return (
@@ -173,18 +173,20 @@ export const FirewallRuleSetForm = React.memo(
                     })}
                   >
                     <Chip
-                      label={rule.action}
+                      label={capitalize(rule.action?.toLowerCase() ?? '')}
                       sx={(theme) => ({
                         background:
                           rule.action === 'ACCEPT'
-                            ? theme.tokens.alias.Background.Positivesubtle
-                            : theme.tokens.alias.Background.Negativesubtle,
+                            ? theme.tokens.component.Badge.Positive.Subtle
+                                .Background
+                            : theme.tokens.component.Badge.Negative.Subtle
+                                .Background,
                         color:
                           rule.action === 'ACCEPT'
-                            ? theme.tokens.alias.Content.Text.Positive
-                            : theme.tokens.alias.Content.Text.Negative,
+                            ? theme.tokens.component.Badge.Positive.Subtle.Text
+                            : theme.tokens.component.Badge.Negative.Subtle.Text,
                         font: theme.font.bold,
-                        width: '58px',
+                        width: '51px',
                         fontSize: theme.tokens.font.FontSize.Xxxs,
                         marginRight: theme.spacingFunction(6),
                         flexShrink: 0,
