@@ -315,6 +315,7 @@ export const generateAddressesLabelV2 = (
         maxHeight: 200, // adjust as needed
         overflowY: 'auto',
         paddingRight: 8, // avoids content hiding behind scrollbar
+        minWidth: '248px',
       }}
     >
       <ul
@@ -345,7 +346,7 @@ export const generateAddressesLabelV2 = (
       ))}
 
       {hasMore && (
-        <Tooltip arrow placement="top" title={fullTooltip}>
+        <Tooltip arrow placement="bottom" title={fullTooltip}>
           <Chip
             label={`+${hidden}`}
             size="small"
