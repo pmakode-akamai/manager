@@ -1,4 +1,5 @@
 import type { FirewallOptionItem } from '../../shared';
+import type { PrefixListDrawerReference } from './FirewallPrefixListDrawer';
 import type { ExtendedFirewallRule } from './firewallRuleEditor';
 import type { Category, FirewallRuleError } from './shared';
 import type {
@@ -15,6 +16,11 @@ export interface FirewallRuleDrawerProps {
   isOpen: boolean;
   mode: FirewallRuleDrawerMode;
   onClose: () => void;
+  onOpenPrefixListDrawer?: (
+    prefixListLabel: string,
+    category: Category,
+    reference?: PrefixListDrawerReference
+  ) => void;
   onSubmit: (category: 'inbound' | 'outbound', rule: FirewallRuleType) => void;
   ruleToModifyOrView?: ExtendedFirewallRule;
 }

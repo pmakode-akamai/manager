@@ -7,13 +7,22 @@ import {
 import { ActionsPanel, Notice, Typography } from '@linode/ui';
 import { styled } from '@mui/material/styles';
 import { useQueryClient } from '@tanstack/react-query';
-import { useBlocker, useLocation, useNavigate } from '@tanstack/react-router';
+import {
+  useBlocker,
+  useLocation,
+  useNavigate,
+  useParams,
+} from '@tanstack/react-router';
 import { useSnackbar } from 'notistack';
 import * as React from 'react';
 
 import { ConfirmationDialog } from 'src/components/ConfirmationDialog/ConfirmationDialog';
 import { getAPIErrorOrDefault } from 'src/utilities/errorUtils';
 
+import {
+  FirewallPrefixListDrawer,
+  PrefixListDrawerReference,
+} from './FirewallPrefixListDrawer';
 import { FirewallRuleDrawer } from './FirewallRuleDrawer';
 import {
   hasModified as _hasModified,
@@ -59,6 +68,24 @@ export const FirewallRulesLanding = React.memo((props: Props) => {
   const location = useLocation();
   const { enqueueSnackbar } = useSnackbar();
 
+  const defaultDrawerModeFromPathName = location.pathname.includes('/edit')
+    ? 'edit'
+    : location.pathname.includes('/view')
+      ? 'view'
+      : 'create';
+
+  const params = useParams({ strict: false });
+
+  const [prefixListDrawer, setPrefixListDrawer] = React.useState<{
+    category: Category;
+    reference?: PrefixListDrawerReference;
+    selectedPrefixListLabel: string | undefined;
+  }>({
+    category: 'inbound',
+    selectedPrefixListLabel: undefined,
+    reference: undefined,
+  });
+
   /**
    * inbound and outbound policy aren't part of any particular rule
    * so they are managed separately rather than through the reducer.
@@ -84,8 +111,9 @@ export const FirewallRulesLanding = React.memo((props: Props) => {
    * Component state and handlers
    */
   const [ruleDrawer, setRuleDrawer] = React.useState<Drawer>({
-    category: 'inbound',
-    mode: 'create',
+    category: (params.category as Category) ?? 'inbound',
+    mode: defaultDrawerModeFromPathName ?? 'create',
+    ruleIdx: params.ruleId ? Number(params.ruleId) : undefined,
   });
   const [submitting, setSubmitting] = React.useState<boolean>(false);
   // @todo fine-grained error handling.
@@ -387,6 +415,19 @@ export const FirewallRulesLanding = React.memo((props: Props) => {
             handleCloneRule('inbound', idx)
           }
           handleDeleteFirewallRule={(idx) => handleDeleteRule('inbound', idx)}
+          handleOpenPrefixListDrawer={(prefixListLabel, idx) => {
+            // Clear ruleset drawer
+            // setRuleDrawer({ ...ruleDrawer, ruleIdx: undefined });
+
+            setPrefixListDrawer({
+              category: 'inbound',
+              selectedPrefixListLabel: prefixListLabel,
+              reference: {
+                type: 'rule',
+                entity: inboundRules[idx],
+              },
+            });
+          }}
           handleOpenRuleDrawerForEditing={(idx: number) =>
             openRuleDrawer('inbound', 'edit', idx)
           }
@@ -411,6 +452,18 @@ export const FirewallRulesLanding = React.memo((props: Props) => {
             handleCloneRule('outbound', idx)
           }
           handleDeleteFirewallRule={(idx) => handleDeleteRule('outbound', idx)}
+          handleOpenPrefixListDrawer={(prefixListLabel, idx) => {
+            // Clear ruleset drawer
+            // setRuleDrawer({ ...ruleDrawer, ruleIdx: undefined });
+            setPrefixListDrawer({
+              category: 'outbound',
+              selectedPrefixListLabel: prefixListLabel,
+              reference: {
+                type: 'rule',
+                entity: outboundRules[idx],
+              },
+            });
+          }}
           handleOpenRuleDrawerForEditing={(idx: number) =>
             openRuleDrawer('outbound', 'edit', idx)
           }
@@ -443,8 +496,31 @@ export const FirewallRulesLanding = React.memo((props: Props) => {
         }
         mode={ruleDrawer.mode}
         onClose={closeRuleDrawer}
+        onOpenPrefixListDrawer={(prefixListLabel, category, reference) => {
+          setPrefixListDrawer({
+            category,
+            reference,
+            selectedPrefixListLabel: prefixListLabel,
+          });
+        }}
         onSubmit={ruleDrawer.mode === 'create' ? handleAddRule : handleEditRule}
         ruleToModifyOrView={ruleToModifyOrView}
+      />
+      <FirewallPrefixListDrawer
+        category={prefixListDrawer.category}
+        isOpen={
+          Boolean(prefixListDrawer.selectedPrefixListLabel?.length) || false
+        }
+        onClose={() => {
+          setPrefixListDrawer({
+            selectedPrefixListLabel: undefined,
+            reference: undefined,
+            category: 'inbound',
+          });
+        }}
+        // prevRuleDrawerData={ruleDrawer}
+        reference={prefixListDrawer.reference}
+        selectedPrefixListLabel={prefixListDrawer.selectedPrefixListLabel}
       />
       <StyledActionsPanel
         primaryButtonProps={{

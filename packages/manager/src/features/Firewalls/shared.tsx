@@ -255,7 +255,7 @@ export const generateAddressesLabel = (
 
 interface GenerateAddressesLabelV2Options {
   addresses: FirewallRuleType['addresses'];
-  rulesRowIndex?: number;
+  onPrefixListClick?: (prefixListLabel: string) => void;
   showTruncateChip?: boolean; // default true
   truncateAt?: number; // default 1
 }
@@ -263,7 +263,12 @@ interface GenerateAddressesLabelV2Options {
 export const generateAddressesLabelV2 = (
   options: GenerateAddressesLabelV2Options
 ) => {
-  const { addresses, showTruncateChip = true, truncateAt = 1 } = options;
+  const {
+    addresses,
+    onPrefixListClick,
+    showTruncateChip = true,
+    truncateAt = 1,
+  } = options;
   const elements: React.ReactNode[] = [];
 
   const allowedAllIPv4 = allowAllIPv4(addresses);
@@ -302,7 +307,13 @@ export const generateAddressesLabelV2 = (
     else if (presence.ipv6) suffix = ' (IPv6)';
 
     elements.push(
-      <Link key={pl} onClick={() => {}}>
+      <Link
+        key={pl}
+        onClick={(e) => {
+          e.preventDefault();
+          onPrefixListClick?.(pl);
+        }}
+      >
         {pl + suffix}
       </Link>
     );

@@ -126,3 +126,13 @@ export const firewallRuleCreateOptions = [
     value: 'ruleset',
   },
 ] as const;
+
+export const getPrefixListType = (name: string) => {
+  if (name?.includes('pl::')) {
+    return 'Account';
+  }
+  if (name?.includes('pl:system:')) {
+    return 'System';
+  }
+  return null;
+};

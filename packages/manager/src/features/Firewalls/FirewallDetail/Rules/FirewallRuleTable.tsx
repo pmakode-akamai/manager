@@ -96,6 +96,7 @@ interface RowActionHandlers {
 interface FirewallRuleTableProps extends RowActionHandlers {
   category: Category;
   disabled: boolean;
+  handleOpenPrefixListDrawer?: (prefixListLabel: string, idx: number) => void;
   handlePolicyChange: (
     category: Category,
     newPolicy: FirewallPolicyType
@@ -113,6 +114,7 @@ export const FirewallRuleTable = (props: FirewallRuleTableProps) => {
     handleDeleteFirewallRule,
     handleOpenRuleDrawerForEditing,
     handleOpenRuleSetDrawerForViewing,
+    handleOpenPrefixListDrawer,
     handlePolicyChange,
     handleReorder,
     handleUndo,
@@ -128,7 +130,12 @@ export const FirewallRuleTable = (props: FirewallRuleTableProps) => {
   const addressColumnLabel =
     category === 'inbound' ? 'sources' : 'destinations';
 
-  const rowData = firewallRuleToRowData(rulesWithStatus);
+  const rowData = firewallRuleToRowData(
+    rulesWithStatus,
+    (prefixListLabel, idx) => {
+      handleOpenPrefixListDrawer?.(prefixListLabel, idx);
+    }
+  );
 
   const openDrawerForCreating = React.useCallback(() => {
     openRuleDrawer(category, 'create');
@@ -639,7 +646,8 @@ export const ConditionalError = React.memo((props: ConditionalErrorProps) => {
  * of data. This also allows us to sort each column of the RuleTable.
  */
 export const firewallRuleToRowData = (
-  firewallRules: ExtendedFirewallRule[]
+  firewallRules: ExtendedFirewallRule[],
+  handleOpenPrefixListDrawer?: (prefixListLabel: string, idx: number) => void
 ): RuleRow[] => {
   return firewallRules.map((thisRule, idx) => {
     const ruleType = ruleToPredefinedFirewall(thisRule);
@@ -648,6 +656,8 @@ export const firewallRuleToRowData = (
       ...thisRule,
       addresses: generateAddressesLabelV2({
         addresses: thisRule.addresses,
+        onPrefixListClick: (prefixListLabel) =>
+          handleOpenPrefixListDrawer?.(prefixListLabel, idx),
       }),
       id: idx + 1, // ids are 1-indexed, as id given to the useSortable hook cannot be 0
       index: idx,

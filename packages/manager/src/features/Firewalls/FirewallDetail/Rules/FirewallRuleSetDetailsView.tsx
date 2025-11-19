@@ -21,13 +21,14 @@ import type { Category } from './shared';
 
 interface FirewallRuleSetDetailsViewProps {
   category: Category;
+  onOpenPrefixListDrawer?: (prefixListLabel: string) => void;
   ruleset: number;
 }
 
 export const FirewallRuleSetDetailsView = (
   props: FirewallRuleSetDetailsViewProps
 ) => {
-  const { category, ruleset } = props;
+  const { category, onOpenPrefixListDrawer, ruleset } = props;
 
   const { isFirewallRulesetsPrefixlistsEnabled } =
     useIsFirewallRulesetsPrefixlistsEnabled();
@@ -151,6 +152,7 @@ export const FirewallRuleSetDetailsView = (
               {generateAddressesLabelV2({
                 addresses: rule.addresses,
                 showTruncateChip: false,
+                onPrefixListClick: onOpenPrefixListDrawer,
               })}
             </Box>
           </StyledListItem>

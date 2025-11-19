@@ -1328,7 +1328,19 @@ export const handlers = [
     const rulesets = firewallRuleSetFactory.buildList(10);
     return HttpResponse.json(makeResourcePage(rulesets));
   }),
-  http.get('*/v4beta/networking/prefixlists', () => {
+  http.get('*/v4beta/networking/prefixlists', ({ request }) => {
+    if (request.headers.get('x-filter')) {
+      const filter = JSON.parse(request.headers.get('x-filter') || '{}');
+
+      if (filter['name']) {
+        const filteredPrefixList = firewallPrefixListFactory.buildList(1, {
+          name: filter['name'],
+          description: `${filter['name']} description`,
+        });
+        return HttpResponse.json(makeResourcePage(filteredPrefixList));
+      }
+    }
+
     const prefixlists = firewallPrefixListFactory.buildList(10);
     return HttpResponse.json(makeResourcePage(prefixlists));
   }),
