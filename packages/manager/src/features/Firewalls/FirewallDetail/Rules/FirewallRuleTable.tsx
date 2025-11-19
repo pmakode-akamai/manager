@@ -639,8 +639,7 @@ export const ConditionalError = React.memo((props: ConditionalErrorProps) => {
  * of data. This also allows us to sort each column of the RuleTable.
  */
 export const firewallRuleToRowData = (
-  firewallRules: ExtendedFirewallRule[],
-  onPrefixListClick?: (idx: number, prefixListLabel: string) => void
+  firewallRules: ExtendedFirewallRule[]
 ): RuleRow[] => {
   return firewallRules.map((thisRule, idx) => {
     const ruleType = ruleToPredefinedFirewall(thisRule);
@@ -649,8 +648,6 @@ export const firewallRuleToRowData = (
       ...thisRule,
       addresses: generateAddressesLabelV2({
         addresses: thisRule.addresses,
-        onPrefixListClick,
-        rulesRowIndex: idx,
       }),
       id: idx + 1, // ids are 1-indexed, as id given to the useSortable hook cannot be 0
       index: idx,
