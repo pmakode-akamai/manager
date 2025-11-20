@@ -19,7 +19,7 @@ import type {
 export const firewallRuleFactory = Factory.Sync.makeFactory<FirewallRuleType>({
   action: 'DROP',
   addresses: {
-    ipv4: ['pl:system:test:1234'],
+    ipv4: ['0.0.0.0/0'],
     ipv6: ['::/0'],
   },
   description: Factory.each((i) => `firewall-rule-${i} description`),
