@@ -511,14 +511,16 @@ export const FirewallRulesLanding = React.memo((props: Props) => {
         isOpen={
           Boolean(prefixListDrawer.selectedPrefixListLabel?.length) || false
         }
-        onClose={() => {
+        onClose={(options) => {
           setPrefixListDrawer({
             selectedPrefixListLabel: undefined,
             reference: undefined,
             category: 'inbound',
           });
+          if (options?.closeAll) {
+            closeRuleDrawer();
+          }
         }}
-        // prevRuleDrawerData={ruleDrawer}
         reference={prefixListDrawer.reference}
         selectedPrefixListLabel={prefixListDrawer.selectedPrefixListLabel}
       />

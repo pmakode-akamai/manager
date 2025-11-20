@@ -3,6 +3,7 @@ import {
   //   useFirewallRuleSetQuery,
 } from '@linode/queries';
 import { Box, Button, Chip, Drawer, Paper, TooltipIcon } from '@linode/ui';
+import { capitalize } from '@linode/utilities';
 import * as React from 'react';
 
 import { CopyTooltip } from 'src/components/CopyTooltip/CopyTooltip';
@@ -29,14 +30,15 @@ export interface PrefixListDrawerReference {
 export interface FirewallPrefixListDrawerProps {
   category: Category;
   isOpen: boolean;
-  onClose: () => void;
+  onClose: (options?: { closeAll: boolean }) => void;
   reference?: PrefixListDrawerReference;
   selectedPrefixListLabel: string | undefined;
 }
 
 export const FirewallPrefixListDrawer = React.memo(
   (props: FirewallPrefixListDrawerProps) => {
-    const { onClose, reference, isOpen, selectedPrefixListLabel } = props;
+    const { category, onClose, reference, isOpen, selectedPrefixListLabel } =
+      props;
     // const navigate = useNavigate();
     // const params = useParams({ from: '/firewalls/$id/rules' });
     // const hasRuleSetContext = location.pathname.includes('/ruleset');
@@ -62,13 +64,19 @@ export const FirewallPrefixListDrawer = React.memo(
     return (
       <Drawer
         error={error}
-        onClose={onClose}
+        onClose={() => onClose({ closeAll: true })}
         open={isOpen}
-        title={selectedPrefixListLabel ?? ''}
+        title={
+          reference?.type === 'ruleset'
+            ? `${capitalize(category)} Rule Set details`
+            : 'Prefix List details'
+        }
       >
         <Box mt={2}>
           <StyledListItem paddingMultiplier={2}>
-            <StyledLabel component="span">Name: </StyledLabel>
+            <StyledLabel component="span">
+              {reference?.type === 'ruleset' ? 'Prefix List Name' : 'Name'}:
+            </StyledLabel>
             {prefixListDetails?.name}
           </StyledListItem>
           <StyledListItem paddingMultiplier={2}>
@@ -232,7 +240,7 @@ export const FirewallPrefixListDrawer = React.memo(
           )}
           <Button
             buttonType="outlined"
-            onClick={onClose}
+            onClick={() => onClose({ closeAll: false })}
             sx={(theme) => ({ marginTop: theme.spacingFunction(16) })}
           >
             {reference?.type === 'ruleset' ? 'Back to Rule Set' : 'Back'}

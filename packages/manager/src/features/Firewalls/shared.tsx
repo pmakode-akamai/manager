@@ -279,8 +279,13 @@ export const generateAddressesLabelV2 = (
   const allowedAllIPv6 = allowAllIPv6(addresses);
 
   // First add "All IPvX" items
-  if (allowedAllIPv4) elements.push('All IPv4');
-  if (allowedAllIPv6) elements.push('All IPv6');
+  if (allowedAllIPv4 && allowedAllIPv6) {
+    elements.push('All IPv4, All IPv6');
+  } else if (allowedAllIPv4) {
+    elements.push('All IPv4');
+  } else if (allowedAllIPv6) {
+    elements.push('All IPv6');
+  }
 
   // Build a map of prefix lists
   const prefixMap: Record<string, { ipv4: boolean; ipv6: boolean }> = {};
