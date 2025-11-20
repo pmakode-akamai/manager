@@ -253,9 +253,13 @@ export const generateAddressesLabel = (
   return 'None';
 };
 
+export type ReferencedSuffix = '(IPv4)' | '(IPv4, IPv6)' | '(IPv6)';
 interface GenerateAddressesLabelV2Options {
   addresses: FirewallRuleType['addresses'];
-  onPrefixListClick?: (prefixListLabel: string) => void;
+  onPrefixListClick?: (
+    prefixListLabel: string,
+    suffix: ReferencedSuffix
+  ) => void;
   showTruncateChip?: boolean; // default true
   truncateAt?: number; // default 1
 }
@@ -301,20 +305,20 @@ export const generateAddressesLabelV2 = (
 
   // Add prefix list links with merged labels
   Object.entries(prefixMap).forEach(([pl, presence]) => {
-    let suffix = '';
-    if (presence.ipv4 && presence.ipv6) suffix = ' (IPv4 + IPv6)';
-    else if (presence.ipv4) suffix = ' (IPv4)';
-    else if (presence.ipv6) suffix = ' (IPv6)';
+    let suffix = '' as ReferencedSuffix;
+    if (presence.ipv4 && presence.ipv6) suffix = '(IPv4, IPv6)';
+    else if (presence.ipv4) suffix = '(IPv4)';
+    else if (presence.ipv6) suffix = '(IPv6)';
 
     elements.push(
       <Link
         key={pl}
         onClick={(e) => {
           e.preventDefault();
-          onPrefixListClick?.(pl);
+          onPrefixListClick?.(pl, suffix);
         }}
       >
-        {pl + suffix}
+        {`${pl} ${suffix}`}
       </Link>
     );
   });

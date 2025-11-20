@@ -415,17 +415,17 @@ export const FirewallRulesLanding = React.memo((props: Props) => {
             handleCloneRule('inbound', idx)
           }
           handleDeleteFirewallRule={(idx) => handleDeleteRule('inbound', idx)}
-          handleOpenPrefixListDrawer={(prefixListLabel, idx) => {
+          handleOpenPrefixListDrawer={(prefixListLabel, suffix) => {
             // Clear ruleset drawer
             // setRuleDrawer({ ...ruleDrawer, ruleIdx: undefined });
 
             setPrefixListDrawer({
               category: 'inbound',
-              selectedPrefixListLabel: prefixListLabel,
               reference: {
                 type: 'rule',
-                entity: inboundRules[idx],
+                suffix,
               },
+              selectedPrefixListLabel: prefixListLabel,
             });
           }}
           handleOpenRuleDrawerForEditing={(idx: number) =>
@@ -452,16 +452,16 @@ export const FirewallRulesLanding = React.memo((props: Props) => {
             handleCloneRule('outbound', idx)
           }
           handleDeleteFirewallRule={(idx) => handleDeleteRule('outbound', idx)}
-          handleOpenPrefixListDrawer={(prefixListLabel, idx) => {
+          handleOpenPrefixListDrawer={(prefixListLabel, suffix) => {
             // Clear ruleset drawer
             // setRuleDrawer({ ...ruleDrawer, ruleIdx: undefined });
             setPrefixListDrawer({
               category: 'outbound',
-              selectedPrefixListLabel: prefixListLabel,
               reference: {
                 type: 'rule',
-                entity: outboundRules[idx],
+                suffix,
               },
+              selectedPrefixListLabel: prefixListLabel,
             });
           }}
           handleOpenRuleDrawerForEditing={(idx: number) =>
@@ -496,10 +496,10 @@ export const FirewallRulesLanding = React.memo((props: Props) => {
         }
         mode={ruleDrawer.mode}
         onClose={closeRuleDrawer}
-        onOpenPrefixListDrawer={(prefixListLabel, category, reference) => {
+        onOpenPrefixListDrawer={(prefixListLabel, referenceType, suffix) => {
           setPrefixListDrawer({
-            category,
-            reference,
+            category: ruleDrawer.category,
+            reference: { suffix, type: referenceType },
             selectedPrefixListLabel: prefixListLabel,
           });
         }}

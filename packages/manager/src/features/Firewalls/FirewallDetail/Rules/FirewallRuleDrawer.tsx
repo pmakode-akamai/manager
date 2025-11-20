@@ -286,11 +286,8 @@ export const FirewallRuleDrawer = React.memo(
         {mode === 'view' && (
           <FirewallRuleSetDetailsView
             category={category}
-            onOpenPrefixListDrawer={(prefixListLabel) => {
-              onOpenPrefixListDrawer?.(prefixListLabel, category, {
-                entity: { ruleset: ruleToModifyOrView?.ruleset },
-                type: 'ruleset',
-              });
+            onOpenPrefixListDrawer={(prefixListLabel, suffix) => {
+              onOpenPrefixListDrawer?.(prefixListLabel, 'ruleset', suffix);
             }}
             ruleset={ruleToModifyOrView?.ruleset ?? -1}
           />

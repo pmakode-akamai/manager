@@ -62,7 +62,10 @@ import type { Category, FirewallRuleError } from './shared';
 import type { DragEndEvent } from '@dnd-kit/core';
 import type { FirewallPolicyType } from '@linode/api-v4/lib/firewalls/types';
 import type { Theme } from '@linode/ui';
-import type { FirewallOptionItem } from 'src/features/Firewalls/shared';
+import type {
+  FirewallOptionItem,
+  ReferencedSuffix,
+} from 'src/features/Firewalls/shared';
 
 interface RuleRow {
   action?: null | string;
@@ -96,7 +99,10 @@ interface RowActionHandlers {
 interface FirewallRuleTableProps extends RowActionHandlers {
   category: Category;
   disabled: boolean;
-  handleOpenPrefixListDrawer?: (prefixListLabel: string, idx: number) => void;
+  handleOpenPrefixListDrawer?: (
+    prefixListLabel: string,
+    suffix: ReferencedSuffix
+  ) => void;
   handlePolicyChange: (
     category: Category,
     newPolicy: FirewallPolicyType
@@ -132,8 +138,8 @@ export const FirewallRuleTable = (props: FirewallRuleTableProps) => {
 
   const rowData = firewallRuleToRowData(
     rulesWithStatus,
-    (prefixListLabel, idx) => {
-      handleOpenPrefixListDrawer?.(prefixListLabel, idx);
+    (prefixListLabel, suffix) => {
+      handleOpenPrefixListDrawer?.(prefixListLabel, suffix);
     }
   );
 
@@ -647,7 +653,10 @@ export const ConditionalError = React.memo((props: ConditionalErrorProps) => {
  */
 export const firewallRuleToRowData = (
   firewallRules: ExtendedFirewallRule[],
-  handleOpenPrefixListDrawer?: (prefixListLabel: string, idx: number) => void
+  handleOpenPrefixListDrawer?: (
+    prefixListLabel: string,
+    suffix: ReferencedSuffix
+  ) => void
 ): RuleRow[] => {
   return firewallRules.map((thisRule, idx) => {
     const ruleType = ruleToPredefinedFirewall(thisRule);
@@ -656,8 +665,7 @@ export const firewallRuleToRowData = (
       ...thisRule,
       addresses: generateAddressesLabelV2({
         addresses: thisRule.addresses,
-        onPrefixListClick: (prefixListLabel) =>
-          handleOpenPrefixListDrawer?.(prefixListLabel, idx),
+        onPrefixListClick: handleOpenPrefixListDrawer,
       }),
       id: idx + 1, // ids are 1-indexed, as id given to the useSortable hook cannot be 0
       index: idx,

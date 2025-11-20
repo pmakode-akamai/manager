@@ -8,6 +8,7 @@ import { DateTimeDisplay } from 'src/components/DateTimeDisplay';
 
 import {
   generateAddressesLabelV2,
+  ReferencedSuffix,
   useIsFirewallRulesetsPrefixlistsEnabled,
 } from '../../shared';
 import {
@@ -21,7 +22,10 @@ import type { Category } from './shared';
 
 interface FirewallRuleSetDetailsViewProps {
   category: Category;
-  onOpenPrefixListDrawer?: (prefixListLabel: string) => void;
+  onOpenPrefixListDrawer?: (
+    prefixListLabel: string,
+    suffix: ReferencedSuffix
+  ) => void;
   ruleset: number;
 }
 

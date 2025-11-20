@@ -8,7 +8,10 @@ import * as React from 'react';
 import { CopyTooltip } from 'src/components/CopyTooltip/CopyTooltip';
 import { DateTimeDisplay } from 'src/components/DateTimeDisplay';
 
-import { useIsFirewallRulesetsPrefixlistsEnabled } from '../../shared';
+import {
+  ReferencedSuffix,
+  useIsFirewallRulesetsPrefixlistsEnabled,
+} from '../../shared';
 import { getPrefixListType } from './shared';
 import {
   StyledLabel,
@@ -18,10 +21,9 @@ import {
 } from './shared.styles';
 
 import type { Category } from './shared';
-import type { FirewallRuleType } from '@linode/api-v4';
 
 export interface PrefixListDrawerReference {
-  entity: FirewallRuleType;
+  suffix: ReferencedSuffix;
   type: 'rule' | 'ruleset';
 }
 export interface FirewallPrefixListDrawerProps {
@@ -51,19 +53,11 @@ export const FirewallPrefixListDrawer = React.memo(
 
     const prefixListDetails = data?.[0];
 
-    const ipv4ReferenceStatus: 'in use' | 'not in use' = 'in use';
-    const ipv6ReferenceStatus: 'in use' | 'not in use' = 'not in use';
+    const isIPv4InUse =
+      reference?.suffix === '(IPv4)' || reference?.suffix === '(IPv4, IPv6)';
 
-    //@TODO - We may not need to pass reference prop, I think we could achieve InUse/NoInUse status in addresses utility itself
-
-    // const { data: ruleSetDetails } = useFirewallRuleSetQuery(
-    //   reference?.entity.ruleset ?? -1,
-    //   isFirewallRulesetsPrefixlistsEnabled
-    // );
-
-    // const isIPv4InUse = reference?.type === 'rule'? reference?.entity.addresses?.ipv4?.includes(selectedPrefixListLabel ?? '') : null
-
-    // const isIPv6InUse = reference?.type ===
+    const isIPv6InUse =
+      reference?.suffix === '(IPv6)' || reference?.suffix === '(IPv4, IPv6)';
 
     return (
       <Drawer
@@ -163,18 +157,14 @@ export const FirewallPrefixListDrawer = React.memo(
               >
                 IPv4
                 <Chip
-                  label={ipv4ReferenceStatus}
+                  label={isIPv4InUse ? 'in use' : 'not in use'}
                   sx={(theme) => ({
-                    background:
-                      ipv4ReferenceStatus === 'in use'
-                        ? theme.tokens.component.Badge.Positive.Subtle
-                            .Background
-                        : theme.tokens.component.Badge.Neutral.Subtle
-                            .Background,
-                    color:
-                      ipv4ReferenceStatus === 'in use'
-                        ? theme.tokens.component.Badge.Positive.Subtle.Text
-                        : theme.tokens.component.Badge.Neutral.Subtle.Text,
+                    background: isIPv4InUse
+                      ? theme.tokens.component.Badge.Positive.Subtle.Background
+                      : theme.tokens.component.Badge.Neutral.Subtle.Background,
+                    color: isIPv4InUse
+                      ? theme.tokens.component.Badge.Positive.Subtle.Text
+                      : theme.tokens.component.Badge.Neutral.Subtle.Text,
                     font: theme.font.bold,
                     fontSize: theme.tokens.font.FontSize.Xxxs,
                     marginRight: theme.spacingFunction(6),
@@ -202,7 +192,7 @@ export const FirewallPrefixListDrawer = React.memo(
                   display: 'flex',
                   justifyContent: 'space-between',
                   marginBottom: theme.spacingFunction(4),
-                  ...(ipv6ReferenceStatus === 'not in use'
+                  ...(!isIPv6InUse
                     ? {
                         color: theme.tokens.alias.Content.Text.Primary.Disabled,
                       }
@@ -211,12 +201,12 @@ export const FirewallPrefixListDrawer = React.memo(
               >
                 IPv6
                 <Chip
-                  label={ipv6ReferenceStatus}
+                  label={isIPv6InUse ? 'in use' : 'not in use'}
                   sx={(theme) => ({
-                    background: !ipv6ReferenceStatus
+                    background: isIPv6InUse
                       ? theme.tokens.component.Badge.Positive.Subtle.Background
                       : theme.tokens.component.Badge.Neutral.Subtle.Background,
-                    color: !ipv6ReferenceStatus
+                    color: isIPv6InUse
                       ? theme.tokens.component.Badge.Positive.Subtle.Text
                       : theme.tokens.component.Badge.Neutral.Subtle.Text,
                     font: theme.font.bold,
@@ -229,7 +219,7 @@ export const FirewallPrefixListDrawer = React.memo(
               <StyledListItem
                 component="span"
                 sx={(theme) => ({
-                  ...(ipv6ReferenceStatus === 'not in use'
+                  ...(!isIPv6InUse
                     ? {
                         color: theme.tokens.alias.Content.Text.Primary.Disabled,
                       }
