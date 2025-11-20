@@ -351,7 +351,7 @@ export const generateAddressesLabelV2 = (
   const fullTooltip = (
     <div
       style={{
-        maxHeight: 200,
+        maxHeight: '40vh',
         overflowY: 'auto',
         paddingRight: 8,
       }}

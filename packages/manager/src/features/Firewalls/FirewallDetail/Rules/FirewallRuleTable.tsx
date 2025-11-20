@@ -223,16 +223,14 @@ export const FirewallRuleTable = (props: FirewallRuleTableProps) => {
                 >
                   Label
                 </TableCell>
+                <TableCell sx={{ width: '10%' }}>Action</TableCell>
                 <Hidden lgDown>
                   <TableCell sx={{ width: '10%' }}>Protocol</TableCell>
                 </Hidden>
                 <Hidden smDown>
                   <TableCell sx={{ width: '15%' }}>Port Range</TableCell>
-                  <TableCell sx={{ width: '15%' }}>
-                    {capitalize(addressColumnLabel)}
-                  </TableCell>
+                  <TableCell>{capitalize(addressColumnLabel)}</TableCell>
                 </Hidden>
-                <TableCell sx={{ width: '10%' }}>Action</TableCell>
                 <TableCell />
               </TableRow>
             </TableHead>
@@ -427,6 +425,9 @@ const FirewallRuleTableRow = React.memo((props: FirewallRuleTableRowProps) => {
               </LinkButton>
             )}
           </TableCell>
+          <TableCell aria-label={`Action: ${action}`}>
+            {capitalize(action?.toLocaleLowerCase() ?? '')}
+          </TableCell>
           <Hidden lgDown>
             <TableCell aria-label={`Protocol: ${protocol}`}>
               {protocol}
@@ -444,9 +445,6 @@ const FirewallRuleTableRow = React.memo((props: FirewallRuleTableRowProps) => {
               <ConditionalError errors={errors} formField="addresses" />
             </TableCell>
           </Hidden>
-          <TableCell aria-label={`Action: ${action}`}>
-            {capitalize(action?.toLocaleLowerCase() ?? '')}
-          </TableCell>
         </>
       )}
 
