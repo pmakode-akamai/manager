@@ -171,6 +171,11 @@ export const FirewallPrefixListDrawer = React.memo(
                   />
                   <TooltipIcon
                     status="info"
+                    sxTooltipIcon={{
+                      '& svg': { width: '16px', height: '16px' },
+                      padding: 0,
+                      mb: 0.1,
+                    }}
                     text="This Prefix List will be automatically deleted when it’s no longer referenced by other firewalls."
                   />
                 </StyledListItem>
