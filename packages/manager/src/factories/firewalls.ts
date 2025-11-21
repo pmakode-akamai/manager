@@ -121,6 +121,7 @@ export const firewallPrefixListFactory =
   Factory.Sync.makeFactory<FirewallPrefixList>({
     created: '2025-11-05T00:00:00',
     updated: '2025-11-05T00:00:00',
+    deleted: null,
     description: Factory.each((i) => `firewall-prefixlist-${i} description`),
     id: Factory.each((i) => i),
     name: Factory.each((i) => `pl:system:resolvers:test-${i}`),
