@@ -194,6 +194,12 @@ export const FirewallPrefixListDrawer = React.memo(
                       display: 'flex',
                       justifyContent: 'space-between',
                       marginBottom: theme.spacingFunction(4),
+                      ...(!isIPv4InUse
+                        ? {
+                            color:
+                              theme.tokens.alias.Content.Text.Primary.Disabled,
+                          }
+                        : {}),
                     })}
                   >
                     IPv4
@@ -216,7 +222,17 @@ export const FirewallPrefixListDrawer = React.memo(
                     />
                   </StyledLabel>
 
-                  <StyledListItem component="span">
+                  <StyledListItem
+                    component="span"
+                    sx={(theme) => ({
+                      ...(!isIPv4InUse
+                        ? {
+                            color:
+                              theme.tokens.alias.Content.Text.Primary.Disabled,
+                          }
+                        : {}),
+                    })}
+                  >
                     {prefixListDetails.ipv4!.length > 0 ? (
                       prefixListDetails.ipv4!.join(', ')
                     ) : (
