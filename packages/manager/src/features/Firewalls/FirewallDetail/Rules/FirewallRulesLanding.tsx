@@ -14,6 +14,7 @@ import * as React from 'react';
 import { ConfirmationDialog } from 'src/components/ConfirmationDialog/ConfirmationDialog';
 import { getAPIErrorOrDefault } from 'src/utilities/errorUtils';
 
+import { FirewallPrefixListDrawer } from './FirewallPrefixListDrawer';
 import { FirewallRuleDrawer } from './FirewallRuleDrawer';
 import {
   hasModified as _hasModified,
@@ -26,6 +27,7 @@ import {
 import { FirewallRuleTable } from './FirewallRuleTable';
 import { parseFirewallRuleError } from './shared';
 
+import type { PrefixListRuleReference } from './FirewallPrefixListDrawer';
 import type { FirewallRuleDrawerMode } from './FirewallRuleDrawer.types';
 import type { Category } from './shared';
 import type {
@@ -86,6 +88,15 @@ export const FirewallRulesLanding = React.memo((props: Props) => {
   const [ruleDrawer, setRuleDrawer] = React.useState<Drawer>({
     category: 'inbound',
     mode: 'create',
+  });
+  const [prefixListDrawer, setPrefixListDrawer] = React.useState<{
+    category: Category;
+    reference: PrefixListRuleReference | undefined;
+    selectedPrefixListLabel: string | undefined;
+  }>({
+    category: 'inbound',
+    selectedPrefixListLabel: undefined,
+    reference: undefined,
   });
   const [submitting, setSubmitting] = React.useState<boolean>(false);
   // @todo fine-grained error handling.
@@ -387,6 +398,16 @@ export const FirewallRulesLanding = React.memo((props: Props) => {
             handleCloneRule('inbound', idx)
           }
           handleDeleteFirewallRule={(idx) => handleDeleteRule('inbound', idx)}
+          handleOpenPrefixListDrawer={(prefixListLabel, plFirewallIPRef) => {
+            setPrefixListDrawer({
+              category: 'inbound',
+              reference: {
+                type: 'rule',
+                plFirewallIPRef,
+              },
+              selectedPrefixListLabel: prefixListLabel,
+            });
+          }}
           handleOpenRuleDrawerForEditing={(idx: number) =>
             openRuleDrawer('inbound', 'edit', idx)
           }
@@ -411,6 +432,13 @@ export const FirewallRulesLanding = React.memo((props: Props) => {
             handleCloneRule('outbound', idx)
           }
           handleDeleteFirewallRule={(idx) => handleDeleteRule('outbound', idx)}
+          handleOpenPrefixListDrawer={(prefixListLabel, plFirewallIPRef) => {
+            setPrefixListDrawer({
+              category: 'outbound',
+              reference: { type: 'rule', plFirewallIPRef },
+              selectedPrefixListLabel: prefixListLabel,
+            });
+          }}
           handleOpenRuleDrawerForEditing={(idx: number) =>
             openRuleDrawer('outbound', 'edit', idx)
           }
@@ -429,6 +457,21 @@ export const FirewallRulesLanding = React.memo((props: Props) => {
       </StyledDiv>
       <FirewallRuleDrawer
         category={ruleDrawer.category}
+        handleOpenPrefixListDrawer={(
+          prefixListLabel,
+          plFirewallIPRef,
+          referenceType
+        ) => {
+          setPrefixListDrawer({
+            category: ruleDrawer.category,
+            reference: {
+              plFirewallIPRef,
+              type: referenceType,
+              modeViewedFrom: ruleDrawer.mode,
+            },
+            selectedPrefixListLabel: prefixListLabel,
+          });
+        }}
         isOpen={
           location.pathname.endsWith('add/inbound') ||
           location.pathname.endsWith('add/outbound') ||
@@ -445,6 +488,22 @@ export const FirewallRulesLanding = React.memo((props: Props) => {
         onClose={closeRuleDrawer}
         onSubmit={ruleDrawer.mode === 'create' ? handleAddRule : handleEditRule}
         ruleToModifyOrView={ruleToModifyOrView}
+      />
+      <FirewallPrefixListDrawer
+        category={prefixListDrawer.category}
+        isOpen={Boolean(prefixListDrawer.selectedPrefixListLabel?.length)}
+        onClose={(options) => {
+          setPrefixListDrawer({
+            selectedPrefixListLabel: undefined,
+            reference: undefined,
+            category: 'inbound',
+          });
+          if (options?.closeAll) {
+            closeRuleDrawer();
+          }
+        }}
+        reference={prefixListDrawer.reference}
+        selectedPrefixListLabel={prefixListDrawer.selectedPrefixListLabel}
       />
       <StyledActionsPanel
         primaryButtonProps={{

@@ -7,6 +7,7 @@ import { CopyTooltip } from 'src/components/CopyTooltip/CopyTooltip';
 import { DateTimeDisplay } from 'src/components/DateTimeDisplay';
 
 import {
+  FirewallIPPrefixListReference,
   generateAddressesLabelV2,
   useIsFirewallRulesetsPrefixlistsEnabled,
 } from '../../shared';
@@ -22,13 +23,17 @@ import type { Category } from './shared';
 interface FirewallRuleSetDetailsViewProps {
   category: Category;
   closeDrawer: () => void;
+  handleOpenPrefixListDrawer?: (
+    prefixListLabel: string,
+    plFirewallIPRef: FirewallIPPrefixListReference
+  ) => void;
   ruleset: number;
 }
 
 export const FirewallRuleSetDetailsView = (
   props: FirewallRuleSetDetailsViewProps
 ) => {
-  const { category, closeDrawer, ruleset } = props;
+  const { category, closeDrawer, handleOpenPrefixListDrawer, ruleset } = props;
 
   const { isFirewallRulesetsPrefixlistsEnabled } =
     useIsFirewallRulesetsPrefixlistsEnabled();
@@ -163,6 +168,7 @@ export const FirewallRuleSetDetailsView = (
               {generateAddressesLabelV2({
                 addresses: rule.addresses,
                 showTruncateChip: false,
+                onPrefixListClick: handleOpenPrefixListDrawer,
               })}
             </Box>
           </StyledListItem>

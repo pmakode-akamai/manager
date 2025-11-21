@@ -16,9 +16,11 @@ import {
 } from './shared.styles';
 
 import type { FirewallIPPrefixListReference } from '../../shared';
+import type { FirewallRuleDrawerMode } from './FirewallRuleDrawer.types';
 import type { Category } from './shared';
 
-export interface PrefixListDrawerReference {
+export interface PrefixListRuleReference {
+  modeViewedFrom?: FirewallRuleDrawerMode; // Optional in the case of normal rules
   plFirewallIPRef: FirewallIPPrefixListReference;
   type: 'rule' | 'ruleset';
 }
@@ -26,7 +28,7 @@ export interface FirewallPrefixListDrawerProps {
   category: Category;
   isOpen: boolean;
   onClose: (options?: { closeAll: boolean }) => void;
-  reference?: PrefixListDrawerReference;
+  reference: PrefixListRuleReference | undefined;
   selectedPrefixListLabel: string | undefined;
 }
 
@@ -55,16 +57,28 @@ export const FirewallPrefixListDrawer = React.memo(
       reference?.plFirewallIPRef === '(IPv6)' ||
       reference?.plFirewallIPRef === '(IPv4, IPv6)';
 
+    const titleText =
+      reference?.type === 'ruleset' && reference.modeViewedFrom === 'create'
+        ? `Add an ${capitalize(category)} Rule or Rule Set`
+        : reference?.type === 'ruleset' && reference.modeViewedFrom === 'view'
+          ? `${capitalize(category)} Rule Set details`
+          : 'Prefix List details';
+
+    const buttonText =
+      reference?.type === 'ruleset' && reference.modeViewedFrom === 'create'
+        ? `Back to ${category} Rule Set`
+        : reference?.type === 'ruleset' && reference.modeViewedFrom === 'view'
+          ? 'Back to the Rule Set'
+          : reference?.type === 'rule' && reference.modeViewedFrom === 'edit'
+            ? 'Back to Rule'
+            : 'Back';
+
     return (
       <Drawer
         error={error}
         onClose={() => onClose({ closeAll: true })}
         open={isOpen}
-        title={
-          reference?.type === 'ruleset'
-            ? `${capitalize(category)} Rule Set details`
-            : 'Prefix List details'
-        }
+        title={titleText}
       >
         <Box mt={2}>
           {[
@@ -253,7 +267,7 @@ export const FirewallPrefixListDrawer = React.memo(
             onClick={() => onClose({ closeAll: false })}
             sx={(theme) => ({ marginTop: theme.spacingFunction(16) })}
           >
-            {reference?.type === 'ruleset' ? 'Back to Rule Set' : 'Back'}
+            {buttonText}
           </Button>
         </Box>
       </Drawer>
