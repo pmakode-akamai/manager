@@ -19,6 +19,7 @@ import Grid from '@mui/material/Grid';
 import * as React from 'react';
 import { makeStyles } from 'tss-react/mui';
 
+import { Link } from 'src/components/Link';
 import { StyledLinkButtonBox } from 'src/components/SelectFirewallPanel/SelectFirewallPanel';
 import { useIsFirewallRulesetsPrefixlistsEnabled } from 'src/features/Firewalls/shared';
 
@@ -442,29 +443,38 @@ export const MultiplePrefixListInput = React.memo(
                   }
                 />
                 {thisPL.address.length !== 0 && (
-                  <Box gap={2} sx={{ display: 'flex', ml: 0.4 }}>
-                    <Checkbox
-                      checked={thisPL.ipv4}
-                      disabled={
-                        prefixListDropdownOptions.find(
-                          (o) => o.label === thisPL.address
-                        )?.notSupportedDetails.isPLIPv4NotSupported ||
-                        (thisPL.ipv4 && !thisPL.ipv6)
-                      }
-                      onChange={() => handleChangeIPv4(!thisPL.ipv4, idx)}
-                      text="IPv4"
-                    />
-                    <Checkbox
-                      checked={thisPL.ipv6}
-                      disabled={
-                        prefixListDropdownOptions.find(
-                          (o) => o.label === thisPL.address
-                        )?.notSupportedDetails.isPLIPv6NotSupported ||
-                        (!thisPL.ipv4 && thisPL.ipv6)
-                      }
-                      onChange={() => handleChangeIPv6(!thisPL.ipv6, idx)}
-                      text="IPv6"
-                    />
+                  <Box
+                    display="flex"
+                    justifyContent="space-between"
+                    sx={{ ml: 0.4 }}
+                  >
+                    <Box display="flex" gap={2}>
+                      <Checkbox
+                        checked={thisPL.ipv4}
+                        disabled={
+                          prefixListDropdownOptions.find(
+                            (o) => o.label === thisPL.address
+                          )?.notSupportedDetails.isPLIPv4NotSupported ||
+                          (thisPL.ipv4 && !thisPL.ipv6)
+                        }
+                        onChange={() => handleChangeIPv4(!thisPL.ipv4, idx)}
+                        text="IPv4"
+                      />
+                      <Checkbox
+                        checked={thisPL.ipv6}
+                        disabled={
+                          prefixListDropdownOptions.find(
+                            (o) => o.label === thisPL.address
+                          )?.notSupportedDetails.isPLIPv6NotSupported ||
+                          (!thisPL.ipv4 && thisPL.ipv6)
+                        }
+                        onChange={() => handleChangeIPv6(!thisPL.ipv6, idx)}
+                        text="IPv6"
+                      />
+                    </Box>
+                    <Box alignItems="center" display="flex">
+                      <Link onClick={() => {}}>View Details</Link>
+                    </Box>
                   </Box>
                 )}
               </Grid>
