@@ -121,10 +121,16 @@ export const validateIPs = (
 };
 
 export const validatePrefixLists = (pls: ExtendedPL[]): ExtendedPL[] => {
+  const seen = new Set<string>();
   return pls.map((pl) => {
     if (!pl.address) {
       return { ...pl, error: 'Please select the Prefix List.' };
     }
+    if (seen.has(pl.address)) {
+      return { ...pl, error: 'This Prefix List is already selected.' };
+    }
+
+    seen.add(pl.address);
     return { ...pl };
   });
 };
