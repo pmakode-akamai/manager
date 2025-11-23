@@ -9,9 +9,7 @@ import {
   InputLabel,
   LinkButton,
   Notice,
-  SelectedIcon,
   Stack,
-  //   TextField,
   TooltipIcon,
   Typography,
 } from '@linode/ui';
@@ -22,6 +20,8 @@ import { makeStyles } from 'tss-react/mui';
 import { Link } from 'src/components/Link';
 import { StyledLinkButtonBox } from 'src/components/SelectFirewallPanel/SelectFirewallPanel';
 import { useIsFirewallRulesetsPrefixlistsEnabled } from 'src/features/Firewalls/shared';
+
+import { getPrefixListType } from './shared';
 
 import type { InputBaseProps } from '@mui/material/InputBase';
 import type { Theme } from '@mui/material/styles';
@@ -393,6 +393,8 @@ export const MultiplePrefixListInput = React.memo(
                 <Autocomplete
                   disableClearable={prefixLists.length > 0}
                   errorText={thisPL.error}
+                  getOptionLabel={(option) => option.label}
+                  groupBy={(option) => getPrefixListType(option.label)}
                   label=""
                   loading={isLoading}
                   noMarginTop
@@ -401,41 +403,6 @@ export const MultiplePrefixListInput = React.memo(
                   }}
                   options={prefixListDropdownOptions}
                   placeholder="Type to search or select a Rule Set"
-                  renderOption={(props, option, { selected }) => {
-                    const { key, ...rest } = props;
-                    return (
-                      <li key={key} {...rest}>
-                        <Stack
-                          alignItems="center"
-                          direction="row"
-                          justifyContent="space-between"
-                          width="100%"
-                        >
-                          <Stack direction="column">
-                            <Box
-                              sx={(theme) => ({
-                                // eslint-disable-next-line @linode/cloud-manager/no-custom-fontWeight
-                                fontWeight:
-                                  theme.tokens.font.FontWeight.Semibold,
-                              })}
-                            >
-                              {option.label}
-                            </Box>
-                            <Box
-                              sx={(theme) => ({
-                                color:
-                                  theme.tokens.component.Dropdown.Text
-                                    .Description,
-                              })}
-                            >
-                              ID: {option.value}
-                            </Box>
-                          </Stack>
-                          {selected && <SelectedIcon visible />}
-                        </Stack>
-                      </li>
-                    );
-                  }}
                   value={
                     prefixListDropdownOptions.find(
                       (o) => o.label === thisPL.address
