@@ -13,7 +13,6 @@ import { styled } from '@mui/material/styles';
 import * as React from 'react';
 
 import { MultipleIPInput } from 'src/components/MultipleIPInput/MultipleIPInput';
-import { MultiplePrefixListInput } from 'src/components/MutiplePrefixListInput/MutiplePrefixListInput';
 import {
   addressOptions,
   firewallOptionItemsShort,
@@ -23,6 +22,7 @@ import {
 import { ipFieldPlaceholder } from 'src/utilities/ipUtils';
 
 import { enforceIPMasks } from './FirewallRuleDrawer.utils';
+import { MultiplePrefixListInput } from './MutiplePrefixListInput';
 import { PORT_PRESETS, PORT_PRESETS_ITEMS } from './shared';
 
 import type { FirewallRuleFormProps } from './FirewallRuleDrawer.types';
@@ -150,7 +150,7 @@ export const FirewallRuleForm = React.memo((props: FirewallRuleFormProps) => {
     (item: string) => {
       setFieldValue('addresses', item);
       // Reset custom IPs
-      setIPs([{ address: '' }]);
+      setIPs([]);
     },
     [setFieldValue, setIPs]
   );
@@ -164,7 +164,6 @@ export const FirewallRuleForm = React.memo((props: FirewallRuleFormProps) => {
 
   const handleIPChange = React.useCallback(
     (_ips: ExtendedIP[]) => {
-      // console.log(_ips);
       setIPs(_ips);
     },
     [setIPs]
@@ -321,10 +320,11 @@ export const FirewallRuleForm = React.memo((props: FirewallRuleFormProps) => {
           <StyledMultipleIPInput
             aria-label="IP / Netmask for Firewall rule"
             ips={ips}
+            isFirstInputClearable
             onBlur={handleIPBlur}
             onChange={handleIPChange}
             placeholder={ipFieldPlaceholder}
-            title="IP / Netmask"
+            title={ips.length > 0 ? 'IP / Netmask' : ''}
             tooltip={ipNetmaskTooltipText}
           />
 
@@ -341,7 +341,7 @@ export const FirewallRuleForm = React.memo((props: FirewallRuleFormProps) => {
             buttonText="Add a Prefix List"
             onChange={handlePrefixListChange}
             pls={pls}
-            title="Prefix List"
+            title={pls.length > 0 ? 'Prefix List' : ''}
           />
         </>
       )}

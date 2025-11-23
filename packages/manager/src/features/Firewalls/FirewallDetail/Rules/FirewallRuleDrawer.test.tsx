@@ -218,21 +218,20 @@ describe('utilities', () => {
 
   describe('validateForm', () => {
     it('validates protocol', () => {
-      expect(validateForm({})).toHaveProperty(
+      expect(validateForm({}, [], [])).toHaveProperty(
         'protocol',
         'Protocol is required.'
       );
     });
     it('validates ports', () => {
-      expect(validateForm({ ports: '80', protocol: 'ICMP' })).toHaveProperty(
-        'ports',
-        'Ports are not allowed for ICMP protocols.'
-      );
       expect(
-        validateForm({ ports: '443', protocol: 'IPENCAP' })
+        validateForm({ ports: '80', protocol: 'ICMP' }, [], [])
+      ).toHaveProperty('ports', 'Ports are not allowed for ICMP protocols.');
+      expect(
+        validateForm({ ports: '443', protocol: 'IPENCAP' }, [], [])
       ).toHaveProperty('ports', 'Ports are not allowed for IPENCAP protocols.');
       expect(
-        validateForm({ ports: 'invalid-port', protocol: 'TCP' })
+        validateForm({ ports: 'invalid-port', protocol: 'TCP' }, [], [])
       ).toHaveProperty('ports');
     });
     it('validates custom ports', () => {
@@ -241,56 +240,68 @@ describe('utilities', () => {
         label: 'Firewalllabel',
       };
       // SUCCESS CASES
-      expect(validateForm({ ports: '1234', protocol: 'TCP', ...rest })).toEqual(
-        {}
-      );
       expect(
-        validateForm({ ports: '1,2,3,4,5', protocol: 'TCP', ...rest })
+        validateForm({ ports: '1234', protocol: 'TCP', ...rest }, [], [])
       ).toEqual({});
       expect(
-        validateForm({ ports: '1, 2, 3, 4, 5', protocol: 'TCP', ...rest })
-      ).toEqual({});
-      expect(validateForm({ ports: '1-20', protocol: 'TCP', ...rest })).toEqual(
-        {}
-      );
-      expect(
-        validateForm({
-          ports: '1,2,3,4,5,6,7,8,9,10,11,12,13,14,15',
-          protocol: 'TCP',
-          ...rest,
-        })
+        validateForm({ ports: '1,2,3,4,5', protocol: 'TCP', ...rest }, [], [])
       ).toEqual({});
       expect(
-        validateForm({ ports: '1-2,3-4', protocol: 'TCP', ...rest })
+        validateForm(
+          { ports: '1, 2, 3, 4, 5', protocol: 'TCP', ...rest },
+          [],
+          []
+        )
       ).toEqual({});
       expect(
-        validateForm({ ports: '1,5-12', protocol: 'TCP', ...rest })
+        validateForm({ ports: '1-20', protocol: 'TCP', ...rest }, [], [])
+      ).toEqual({});
+      expect(
+        validateForm(
+          {
+            ports: '1,2,3,4,5,6,7,8,9,10,11,12,13,14,15',
+            protocol: 'TCP',
+            ...rest,
+          },
+          [],
+          []
+        )
+      ).toEqual({});
+      expect(
+        validateForm({ ports: '1-2,3-4', protocol: 'TCP', ...rest }, [], [])
+      ).toEqual({});
+      expect(
+        validateForm({ ports: '1,5-12', protocol: 'TCP', ...rest }, [], [])
       ).toEqual({});
       // FAILURE CASES
       expect(
-        validateForm({ ports: '1,21-12', protocol: 'TCP', ...rest })
+        validateForm({ ports: '1,21-12', protocol: 'TCP', ...rest }, [], [])
       ).toHaveProperty(
         'ports',
         'Range must start with a smaller number and end with a larger number'
       );
       expect(
-        validateForm({ ports: '1-21-45', protocol: 'TCP', ...rest })
+        validateForm({ ports: '1-21-45', protocol: 'TCP', ...rest }, [], [])
       ).toHaveProperty('ports', 'Ranges must have 2 values');
       expect(
-        validateForm({ ports: 'abc', protocol: 'TCP', ...rest })
+        validateForm({ ports: 'abc', protocol: 'TCP', ...rest }, [], [])
       ).toHaveProperty('ports', 'Must be 1-65535');
       expect(
-        validateForm({ ports: '1--20', protocol: 'TCP', ...rest })
+        validateForm({ ports: '1--20', protocol: 'TCP', ...rest }, [], [])
       ).toHaveProperty('ports', 'Must be 1-65535');
       expect(
-        validateForm({ ports: '-20', protocol: 'TCP', ...rest })
+        validateForm({ ports: '-20', protocol: 'TCP', ...rest }, [], [])
       ).toHaveProperty('ports', 'Must be 1-65535');
       expect(
-        validateForm({
-          ports: '1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16',
-          protocol: 'TCP',
-          ...rest,
-        })
+        validateForm(
+          {
+            ports: '1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16',
+            protocol: 'TCP',
+            ...rest,
+          },
+          [],
+          []
+        )
       ).toHaveProperty(
         'ports',
         'Number of ports or port range endpoints exceeded. Max allowed is 15'
@@ -345,11 +356,50 @@ describe('utilities', () => {
           ports: '80',
           protocol: 'TCP',
         };
-        expect(validateForm({ label: value, ...rest })).toEqual(result);
+        expect(validateForm({ label: value, ...rest }, [], [])).toEqual(result);
       });
     });
+
+    it('handles addresses field', () => {
+      // In valid cases
+      expect(validateForm({}, [], [])).toHaveProperty(
+        'addresses',
+        'Sources is a required field.'
+      );
+
+      expect(
+        validateForm({ addresses: 'ip/netmask/prefixlist' }, [], [])
+      ).toHaveProperty(
+        'addresses',
+        'Add an IP address in IP/mask format, or reference a Prefix List name.'
+      );
+
+      // Valid cases
+      expect(
+        validateForm(
+          { addresses: 'ip/netmask/prefixlist' },
+          [{ address: '192.268.0.0' }, { address: '192.268.0.1' }],
+          [{ address: 'pl:system:test', ipv4: true, ipv6: true }]
+        )
+      ).not.toHaveProperty('addresses');
+      expect(
+        validateForm(
+          { addresses: 'ip/netmask/prefixlist' },
+          [{ address: '192.268.0.0' }],
+          []
+        )
+      ).not.toHaveProperty('addresses');
+      expect(
+        validateForm(
+          { addresses: 'ip/netmask/prefixlist' },
+          [],
+          [{ address: 'pl:system:test', ipv4: true, ipv6: true }]
+        )
+      ).not.toHaveProperty('addresses');
+    });
+
     it('handles required fields', () => {
-      expect(validateForm({})).toEqual({
+      expect(validateForm({}, [], [])).toEqual({
         addresses: 'Sources is a required field.',
         label: 'Label is required.',
         ports: 'Ports is a required field.',
@@ -362,7 +412,7 @@ describe('utilities', () => {
     const ruleToModify: ExtendedFirewallRule = {
       action: 'ACCEPT',
       addresses: {
-        ipv4: ['1.2.3.4'],
+        ipv4: ['1.2.3.4', 'pl:system:test'],
         ipv6: ['::0'],
       },
       originalIndex: 0,
@@ -371,10 +421,8 @@ describe('utilities', () => {
       status: 'NEW',
     };
     it('parses the IPs when no errors', () => {
-      expect(getInitialIPs(ruleToModify)).toEqual([
-        { address: '1.2.3.4' },
-        { address: '::0' },
-      ]);
+      const { ips: ipsResult } = getInitialIPs(ruleToModify);
+      expect(ipsResult).toEqual([{ address: '1.2.3.4' }, { address: '::0' }]);
     });
     it('parses the IPs with no errors', () => {
       const errors: FirewallRuleError[] = [
@@ -386,13 +434,15 @@ describe('utilities', () => {
           reason: 'Invalid IP',
         },
       ];
-      expect(getInitialIPs({ ...ruleToModify, errors })).toEqual([
+      const { ips: ipsResult } = getInitialIPs({ ...ruleToModify, errors });
+
+      expect(ipsResult).toEqual([
         { address: '1.2.3.4', error: IP_ERROR_MESSAGE },
         { address: '::0' },
       ]);
     });
     it('offsets error indices correctly', () => {
-      const result = getInitialIPs({
+      const { ips: ipsResult } = getInitialIPs({
         ...ruleToModify,
         addresses: {
           ipv4: ['1.2.3.4'],
@@ -408,7 +458,7 @@ describe('utilities', () => {
           },
         ],
       });
-      expect(result).toEqual([
+      expect(ipsResult).toEqual([
         { address: '1.2.3.4' },
         { address: 'INVALID_IP', error: IP_ERROR_MESSAGE },
       ]);

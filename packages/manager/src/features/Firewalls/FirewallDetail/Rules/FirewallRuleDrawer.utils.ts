@@ -86,14 +86,32 @@ export const formValueToIPs = (
     case 'allIPv6':
       return { ipv6: [allIPv6] };
     default: {
-      // The user has selected "IP / Netmask / Prefix List" and entered custom IPs, so we need
+      // The user has selected "IP / Netmask / Prefix List" and entered custom IPs or selected PLs, so we need
       // to separate those into v4 and v6 addresses.
       const classifiedIPs = classifyIPs(ips);
       const classifiedPLs = classifyPLs(pls ?? []);
-      return {
-        ipv4: [...(classifiedIPs.ipv4 ?? []), ...(classifiedPLs.ipv4 ?? [])],
-        ipv6: [...(classifiedIPs.ipv6 ?? []), ...(classifiedPLs.ipv6 ?? [])],
-      };
+
+      const ipv4 = [
+        ...(classifiedIPs.ipv4 ?? []),
+        ...(classifiedPLs.ipv4 ?? []),
+      ];
+
+      const ipv6 = [
+        ...(classifiedIPs.ipv6 ?? []),
+        ...(classifiedPLs.ipv6 ?? []),
+      ];
+
+      const result: FirewallRuleType['addresses'] = {};
+
+      if (ipv4.length > 0) {
+        result.ipv4 = ipv4;
+      }
+
+      if (ipv6.length > 0) {
+        result.ipv6 = ipv6;
+      }
+
+      return result;
     }
   }
 };
@@ -123,15 +141,28 @@ export const validateIPs = (
 export const validatePrefixLists = (pls: ExtendedPL[]): ExtendedPL[] => {
   const seen = new Set<string>();
   return pls.map((pl) => {
+    const { address, ipv4, ipv6 } = pl;
+
     if (!pl.address) {
       return { ...pl, error: 'Please select the Prefix List.' };
     }
+
+    if (pl.ipv4 === false && pl.ipv6 === false) {
+      return {
+        ...pl,
+        error: 'At least one IPv4 or IPv6 option must be selected.',
+      };
+    }
+
     if (seen.has(pl.address)) {
-      return { ...pl, error: 'This Prefix List is already selected.' };
+      return {
+        ...pl,
+        error: 'This Prefix List is already selected.',
+      };
     }
 
     seen.add(pl.address);
-    return { ...pl };
+    return { address, ipv4, ipv6 };
   });
 };
 
@@ -365,13 +396,11 @@ export const portStringToItems = (
   return [items, customInput.join(', ')];
 };
 
-export const validateForm = ({
-  addresses,
-  description,
-  label,
-  ports,
-  protocol,
-}: Partial<FormState>) => {
+export const validateForm = (
+  { addresses, description, label, ports, protocol }: Partial<FormState>,
+  validatedIPs: ExtendedIP[],
+  validatedPLs: ExtendedPL[]
+) => {
   const errors: Partial<FormState> = {};
 
   if (label) {
@@ -397,6 +426,13 @@ export const validateForm = ({
 
   if (!addresses) {
     errors.addresses = 'Sources is a required field.';
+  } else if (
+    addresses === 'ip/netmask/prefixlist' &&
+    validatedIPs.length === 0 &&
+    validatedPLs.length === 0
+  ) {
+    errors.addresses =
+      'Add an IP address in IP/mask format, or reference a Prefix List name.';
   }
 
   if (!ports && protocol !== 'ICMP' && protocol !== 'IPENCAP') {

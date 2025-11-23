@@ -66,12 +66,6 @@ const useStyles = makeStyles()((theme: Theme) => ({
 
 export interface MultiplePrefixListInputProps {
   /**
-   * Tightens spacing when used in VPC Dual Stack contexts.
-   * @default false
-   */
-  adjustSpacingForVPCDualStack?: boolean;
-
-  /**
    * Text displayed on the button.
    */
   buttonText?: string;
@@ -91,24 +85,6 @@ export interface MultiplePrefixListInputProps {
    * Error message for invalid input.
    */
   error?: string;
-
-  /**
-   * Indicates if the input relates to database access controls.
-   * @default false
-   */
-  forDatabaseAccessControls?: boolean;
-
-  /**
-   * Indicates if the input is for Prefix Lists (This will be an Autocomplete field).
-   * @default false
-   */
-  forPLs?: boolean;
-
-  /**
-   * Indicates if the input is for VPC IPv4 ranges.
-   * @default false
-   */
-  forVPCIPRanges?: boolean;
 
   /**
    * Helper text for additional guidance.
@@ -166,13 +142,10 @@ export interface MultiplePrefixListInputProps {
 export const MultiplePrefixListInput = React.memo(
   (props: MultiplePrefixListInputProps) => {
     const {
-      adjustSpacingForVPCDualStack,
       buttonText,
       className,
       disabled,
       error,
-      forDatabaseAccessControls,
-      forVPCIPRanges,
       //   forPLs,
       helperText,
       pls,
@@ -194,15 +167,16 @@ export const MultiplePrefixListInput = React.memo(
     const prefixLists = data ?? [];
 
     // const prefixLists: Partial<FirewallPrefixList>[] = [
-    //   { id: 1, name: 'pl:system:test-1', ipv4: ['192.168.0.0'], ipv6: [] },
-    //   { id: 2, name: 'pl:system:test-2', ipv4: null, ipv6: [] },
+    //   { id: 1, name: 'pl::subnets:325584', ipv6: ['asdas'] },
+    //   { id: 2, name: 'pl::vpcs:298694', ipv4: [], ipv6: [] },
     //   {
     //     id: 3,
     //     name: 'pl:system:test-3',
     //     ipv4: ['192.168.0'],
-    //     ipv6: ['133.0.0.0.0'],
+    //     ipv6: null,
     //   },
-    //   { id: 4, name: 'pl:system:test-4', ipv4: null, ipv6: null },
+    //   { id: 4, name: 'pl:system:test-4', ipv4: null, ipv6: ['124.4124.124'] },
+    //   { id: 5, name: 'pl:system:test-5', ipv4: null, ipv6: null },
     // ];
 
     const prefixListDropdownOptions = React.useMemo(
@@ -232,21 +206,75 @@ export const MultiplePrefixListInput = React.memo(
 
     const handleChange = (pl: string, idx: number) => {
       const newPLs = [...pls];
+
       newPLs[idx].address = pl;
-      newPLs[idx].ipv4 = false;
-      newPLs[idx].ipv6 = false;
+
+      const plNotSupportedDetails = prefixListDropdownOptions.find(
+        (o) => o.label === newPLs[idx].address
+      )?.notSupportedDetails;
+
+      const bothIPv4AndIPv6Supported =
+        !plNotSupportedDetails?.isPLIPv4NotSupported &&
+        !plNotSupportedDetails?.isPLIPv6NotSupported;
+
+      const onlyIPv4Supported =
+        !plNotSupportedDetails?.isPLIPv4NotSupported &&
+        plNotSupportedDetails?.isPLIPv6NotSupported;
+
+      const onlyIPv6Supported =
+        !plNotSupportedDetails?.isPLIPv6NotSupported &&
+        plNotSupportedDetails?.isPLIPv4NotSupported;
+
+      if (bothIPv4AndIPv6Supported || onlyIPv4Supported) {
+        newPLs[idx].ipv4 = true;
+        newPLs[idx].ipv6 = false;
+      }
+
+      if (onlyIPv6Supported) {
+        newPLs[idx].ipv4 = false;
+        newPLs[idx].ipv6 = true;
+      }
+
       onChange(newPLs);
     };
 
     const handleChangeIPv4 = (hasIPv4: boolean, idx: number) => {
       const newPLs = [...pls];
+
+      const details = prefixListDropdownOptions.find(
+        (o) => o.label === newPLs[idx].address
+      )?.notSupportedDetails;
+
+      const plSupportsIPv6 = details && !details.isPLIPv6NotSupported;
+
       newPLs[idx].ipv4 = hasIPv4;
+
+      // If Ipv4 is unchecked then check IpV6 by default if IPv6 is supported by this PL.
+      if (!hasIPv4 && !newPLs[idx].ipv6) {
+        if (plSupportsIPv6) {
+          newPLs[idx].ipv6 = true;
+        }
+      }
       onChange(newPLs);
     };
 
     const handleChangeIPv6 = (hasIPv6: boolean, idx: number) => {
       const newPLs = [...pls];
+
+      const details = prefixListDropdownOptions.find(
+        (o) => o.label === newPLs[idx].address
+      )?.notSupportedDetails;
+
+      const plSupportsIPv4 = details && !details.isPLIPv4NotSupported;
+
       newPLs[idx].ipv6 = hasIPv6;
+
+      // If Ipv6 is unchecked then check IpV4 by default if IPv4 is supported by this PL.
+      if (!hasIPv6 && !newPLs[idx].ipv4) {
+        if (plSupportsIPv4) {
+          newPLs[idx].ipv4 = true;
+        }
+      }
       onChange(newPLs);
     };
 
@@ -277,33 +305,27 @@ export const MultiplePrefixListInput = React.memo(
       return null;
     }
 
-    const addIPButton =
-      forVPCIPRanges || isLinkStyled ? (
-        <StyledLinkButtonBox
-          sx={{
-            marginTop:
-              adjustSpacingForVPCDualStack && pls.length === 0
-                ? '0px'
-                : isLinkStyled
-                  ? '8px'
-                  : '12px',
-          }}
-        >
-          <LinkButton disabled={disabled} onClick={addNewInput}>
-            {buttonText}
-          </LinkButton>
-        </StyledLinkButtonBox>
-      ) : (
-        <Button
-          buttonType="secondary"
-          className={classes.addIP}
-          compactX
-          disabled={disabled}
-          onClick={addNewInput}
-        >
-          {buttonText ?? 'Add a Prefix List'}
-        </Button>
-      );
+    const addIPButton = isLinkStyled ? (
+      <StyledLinkButtonBox
+        sx={{
+          marginTop: isLinkStyled ? '8px' : '12px',
+        }}
+      >
+        <LinkButton disabled={disabled} onClick={addNewInput}>
+          {buttonText}
+        </LinkButton>
+      </StyledLinkButtonBox>
+    ) : (
+      <Button
+        buttonType="secondary"
+        className={classes.addIP}
+        compactX
+        disabled={disabled}
+        onClick={addNewInput}
+      >
+        {buttonText ?? 'Add a Prefix List'}
+      </Button>
+    );
 
     return (
       <div className={cx(classes.root, className)}>
@@ -346,7 +368,6 @@ export const MultiplePrefixListInput = React.memo(
               spacing={2}
               sx={{
                 justifyContent: 'center',
-                maxWidth: forVPCIPRanges ? '415px' : undefined,
               }}
             >
               <Grid size={11}>
@@ -427,7 +448,8 @@ export const MultiplePrefixListInput = React.memo(
                       disabled={
                         prefixListDropdownOptions.find(
                           (o) => o.label === thisPL.address
-                        )?.notSupportedDetails.isPLIPv4NotSupported
+                        )?.notSupportedDetails.isPLIPv4NotSupported ||
+                        (thisPL.ipv4 && !thisPL.ipv6)
                       }
                       onChange={() => handleChangeIPv4(!thisPL.ipv4, idx)}
                       text="IPv4"
@@ -437,7 +459,8 @@ export const MultiplePrefixListInput = React.memo(
                       disabled={
                         prefixListDropdownOptions.find(
                           (o) => o.label === thisPL.address
-                        )?.notSupportedDetails.isPLIPv6NotSupported
+                        )?.notSupportedDetails.isPLIPv6NotSupported ||
+                        (!thisPL.ipv4 && thisPL.ipv6)
                       }
                       onChange={() => handleChangeIPv6(!thisPL.ipv6, idx)}
                       text="IPv6"
@@ -445,26 +468,21 @@ export const MultiplePrefixListInput = React.memo(
                   </Box>
                 )}
               </Grid>
-              {/** Don't show the button for the first input since it won't do anything, unless this component is
-               * used in DBaaS or for Linode VPC interfaces
-               */}
               <Grid size={1}>
-                {(idx > 0 || forDatabaseAccessControls || forVPCIPRanges) && (
-                  <IconButton
-                    aria-disabled={disabled}
-                    className={classes.button}
-                    data-testid="button"
-                    disabled={disabled}
-                    onClick={() => removeInput(idx)}
-                    sx={(theme) => ({
-                      height: 20,
-                      width: 20,
-                      marginTop: `${theme.spacingFunction(16)} !important`,
-                    })}
-                  >
-                    <CloseIcon data-testid={`delete-pl-${idx}`} />
-                  </IconButton>
-                )}
+                <IconButton
+                  aria-disabled={disabled}
+                  className={classes.button}
+                  data-testid="button"
+                  disabled={disabled}
+                  onClick={() => removeInput(idx)}
+                  sx={(theme) => ({
+                    height: 20,
+                    width: 20,
+                    marginTop: `${theme.spacingFunction(16)} !important`,
+                  })}
+                >
+                  <CloseIcon data-testid={`delete-pl-${idx}`} />
+                </IconButton>
               </Grid>
             </Grid>
           ))}

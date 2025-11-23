@@ -120,6 +120,11 @@ export interface MultipeIPInputProps {
   ips: ExtendedIP[];
 
   /**
+   * Determines whether the first input can be cleared.
+   */
+  isFirstInputClearable?: boolean;
+
+  /**
    * Styles the button as a link.
    * @default false
    */
@@ -169,6 +174,7 @@ export const MultipleIPInput = React.memo((props: MultipeIPInputProps) => {
     // forPLs,
     helperText,
     ips,
+    isFirstInputClearable,
     isLinkStyled,
     onBlur,
     onChange,
@@ -311,7 +317,10 @@ export const MultipleIPInput = React.memo((props: MultipeIPInputProps) => {
              * used in DBaaS or for Linode VPC interfaces
              */}
             <Grid size={1}>
-              {(idx > 0 || forDatabaseAccessControls || forVPCIPRanges) && (
+              {(idx > 0 ||
+                forDatabaseAccessControls ||
+                forVPCIPRanges ||
+                isFirstInputClearable) && (
                 <IconButton
                   aria-disabled={disabled}
                   className={classes.button}
