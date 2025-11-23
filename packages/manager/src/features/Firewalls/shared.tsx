@@ -93,7 +93,7 @@ export const addressOptions = [
   { label: 'All IPv4, All IPv6', value: 'all' },
   { label: 'All IPv4', value: 'allIPv4' },
   { label: 'All IPv6', value: 'allIPv6' },
-  { label: 'IP / Netmask', value: 'ip/netmask' },
+  { label: 'IP / Netmask / Prefix List', value: 'ip/netmask/prefixlist' },
 ];
 
 export const portPresets: Record<FirewallPreset, keyof typeof PORT_PRESETS> = {
@@ -268,6 +268,42 @@ export const generateAddressesLabel = (
   return 'None';
 };
 
+export type PrefixPresence = { ipv4: boolean; ipv6: boolean };
+export type PrefixMap = Record<string, PrefixPresence>;
+
+const isPrefixList = (ip: string) => ip.startsWith('pl:');
+
+export const buildPrefixListMap = (options: {
+  ipv4?: string[];
+  ipv6?: string[];
+}): PrefixMap => {
+  const { ipv4 = [], ipv6 = [] } = options;
+
+  const prefixMap: PrefixMap = {};
+
+  // ---- Handle IPv4 ----
+  ipv4.forEach((ip) => {
+    if (isPrefixList(ip)) {
+      if (!prefixMap[ip]) {
+        prefixMap[ip] = { ipv4: false, ipv6: false };
+      }
+      prefixMap[ip].ipv4 = true;
+    }
+  });
+
+  // ---- Handle IPv6 ----
+  ipv6.forEach((ip) => {
+    if (isPrefixList(ip)) {
+      if (!prefixMap[ip]) {
+        prefixMap[ip] = { ipv4: false, ipv6: false };
+      }
+      prefixMap[ip].ipv6 = true;
+    }
+  });
+
+  return prefixMap;
+};
+
 interface GenerateAddressesLabelV2Options {
   addresses: FirewallRuleType['addresses'];
   onPrefixListClick?: (
@@ -301,32 +337,33 @@ export const generateAddressesLabelV2 = (
     elements.push('All IPv6');
   }
 
-  const isPrefixList = (ip: string) => ip.startsWith('pl:');
-
   // Build a map of prefix lists
-  const prefixMap: Record<string, { ipv4: boolean; ipv6: boolean }> = {};
+  const prefixMap = buildPrefixListMap({
+    ipv4: allowedAllIPv4 ? [] : (addresses?.ipv4 ?? []),
+    ipv6: allowedAllIPv6 ? [] : (addresses?.ipv6 ?? []),
+  });
 
-  if (!allowedAllIPv4) {
-    addresses?.ipv4?.forEach((ip) => {
-      if (isPrefixList(ip)) {
-        if (!prefixMap[ip]) {
-          prefixMap[ip] = { ipv4: false, ipv6: false };
-        }
-        prefixMap[ip].ipv4 = true;
-      }
-    });
-  }
+  // if (!allowedAllIPv4) {
+  //   addresses?.ipv4?.forEach((ip) => {
+  //     if (isPrefixList(ip)) {
+  //       if (!prefixMap[ip]) {
+  //         prefixMap[ip] = { ipv4: false, ipv6: false };
+  //       }
+  //       prefixMap[ip].ipv4 = true;
+  //     }
+  //   });
+  // }
 
-  if (!allowedAllIPv6) {
-    addresses?.ipv6?.forEach((ip) => {
-      if (isPrefixList(ip)) {
-        if (!prefixMap[ip]) {
-          prefixMap[ip] = { ipv4: false, ipv6: false };
-        }
-        prefixMap[ip].ipv6 = true;
-      }
-    });
-  }
+  // if (!allowedAllIPv6) {
+  //   addresses?.ipv6?.forEach((ip) => {
+  //     if (isPrefixList(ip)) {
+  //       if (!prefixMap[ip]) {
+  //         prefixMap[ip] = { ipv4: false, ipv6: false };
+  //       }
+  //       prefixMap[ip].ipv6 = true;
+  //     }
+  //   });
+  // }
 
   // Add prefix list links with merged labels (eg., "pl:system:test (IPv4, IPv6)")
   Object.entries(prefixMap).forEach(([pl, presence]) => {

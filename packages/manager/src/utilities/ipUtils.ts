@@ -21,6 +21,11 @@ export interface ExtendedIP {
   error?: string;
 }
 
+export interface ExtendedPL extends ExtendedIP {
+  ipv4: boolean;
+  ipv6: boolean;
+}
+
 export const stringToExtendedIP = (ip: string): ExtendedIP => ({ address: ip });
 export const extendedIPToString = (ip: ExtendedIP): string => ip.address;
 export const ipFieldPlaceholder = '192.0.2.1/32';

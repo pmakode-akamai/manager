@@ -195,7 +195,10 @@ describe('utilities', () => {
         ipv6: ['::/0'],
       });
       expect(
-        formValueToIPs('ip/netmask', ['1.1.1.1'].map(stringToExtendedIP))
+        formValueToIPs(
+          'ip/netmask/prefixlist',
+          ['1.1.1.1'].map(stringToExtendedIP)
+        )
       ).toEqual({
         ipv4: ['1.1.1.1'],
       });

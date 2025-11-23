@@ -93,6 +93,12 @@ export interface MultipeIPInputProps {
   forDatabaseAccessControls?: boolean;
 
   /**
+   * Indicates if the input is for Prefix Lists (This will be an Autocomplete field).
+   * @default false
+   */
+  forPLs?: boolean;
+
+  /**
    * Indicates if the input is for VPC IPv4 ranges.
    * @default false
    */
@@ -160,6 +166,7 @@ export const MultipleIPInput = React.memo((props: MultipeIPInputProps) => {
     error,
     forDatabaseAccessControls,
     forVPCIPRanges,
+    // forPLs,
     helperText,
     ips,
     isLinkStyled,
