@@ -1369,6 +1369,9 @@ export const handlers = [
         const filteredPrefixList = firewallPrefixListFactory.buildList(1, {
           name: filter['name'],
           description: `${filter['name']} description`,
+          ...(filter['name'] === 'pl::marked-for-deletion'
+            ? { deleted: '2025-11-18T18:51:11' }
+            : {}),
         });
         return HttpResponse.json(makeResourcePage(filteredPrefixList));
       }
@@ -1440,6 +1443,7 @@ export const handlers = [
                       '192.168.1.216',
                       'pl::vpcs:test-2',
                       '172.31.255.255',
+                      'pl::marked-for-deletion',
                     ],
                     ipv6: [
                       'pl:system:test-1',
