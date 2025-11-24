@@ -1,16 +1,9 @@
 import { useAllFirewallPrefixListsQuery } from '@linode/queries';
-import {
-  Box,
-  Button,
-  ChevronLeftIcon,
-  Chip,
-  Drawer,
-  Paper,
-  TooltipIcon,
-} from '@linode/ui';
+import { Box, Button, Chip, Drawer, Paper, TooltipIcon } from '@linode/ui';
 import { capitalize } from '@linode/utilities';
 import * as React from 'react';
 
+import ArrowLeftIcon from 'src/assets/icons/arrow-left.svg';
 import { CopyTooltip } from 'src/components/CopyTooltip/CopyTooltip';
 import { DateTimeDisplay } from 'src/components/DateTimeDisplay';
 
@@ -315,7 +308,7 @@ export const FirewallPrefixListDrawer = React.memo(
           <Button
             buttonType="outlined"
             onClick={() => onClose({ closeAll: false })}
-            startIcon={<ChevronLeftIcon />}
+            startIcon={<ArrowLeftIcon />}
             sx={(theme) => ({ marginTop: theme.spacingFunction(16) })}
           >
             {buttonText}
