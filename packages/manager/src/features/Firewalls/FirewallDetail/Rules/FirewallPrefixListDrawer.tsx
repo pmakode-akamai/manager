@@ -8,7 +8,10 @@ import { CopyTooltip } from 'src/components/CopyTooltip/CopyTooltip';
 import { DateTimeDisplay } from 'src/components/DateTimeDisplay';
 
 import { useIsFirewallRulesetsPrefixlistsEnabled } from '../../shared';
-import { getPrefixListType } from './shared';
+import {
+  getPrefixListType,
+  PREFIXLIST_MARKED_FOR_DELETION_TEXT,
+} from './shared';
 import {
   StyledLabel,
   StyledListItem,
@@ -177,7 +180,7 @@ export const FirewallPrefixListDrawer = React.memo(
                       padding: 0,
                       mb: 0.1,
                     }}
-                    text="This Prefix List will be automatically deleted when it’s no longer referenced by other firewalls."
+                    text={PREFIXLIST_MARKED_FOR_DELETION_TEXT}
                   />
                 </StyledListItem>
               )}
