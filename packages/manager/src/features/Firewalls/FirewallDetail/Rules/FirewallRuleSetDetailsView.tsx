@@ -4,6 +4,7 @@ import {
   Box,
   CircleProgress,
   ErrorState,
+  NotFound,
   Paper,
   TooltipIcon,
 } from '@linode/ui';
@@ -49,6 +50,8 @@ export const FirewallRuleSetDetailsView = (
     useIsFirewallRulesetsPrefixlistsEnabled();
   const { classes } = useStyles();
 
+  const isValidRuleSetId = ruleset !== undefined && ruleset !== null;
+
   const {
     data: ruleSetDetails,
     isFetching,
@@ -56,10 +59,12 @@ export const FirewallRuleSetDetailsView = (
     error,
   } = useFirewallRuleSetQuery(
     ruleset ?? -1,
-    ruleset !== undefined &&
-      ruleset !== null &&
-      isFirewallRulesetsPrefixlistsEnabled
+    isValidRuleSetId && isFirewallRulesetsPrefixlistsEnabled
   );
+
+  if (!isValidRuleSetId) {
+    return <NotFound alignTop />;
+  }
 
   if (isFetching) {
     return (
