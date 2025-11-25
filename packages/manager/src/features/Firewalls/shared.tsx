@@ -1,4 +1,4 @@
-import { Chip, Tooltip } from '@linode/ui';
+import { Box, Chip, Tooltip } from '@linode/ui';
 import { capitalize, truncateAndJoinList } from '@linode/utilities';
 import React from 'react';
 
@@ -389,10 +389,15 @@ export const generateAddressesLabelV2 = (
     elements.push('All IPv6');
   }
 
-  // Build a map of prefix lists
+  // Build a map of prefix lists.
+  // NOTE: If "allowedAllIPv4" or "allowedAllIPv6" is true, we skip those IPs entirely
+  // because "All IPvX" is already represented, and there are no specific addresses to map.
+  const ipv4ForPLMapping = allowedAllIPv4 ? [] : (addresses?.ipv4 ?? []);
+  const ipv6ForPLMapping = allowedAllIPv6 ? [] : (addresses?.ipv6 ?? []);
+
   const prefixListReferenceMap = buildPrefixListReferenceMap({
-    ipv4: allowedAllIPv4 ? [] : (addresses?.ipv4 ?? []),
-    ipv6: allowedAllIPv6 ? [] : (addresses?.ipv6 ?? []),
+    ipv4: ipv4ForPLMapping,
+    ipv6: ipv6ForPLMapping,
   });
 
   // Add prefix list links with merged labels (eg., "pl:system:test (IPv4, IPv6)")
@@ -446,12 +451,13 @@ export const generateAddressesLabelV2 = (
   const hasMore = showTruncateChip && elements.length > truncateAt;
 
   const fullTooltip = (
-    <div
-      style={{
+    <Box
+      sx={(theme) => ({
         maxHeight: '40vh',
         overflowY: 'auto',
-        paddingRight: 8,
-      }}
+        // Extra space on the right to prevent scrollbar from overlapping content
+        paddingRight: theme.spacingFunction(8),
+      })}
     >
       <ul
         style={{
@@ -468,39 +474,53 @@ export const generateAddressesLabelV2 = (
           </li>
         ))}
       </ul>
-    </div>
+    </Box>
   );
 
   return (
     <>
-      {truncated.map((el, idx) => (
-        <React.Fragment key={idx}>
-          {el}
-          {idx < truncated.length - 1 && ', '}
-        </React.Fragment>
-      ))}
-
+      <Box
+        component="span"
+        sx={(theme) => ({
+          // Only add gap if Chip is visible
+          marginRight: hasMore ? theme.spacingFunction(8) : 0,
+        })}
+      >
+        {truncated.map((el, idx) => (
+          <React.Fragment key={idx}>
+            {el}
+            {idx < truncated.length - 1 && ', '}
+          </React.Fragment>
+        ))}
+      </Box>
       {hasMore && (
         <Tooltip
           arrow
-          componentsProps={{
+          placement="bottom"
+          slotProps={{
             tooltip: {
-              sx: {
+              sx: (theme) => ({
                 minWidth: '248px',
-              },
+                padding: `${theme.spacingFunction(16)} !important`,
+              }),
             },
           }}
-          placement="bottom"
           title={fullTooltip}
         >
           <Chip
             label={`+${hidden}`}
-            size="small"
             sx={(theme) => ({
               cursor: 'pointer',
-              marginLeft: theme.spacingFunction(8),
               borderRadius: '12px',
               minWidth: '33px',
+              borderColor: theme.tokens.component.Tag.Default.Border,
+              '&:hover': {
+                borderColor: theme.tokens.alias.Content.Icon.Primary.Hover,
+              },
+              '& .MuiChip-label': {
+                // eslint-disable-next-line @linode/cloud-manager/no-custom-fontWeight
+                fontWeight: theme.tokens.font.FontWeight.Semibold,
+              },
             })}
             variant="outlined"
           />
