@@ -350,6 +350,7 @@ export const MultiplePrefixListInput = React.memo(
           <Grid size={11}>
             <Autocomplete
               disableClearable={prefixLists.length > 0}
+              disabled={disabled}
               errorText={thisPL.error}
               getOptionLabel={(option) => option.label}
               groupBy={(option) => getPrefixListType(option.label)}
@@ -374,13 +375,13 @@ export const MultiplePrefixListInput = React.memo(
                 <Box display="flex" gap={2}>
                   <Checkbox
                     checked={thisPL.ipv4 === true}
-                    disabled={disableIPv4 === true}
+                    disabled={disableIPv4 === true || disabled}
                     onChange={() => handleChangeIPv4(!thisPL.ipv4, idx)}
                     text="IPv4"
                   />
                   <Checkbox
                     checked={thisPL.ipv6 === true}
-                    disabled={disableIPv6 === true}
+                    disabled={disableIPv6 === true || disabled}
                     onChange={() => handleChangeIPv6(!thisPL.ipv6, idx)}
                     text="IPv6"
                   />
