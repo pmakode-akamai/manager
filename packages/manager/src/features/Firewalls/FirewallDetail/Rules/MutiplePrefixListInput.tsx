@@ -187,11 +187,6 @@ export const MultiplePrefixListInput = React.memo(
             const isUnsupported =
               (pl.ipv4 === null || pl.ipv4 === undefined) &&
               (pl.ipv6 === null || pl.ipv6 === undefined);
-
-            // const isAlreadySelected = pls?.some((p) => p.address === pl.name);
-
-            // Keep only when supported AND not selected
-            // return isSupported && !isAlreadySelected;
             return !isUnsupported;
           })
           .map((pl) => ({
@@ -204,6 +199,13 @@ export const MultiplePrefixListInput = React.memo(
           })),
       [prefixLists]
     );
+
+    const getAvailableOptions = (idx: number, address: string) =>
+      prefixListDropdownOptions.filter(
+        (o) =>
+          o.label === address || // allow current
+          !pls.some((p, i) => i !== idx && p.address === o.label)
+      );
 
     const handleChange = (pl: string, idx: number) => {
       const newPLs = [...pls];
@@ -279,19 +281,6 @@ export const MultiplePrefixListInput = React.memo(
       onChange(newPLs);
     };
 
-    // const handleBlur = (
-    //   e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>,
-    //   idx: number
-    // ) => {
-    //   if (!onBlur || e.target.value === '') {
-    //     return;
-    //   }
-
-    //   const newIPs = [...ips];
-    //   newIPs[idx].address = e.target.value;
-    //   onBlur(newIPs);
-    // };
-
     const addNewInput = () => {
       onChange([...pls, { address: '', ipv4: false, ipv6: false }]);
     };
@@ -306,7 +295,7 @@ export const MultiplePrefixListInput = React.memo(
       return null;
     }
 
-    const addIPButton = isLinkStyled ? (
+    const addPrefixListButton = isLinkStyled ? (
       <StyledLinkButtonBox
         sx={{
           marginTop: isLinkStyled ? '8px' : '12px',
@@ -327,6 +316,100 @@ export const MultiplePrefixListInput = React.memo(
         {buttonText ?? 'Add a Prefix List'}
       </Button>
     );
+
+    const renderRow = (thisPL: ExtendedPL, idx: number) => {
+      const availableOptions = getAvailableOptions(idx, thisPL.address);
+
+      const selectedOption = availableOptions.find(
+        (o) => o.label === thisPL.address
+      );
+
+      const ipv4Unsupported =
+        selectedOption?.notSupportedDetails.isPLIPv4NotSupported === true;
+      const ipv6Unsupported =
+        selectedOption?.notSupportedDetails.isPLIPv6NotSupported === true;
+
+      // Prevent both being unchecked
+      const ipv4Forced = thisPL.ipv4 === true && thisPL.ipv6 === false;
+      const ipv6Forced = thisPL.ipv6 === true && thisPL.ipv4 === false;
+
+      const disableIPv4 = ipv4Unsupported === true || ipv4Forced === true;
+      const disableIPv6 = ipv6Unsupported === true || ipv6Forced === true;
+
+      return (
+        <Grid
+          container
+          data-testid="domain-transfer-input"
+          direction="row"
+          key={`domain-transfer-ip-${idx}`}
+          spacing={2}
+          sx={{
+            justifyContent: 'center',
+          }}
+        >
+          <Grid size={11}>
+            <Autocomplete
+              disableClearable={prefixLists.length > 0}
+              errorText={thisPL.error}
+              getOptionLabel={(option) => option.label}
+              groupBy={(option) => getPrefixListType(option.label)}
+              label=""
+              loading={isLoading}
+              noMarginTop
+              onChange={(_, selectedPrefixList) => {
+                handleChange(selectedPrefixList?.label ?? '', idx);
+              }}
+              options={availableOptions}
+              placeholder="Type to search or select a Rule Set"
+              value={
+                availableOptions.find((o) => o.label === thisPL.address) ?? null
+              }
+            />
+            {thisPL.address.length !== 0 && (
+              <Box
+                display="flex"
+                justifyContent="space-between"
+                sx={{ ml: 0.4 }}
+              >
+                <Box display="flex" gap={2}>
+                  <Checkbox
+                    checked={thisPL.ipv4 === true}
+                    disabled={disableIPv4 === true}
+                    onChange={() => handleChangeIPv4(!thisPL.ipv4, idx)}
+                    text="IPv4"
+                  />
+                  <Checkbox
+                    checked={thisPL.ipv6 === true}
+                    disabled={disableIPv6 === true}
+                    onChange={() => handleChangeIPv6(!thisPL.ipv6, idx)}
+                    text="IPv6"
+                  />
+                </Box>
+                <Box alignItems="center" display="flex">
+                  <Link onClick={() => {}}>View Details</Link>
+                </Box>
+              </Box>
+            )}
+          </Grid>
+          <Grid size={1}>
+            <IconButton
+              aria-disabled={disabled}
+              className={classes.button}
+              data-testid="button"
+              disabled={disabled}
+              onClick={() => removeInput(idx)}
+              sx={(theme) => ({
+                height: 20,
+                width: 20,
+                marginTop: `${theme.spacingFunction(16)} !important`,
+              })}
+            >
+              <CloseIcon data-testid={`delete-pl-${idx}`} />
+            </IconButton>
+          </Grid>
+        </Grid>
+      );
+    };
 
     return (
       <div className={cx(classes.root, className)}>
@@ -360,111 +443,9 @@ export const MultiplePrefixListInput = React.memo(
         )}
         {error && <Notice spacingTop={8} text={error} variant="error" />}
         <Stack spacing={1}>
-          {pls.map((thisPL, idx) => (
-            <Grid
-              container
-              data-testid="domain-transfer-input"
-              direction="row"
-              key={`domain-transfer-ip-${idx}`}
-              spacing={2}
-              sx={{
-                justifyContent: 'center',
-              }}
-            >
-              <Grid size={11}>
-                {/* <TextField
-                  className={classes.input}
-                  errorText={thisIP.error}
-                  hideLabel
-                  InputProps={{
-                    'aria-label': `${title} ip-address-${idx}`,
-                    disabled,
-                    ...props.inputProps,
-                  }}
-                  // Prevent unique ID errors, since TextField sets the input element's ID to the label
-                  label={`domain-transfer-ip-${idx}`}
-                  onBlur={(e) => handleBlur(e, idx)}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    handleChange(e, idx)
-                  }
-                  placeholder={placeholder}
-                  value={thisIP.address}
-                /> */}
-                <Autocomplete
-                  disableClearable={prefixLists.length > 0}
-                  errorText={thisPL.error}
-                  getOptionLabel={(option) => option.label}
-                  groupBy={(option) => getPrefixListType(option.label)}
-                  label=""
-                  loading={isLoading}
-                  noMarginTop
-                  onChange={(_, selectedPrefixList) => {
-                    handleChange(selectedPrefixList?.label ?? '', idx);
-                  }}
-                  options={prefixListDropdownOptions}
-                  placeholder="Type to search or select a Rule Set"
-                  value={
-                    prefixListDropdownOptions.find(
-                      (o) => o.label === thisPL.address
-                    ) ?? null
-                  }
-                />
-                {thisPL.address.length !== 0 && (
-                  <Box
-                    display="flex"
-                    justifyContent="space-between"
-                    sx={{ ml: 0.4 }}
-                  >
-                    <Box display="flex" gap={2}>
-                      <Checkbox
-                        checked={thisPL.ipv4}
-                        disabled={
-                          prefixListDropdownOptions.find(
-                            (o) => o.label === thisPL.address
-                          )?.notSupportedDetails.isPLIPv4NotSupported ||
-                          (thisPL.ipv4 && !thisPL.ipv6)
-                        }
-                        onChange={() => handleChangeIPv4(!thisPL.ipv4, idx)}
-                        text="IPv4"
-                      />
-                      <Checkbox
-                        checked={thisPL.ipv6}
-                        disabled={
-                          prefixListDropdownOptions.find(
-                            (o) => o.label === thisPL.address
-                          )?.notSupportedDetails.isPLIPv6NotSupported ||
-                          (!thisPL.ipv4 && thisPL.ipv6)
-                        }
-                        onChange={() => handleChangeIPv6(!thisPL.ipv6, idx)}
-                        text="IPv6"
-                      />
-                    </Box>
-                    <Box alignItems="center" display="flex">
-                      <Link onClick={() => {}}>View Details</Link>
-                    </Box>
-                  </Box>
-                )}
-              </Grid>
-              <Grid size={1}>
-                <IconButton
-                  aria-disabled={disabled}
-                  className={classes.button}
-                  data-testid="button"
-                  disabled={disabled}
-                  onClick={() => removeInput(idx)}
-                  sx={(theme) => ({
-                    height: 20,
-                    width: 20,
-                    marginTop: `${theme.spacingFunction(16)} !important`,
-                  })}
-                >
-                  <CloseIcon data-testid={`delete-pl-${idx}`} />
-                </IconButton>
-              </Grid>
-            </Grid>
-          ))}
+          {pls.map((thisPL, idx) => renderRow(thisPL, idx))}
         </Stack>
-        {addIPButton}
+        {addPrefixListButton}
       </div>
     );
   }
