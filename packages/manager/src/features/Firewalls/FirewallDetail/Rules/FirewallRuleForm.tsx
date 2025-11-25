@@ -43,6 +43,7 @@ export const FirewallRuleForm = React.memo((props: FirewallRuleFormProps) => {
     errors,
     handleBlur,
     handleChange,
+    handleOpenPrefixListDrawer,
     handleSubmit,
     ips,
     pls,
@@ -339,6 +340,7 @@ export const FirewallRuleForm = React.memo((props: FirewallRuleFormProps) => {
           <StyledMultiplePrefixListInput
             aria-label="Prefix List for Firewall rule"
             buttonText="Add a Prefix List"
+            handleOpenPrefixListDrawer={handleOpenPrefixListDrawer}
             onChange={handlePrefixListChange}
             pls={pls}
             title={pls.length > 0 ? 'Prefix List' : ''}

@@ -240,6 +240,16 @@ export const FirewallRuleDrawer = React.memo(
                   addressesLabel={addressesLabel}
                   category={category}
                   closeDrawer={onClose}
+                  handleOpenPrefixListDrawer={(
+                    prefixListLabel,
+                    plFirewallIPRef
+                  ) => {
+                    handleOpenPrefixListDrawer?.(
+                      prefixListLabel,
+                      plFirewallIPRef,
+                      'rule'
+                    );
+                  }}
                   ips={ips}
                   mode={mode}
                   pls={pls}

@@ -19,7 +19,10 @@ import { makeStyles } from 'tss-react/mui';
 
 import { Link } from 'src/components/Link';
 import { StyledLinkButtonBox } from 'src/components/SelectFirewallPanel/SelectFirewallPanel';
-import { useIsFirewallRulesetsPrefixlistsEnabled } from 'src/features/Firewalls/shared';
+import {
+  FirewallIPPrefixListReference,
+  useIsFirewallRulesetsPrefixlistsEnabled,
+} from 'src/features/Firewalls/shared';
 
 import { getPrefixListType } from './shared';
 
@@ -87,6 +90,11 @@ export interface MultiplePrefixListInputProps {
    */
   error?: string;
 
+  handleOpenPrefixListDrawer?: (
+    prefixListLabel: string,
+    plFirewallIPRef: FirewallIPPrefixListReference
+  ) => void;
+
   /**
    * Helper text for additional guidance.
    */
@@ -97,16 +105,16 @@ export interface MultiplePrefixListInputProps {
    */
   inputProps?: InputBaseProps;
 
+  //   /**
+  //    * Callback triggered when the input loses focus, passing updated `ips`.
+  //    */
+  //   onBlur?: (ips: ExtendedIP[]) => void;
+
   /**
    * Styles the button as a link.
    * @default false
    */
   isLinkStyled?: boolean;
-
-  //   /**
-  //    * Callback triggered when the input loses focus, passing updated `ips`.
-  //    */
-  //   onBlur?: (ips: ExtendedIP[]) => void;
 
   /**
    * Callback triggered when IPs change, passing updated `ips`.
@@ -156,6 +164,7 @@ export const MultiplePrefixListInput = React.memo(
       //   placeholder,
       required,
       title,
+      handleOpenPrefixListDrawer,
       tooltip,
     } = props;
     const { classes, cx } = useStyles();
@@ -387,7 +396,22 @@ export const MultiplePrefixListInput = React.memo(
                   />
                 </Box>
                 <Box alignItems="center" display="flex">
-                  <Link onClick={() => {}}>View Details</Link>
+                  <Link
+                    onClick={(e) => {
+                      e.preventDefault();
+
+                      handleOpenPrefixListDrawer?.(
+                        thisPL.address,
+                        thisPL.ipv4 && thisPL.ipv6
+                          ? '(IPv4, IPv6)'
+                          : thisPL.ipv4
+                            ? '(IPv4)'
+                            : '(IPv6)'
+                      );
+                    }}
+                  >
+                    View Details
+                  </Link>
                 </Box>
               </Box>
             )}
