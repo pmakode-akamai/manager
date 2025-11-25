@@ -335,7 +335,7 @@ export const FirewallPrefixListDrawer = React.memo(
               </Button>
             ) : (
               <Button
-                buttonType="primary"
+                buttonType="secondary"
                 onClick={() => onClose({ closeAll: false })}
               >
                 Cancel
