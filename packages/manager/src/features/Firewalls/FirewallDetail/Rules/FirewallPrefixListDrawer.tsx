@@ -75,14 +75,14 @@ export const FirewallPrefixListDrawer = React.memo(
           ? `${capitalize(category)} Rule Set details`
           : 'Prefix List details';
 
-    const buttonText =
+    const backButtonText =
       reference?.type === 'ruleset' && reference.modeViewedFrom === 'create'
         ? `Back to ${category} Rule Set`
         : reference?.type === 'ruleset' && reference.modeViewedFrom === 'view'
           ? 'Back to the Rule Set'
           : reference?.type === 'rule' && reference.modeViewedFrom === 'edit'
             ? 'Back to Rule'
-            : 'Back';
+            : null;
 
     return (
       <Drawer
@@ -191,6 +191,11 @@ export const FirewallPrefixListDrawer = React.memo(
                     backgroundColor: theme.tokens.alias.Background.Neutral,
                     padding: theme.spacingFunction(12),
                     marginTop: theme.spacingFunction(8),
+                    ...(isIPv4InUse
+                      ? {
+                          border: `1px solid ${theme.tokens.alias.Border.Positive}`,
+                        }
+                      : {}),
                   })}
                 >
                   <StyledLabel
@@ -252,6 +257,11 @@ export const FirewallPrefixListDrawer = React.memo(
                     backgroundColor: theme.tokens.alias.Background.Neutral,
                     padding: theme.spacingFunction(12),
                     marginTop: theme.spacingFunction(8),
+                    ...(isIPv6InUse
+                      ? {
+                          border: `1px solid ${theme.tokens.alias.Border.Positive}`,
+                        }
+                      : {}),
                   })}
                 >
                   <StyledLabel
@@ -308,14 +318,30 @@ export const FirewallPrefixListDrawer = React.memo(
             </>
           )}
 
-          <Button
-            buttonType="outlined"
-            onClick={() => onClose({ closeAll: false })}
-            startIcon={<ArrowLeftIcon />}
-            sx={(theme) => ({ marginTop: theme.spacingFunction(16) })}
+          <Box
+            sx={(theme) => ({
+              marginTop: theme.spacingFunction(16),
+              display: 'flex',
+              justifyContent: backButtonText ? 'flex-start' : 'flex-end',
+            })}
           >
-            {buttonText}
-          </Button>
+            {backButtonText ? (
+              <Button
+                buttonType="outlined"
+                onClick={() => onClose({ closeAll: false })}
+                startIcon={<ArrowLeftIcon />}
+              >
+                {backButtonText}
+              </Button>
+            ) : (
+              <Button
+                buttonType="primary"
+                onClick={() => onClose({ closeAll: false })}
+              >
+                Cancel
+              </Button>
+            )}
+          </Box>
         </Box>
       </Drawer>
     );
