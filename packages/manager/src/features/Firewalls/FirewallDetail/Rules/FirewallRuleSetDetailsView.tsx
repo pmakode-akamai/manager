@@ -15,7 +15,7 @@ import { CopyTooltip } from 'src/components/CopyTooltip/CopyTooltip';
 import { DateTimeDisplay } from 'src/components/DateTimeDisplay';
 
 import {
-  FirewallIPPrefixListReference,
+  FirewallRulePrefixListReferenceTag,
   generateAddressesLabelV2,
   useIsFirewallRulesetsPrefixlistsEnabled,
 } from '../../shared';
@@ -36,7 +36,7 @@ interface FirewallRuleSetDetailsViewProps {
   closeDrawer: () => void;
   handleOpenPrefixListDrawer?: (
     prefixListLabel: string,
-    plFirewallIPRef: FirewallIPPrefixListReference
+    plRuleRefTag: FirewallRulePrefixListReferenceTag
   ) => void;
   ruleset: FirewallRuleType['ruleset'];
 }

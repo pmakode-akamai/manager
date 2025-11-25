@@ -63,8 +63,8 @@ import type { Category, FirewallRuleError } from './shared';
 import type { DragEndEvent } from '@dnd-kit/core';
 import type { FirewallPolicyType } from '@linode/api-v4/lib/firewalls/types';
 import type {
-  FirewallIPPrefixListReference,
   FirewallOptionItem,
+  FirewallRulePrefixListReferenceTag,
 } from 'src/features/Firewalls/shared';
 
 interface RuleRow {
@@ -101,7 +101,7 @@ interface FirewallRuleTableProps extends RowActionHandlers {
   disabled: boolean;
   handleOpenPrefixListDrawer?: (
     prefixListLabel: string,
-    plFirewallIPRef: FirewallIPPrefixListReference
+    plRuleRefTag: FirewallRulePrefixListReferenceTag
   ) => void;
   handlePolicyChange: (
     category: Category,
@@ -650,7 +650,7 @@ export const firewallRuleToRowData = (
   isFirewallRulesetsPrefixlistsEnabled?: boolean,
   handleOpenPrefixListDrawer?: (
     prefixListLabel: string,
-    plFirewallIPRef: FirewallIPPrefixListReference
+    plRuleRefTag: FirewallRulePrefixListReferenceTag
   ) => void
 ): RuleRow[] => {
   return firewallRules.map((thisRule, idx) => {

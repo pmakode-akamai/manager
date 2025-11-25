@@ -1,6 +1,6 @@
 import type {
-  FirewallIPPrefixListReference,
   FirewallOptionItem,
+  FirewallRulePrefixListReferenceTag,
 } from '../../shared';
 import type { PrefixListRuleReference } from './FirewallPrefixListDrawer';
 import type { ExtendedFirewallRule } from './firewallRuleEditor';
@@ -18,7 +18,7 @@ export interface FirewallRuleDrawerProps {
   category: Category;
   handleOpenPrefixListDrawer?: (
     prefixListLabel: string,
-    plFirewallIPRef: FirewallIPPrefixListReference,
+    plRuleRefTag: FirewallRulePrefixListReferenceTag,
     referenceType: PrefixListRuleReference['type']
   ) => void;
   isOpen: boolean;
@@ -62,7 +62,7 @@ export interface FirewallRuleSetFormProps
   closeDrawer: () => void;
   handleOpenPrefixListDrawer?: (
     prefixListLabel: string,
-    plFirewallIPRef: FirewallIPPrefixListReference
+    plRuleRefTag: FirewallRulePrefixListReferenceTag
   ) => void;
   ruleErrors?: FirewallRuleError[];
 }

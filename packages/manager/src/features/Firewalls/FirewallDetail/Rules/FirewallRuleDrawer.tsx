@@ -262,11 +262,11 @@ export const FirewallRuleDrawer = React.memo(
                     closeDrawer={onClose}
                     handleOpenPrefixListDrawer={(
                       prefixListLabel,
-                      plFirewallIPRef
+                      plRuleRefTag
                     ) => {
                       handleOpenPrefixListDrawer?.(
                         prefixListLabel,
-                        plFirewallIPRef,
+                        plRuleRefTag,
                         'ruleset'
                       );
                     }}
@@ -282,10 +282,10 @@ export const FirewallRuleDrawer = React.memo(
           <FirewallRuleSetDetailsView
             category={category}
             closeDrawer={onClose}
-            handleOpenPrefixListDrawer={(prefixListLabel, plFirewallIPRef) => {
+            handleOpenPrefixListDrawer={(prefixListLabel, plRuleRefTag) => {
               handleOpenPrefixListDrawer?.(
                 prefixListLabel,
-                plFirewallIPRef,
+                plRuleRefTag,
                 'ruleset'
               );
             }}

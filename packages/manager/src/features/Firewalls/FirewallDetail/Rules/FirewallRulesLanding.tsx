@@ -434,12 +434,12 @@ export const FirewallRulesLanding = React.memo((props: Props) => {
             handleCloneRule('inbound', idx)
           }
           handleDeleteFirewallRule={(idx) => handleDeleteRule('inbound', idx)}
-          handleOpenPrefixListDrawer={(prefixListLabel, plFirewallIPRef) => {
+          handleOpenPrefixListDrawer={(prefixListLabel, plRuleRefTag) => {
             setPrefixListDrawer({
               category: 'inbound',
               reference: {
                 type: 'rule',
-                plFirewallIPRef,
+                plRuleRefTag,
               },
               selectedPrefixListLabel: prefixListLabel,
             });
@@ -480,10 +480,10 @@ export const FirewallRulesLanding = React.memo((props: Props) => {
             handleCloneRule('outbound', idx)
           }
           handleDeleteFirewallRule={(idx) => handleDeleteRule('outbound', idx)}
-          handleOpenPrefixListDrawer={(prefixListLabel, plFirewallIPRef) => {
+          handleOpenPrefixListDrawer={(prefixListLabel, plRuleRefTag) => {
             setPrefixListDrawer({
               category: 'outbound',
-              reference: { type: 'rule', plFirewallIPRef },
+              reference: { type: 'rule', plRuleRefTag },
               selectedPrefixListLabel: prefixListLabel,
             });
           }}
@@ -519,13 +519,13 @@ export const FirewallRulesLanding = React.memo((props: Props) => {
         category={ruleDrawer.category}
         handleOpenPrefixListDrawer={(
           prefixListLabel,
-          plFirewallIPRef,
+          plRuleRefTag,
           referenceType
         ) => {
           setPrefixListDrawer({
             category: ruleDrawer.category,
             reference: {
-              plFirewallIPRef,
+              plRuleRefTag,
               type: referenceType,
               modeViewedFrom: ruleDrawer.mode,
             },

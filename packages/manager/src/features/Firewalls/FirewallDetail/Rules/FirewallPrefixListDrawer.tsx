@@ -19,13 +19,13 @@ import {
   useStyles,
 } from './shared.styles';
 
-import type { FirewallIPPrefixListReference } from '../../shared';
+import type { FirewallRulePrefixListReferenceTag } from '../../shared';
 import type { FirewallRuleDrawerMode } from './FirewallRuleDrawer.types';
 import type { Category } from './shared';
 
 export interface PrefixListRuleReference {
   modeViewedFrom?: FirewallRuleDrawerMode; // Optional in the case of normal rules
-  plFirewallIPRef: FirewallIPPrefixListReference;
+  plRuleRefTag: FirewallRulePrefixListReferenceTag;
   type: 'rule' | 'ruleset';
 }
 
@@ -61,12 +61,12 @@ export const FirewallPrefixListDrawer = React.memo(
       prefixListDetails?.ipv6 !== null && prefixListDetails?.ipv6 !== undefined;
 
     const isIPv4InUse =
-      reference?.plFirewallIPRef === '(IPv4)' ||
-      reference?.plFirewallIPRef === '(IPv4, IPv6)';
+      reference?.plRuleRefTag === '(IPv4)' ||
+      reference?.plRuleRefTag === '(IPv4, IPv6)';
 
     const isIPv6InUse =
-      reference?.plFirewallIPRef === '(IPv6)' ||
-      reference?.plFirewallIPRef === '(IPv4, IPv6)';
+      reference?.plRuleRefTag === '(IPv6)' ||
+      reference?.plRuleRefTag === '(IPv4, IPv6)';
 
     const titleText =
       reference?.type === 'ruleset' && reference.modeViewedFrom === 'create'
