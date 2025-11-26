@@ -69,7 +69,12 @@ const computeExpected = (
 
 describe('PrefixListDrawer', () => {
   beforeEach(() => {
-    spy.mockReturnValue({ isFirewallRulesetsPrefixlistsEnabled: true });
+    spy.mockReturnValue({
+      isFirewallRulesetsPrefixlistsFeatureEnabled: true,
+      isFirewallRulesetsPrefixListsBetaEnabled: false,
+      isFirewallRulesetsPrefixListsLAEnabled: false,
+      isFirewallRulesetsPrefixListsGAEnabled: false,
+    });
 
     queryMocks.useAllFirewallPrefixListsQuery.mockReturnValue({
       data: [firewallPrefixListFactory.build()],

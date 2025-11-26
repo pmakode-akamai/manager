@@ -42,12 +42,12 @@ export const FirewallPrefixListDrawer = React.memo(
     const { category, onClose, reference, isOpen, selectedPrefixListLabel } =
       props;
 
-    const { isFirewallRulesetsPrefixlistsEnabled } =
+    const { isFirewallRulesetsPrefixlistsFeatureEnabled } =
       useIsFirewallRulesetsPrefixlistsEnabled();
     const { classes } = useStyles();
 
     const { data, error, isFetching } = useAllFirewallPrefixListsQuery(
-      isFirewallRulesetsPrefixlistsEnabled,
+      isFirewallRulesetsPrefixlistsFeatureEnabled,
       {},
       { name: selectedPrefixListLabel }
     );

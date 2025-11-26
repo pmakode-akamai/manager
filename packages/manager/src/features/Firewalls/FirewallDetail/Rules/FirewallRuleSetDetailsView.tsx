@@ -15,7 +15,6 @@ import { CopyTooltip } from 'src/components/CopyTooltip/CopyTooltip';
 import { DateTimeDisplay } from 'src/components/DateTimeDisplay';
 
 import {
-  FirewallRulePrefixListReferenceTag,
   generateAddressesLabelV2,
   useIsFirewallRulesetsPrefixlistsEnabled,
 } from '../../shared';
@@ -28,6 +27,7 @@ import {
   useStyles,
 } from './shared.styles';
 
+import type { FirewallRulePrefixListReferenceTag } from '../../shared';
 import type { Category } from './shared';
 import type { FirewallRuleType } from '@linode/api-v4';
 
@@ -46,7 +46,7 @@ export const FirewallRuleSetDetailsView = (
 ) => {
   const { category, closeDrawer, handleOpenPrefixListDrawer, ruleset } = props;
 
-  const { isFirewallRulesetsPrefixlistsEnabled } =
+  const { isFirewallRulesetsPrefixlistsFeatureEnabled } =
     useIsFirewallRulesetsPrefixlistsEnabled();
   const { classes } = useStyles();
 
@@ -59,7 +59,7 @@ export const FirewallRuleSetDetailsView = (
     error,
   } = useFirewallRuleSetQuery(
     ruleset ?? -1,
-    isValidRuleSetId && isFirewallRulesetsPrefixlistsEnabled
+    isValidRuleSetId && isFirewallRulesetsPrefixlistsFeatureEnabled
   );
 
   if (!isValidRuleSetId) {

@@ -39,11 +39,11 @@ export const FirewallRuleSetForm = React.memo(
 
     const { classes } = useStyles();
 
-    const { isFirewallRulesetsPrefixlistsEnabled } =
+    const { isFirewallRulesetsPrefixlistsFeatureEnabled } =
       useIsFirewallRulesetsPrefixlistsEnabled();
 
     const { data, error, isLoading } = useAllFirewallRuleSetsQuery(
-      isFirewallRulesetsPrefixlistsEnabled
+      isFirewallRulesetsPrefixlistsFeatureEnabled
     );
 
     const ruleSets = data ?? [];
