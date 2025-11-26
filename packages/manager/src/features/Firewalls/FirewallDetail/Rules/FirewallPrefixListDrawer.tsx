@@ -73,16 +73,23 @@ export const FirewallPrefixListDrawer = React.memo(
         ? `Add an ${capitalize(category)} Rule or Rule Set`
         : reference?.type === 'ruleset' && reference.modeViewedFrom === 'view'
           ? `${capitalize(category)} Rule Set details`
-          : 'Prefix List details';
+          : reference?.type === 'rule' && reference.modeViewedFrom === 'edit'
+            ? 'Edit Rule'
+            : 'Prefix List details';
 
     const backButtonText =
       reference?.type === 'ruleset' && reference.modeViewedFrom === 'create'
-        ? `Back to ${category} Rule Set`
+        ? `Back to ${capitalize(category)} Rule Set`
         : reference?.type === 'ruleset' && reference.modeViewedFrom === 'view'
           ? 'Back to the Rule Set'
           : reference?.type === 'rule' && reference.modeViewedFrom === 'edit'
             ? 'Back to Rule'
             : null;
+
+    const plFieldLabel =
+      reference?.type === 'rule' && reference.modeViewedFrom === undefined
+        ? 'Name'
+        : 'Prefix List Name';
 
     return (
       <Drawer
@@ -97,8 +104,7 @@ export const FirewallPrefixListDrawer = React.memo(
             <>
               {[
                 {
-                  label:
-                    reference?.type === 'ruleset' ? 'Prefix List Name' : 'Name',
+                  label: plFieldLabel,
                   value: prefixListDetails.name,
                 },
                 {
@@ -330,6 +336,7 @@ export const FirewallPrefixListDrawer = React.memo(
                 buttonType="outlined"
                 onClick={() => onClose({ closeAll: false })}
                 startIcon={<ArrowLeftIcon />}
+                sx={{ textTransform: 'none' }}
               >
                 {backButtonText}
               </Button>
