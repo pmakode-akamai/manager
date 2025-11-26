@@ -122,7 +122,7 @@ describe('PrefixListDrawer', () => {
   ];
 
   it.each(drawerProps)(
-    'renders correct Drawer title, labels, and button',
+    'renders correct UI for category:$category, referenceType:$reference.type and modeViewedFrom:$reference.modeViewedFrom',
     ({ category, reference }) => {
       const { getByText, getByRole } = renderWithTheme(
         <FirewallPrefixListDrawer
@@ -173,7 +173,7 @@ describe('PrefixListDrawer', () => {
     },
   ];
 
-  it.each(deletionCases)('%s', async ({ deleted }) => {
+  it.each(deletionCases)('$description', async ({ deleted }) => {
     const prefixList = firewallPrefixListFactory.build({ deleted });
 
     queryMocks.useAllFirewallPrefixListsQuery.mockReturnValue({
