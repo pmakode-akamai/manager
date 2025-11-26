@@ -1,5 +1,13 @@
 import { useFirewallRuleSetQuery } from '@linode/queries';
-import { ActionsPanel, Box, Paper, TooltipIcon } from '@linode/ui';
+import {
+  ActionsPanel,
+  Box,
+  CircleProgress,
+  ErrorState,
+  NotFound,
+  Paper,
+  TooltipIcon,
+} from '@linode/ui';
 import { capitalize } from '@linode/utilities';
 import * as React from 'react';
 
@@ -7,7 +15,6 @@ import { CopyTooltip } from 'src/components/CopyTooltip/CopyTooltip';
 import { DateTimeDisplay } from 'src/components/DateTimeDisplay';
 
 import {
-  FirewallIPPrefixListReference,
   generateAddressesLabelV2,
   useIsFirewallRulesetsPrefixlistsEnabled,
 } from '../../shared';
@@ -20,16 +27,18 @@ import {
   useStyles,
 } from './shared.styles';
 
+import type { FirewallRulePrefixListReferenceTag } from '../../shared';
 import type { Category } from './shared';
+import type { FirewallRuleType } from '@linode/api-v4';
 
 interface FirewallRuleSetDetailsViewProps {
   category: Category;
   closeDrawer: () => void;
   handleOpenPrefixListDrawer?: (
     prefixListLabel: string,
-    plFirewallIPRef: FirewallIPPrefixListReference
+    plRuleRefTag: FirewallRulePrefixListReferenceTag
   ) => void;
-  ruleset: number;
+  ruleset: FirewallRuleType['ruleset'];
 }
 
 export const FirewallRuleSetDetailsView = (
@@ -37,14 +46,37 @@ export const FirewallRuleSetDetailsView = (
 ) => {
   const { category, closeDrawer, handleOpenPrefixListDrawer, ruleset } = props;
 
-  const { isFirewallRulesetsPrefixlistsEnabled } =
+  const { isFirewallRulesetsPrefixlistsFeatureEnabled } =
     useIsFirewallRulesetsPrefixlistsEnabled();
   const { classes } = useStyles();
 
-  const { data: ruleSetDetails } = useFirewallRuleSetQuery(
-    ruleset,
-    isFirewallRulesetsPrefixlistsEnabled
+  const isValidRuleSetId = ruleset !== undefined && ruleset !== null;
+
+  const {
+    data: ruleSetDetails,
+    isFetching,
+    isError,
+    error,
+  } = useFirewallRuleSetQuery(
+    ruleset ?? -1,
+    isValidRuleSetId && isFirewallRulesetsPrefixlistsFeatureEnabled
   );
+
+  if (!isValidRuleSetId) {
+    return <NotFound alignTop />;
+  }
+
+  if (isFetching) {
+    return (
+      <Box display="flex" justifyContent="center" mt={12}>
+        <CircleProgress size="md" />
+      </Box>
+    );
+  }
+
+  if (isError) {
+    return <ErrorState errorText={error[0].reason} />;
+  }
 
   return (
     <Box mt={2}>
@@ -163,7 +195,7 @@ export const FirewallRuleSetDetailsView = (
       </Paper>
 
       <ActionsPanel
-        primaryButtonProps={{
+        secondaryButtonProps={{
           label: 'Cancel',
           onClick: closeDrawer,
         }}

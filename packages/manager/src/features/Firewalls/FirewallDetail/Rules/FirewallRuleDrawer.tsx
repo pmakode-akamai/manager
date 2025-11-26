@@ -49,7 +49,7 @@ export const FirewallRuleDrawer = React.memo(
       ruleToModifyOrView,
     } = props;
 
-    const { isFirewallRulesetsPrefixlistsEnabled } =
+    const { isFirewallRulesetsPrefixlistsFeatureEnabled } =
       useIsFirewallRulesetsPrefixlistsEnabled();
 
     /**
@@ -97,7 +97,7 @@ export const FirewallRuleDrawer = React.memo(
       // 2. The drawer is closed - ensures the next time it opens, it starts with the default 'rule' selection.
       if (
         mode === 'create' &&
-        (!isFirewallRulesetsPrefixlistsEnabled || !isOpen)
+        (!isFirewallRulesetsPrefixlistsFeatureEnabled || !isOpen)
       ) {
         setCreateEntityType('rule');
       }
@@ -105,13 +105,13 @@ export const FirewallRuleDrawer = React.memo(
       mode,
       isOpen,
       ruleToModifyOrView,
-      isFirewallRulesetsPrefixlistsEnabled,
+      isFirewallRulesetsPrefixlistsFeatureEnabled,
     ]);
 
     const title =
       mode === 'create'
         ? `Add an ${capitalize(category)} Rule${
-            isFirewallRulesetsPrefixlistsEnabled ? ' or Rule Set' : ''
+            isFirewallRulesetsPrefixlistsFeatureEnabled ? ' or Rule Set' : ''
           }`
         : mode === 'edit'
           ? 'Edit Rule'
@@ -186,7 +186,7 @@ export const FirewallRuleDrawer = React.memo(
 
     return (
       <Drawer onClose={onClose} open={isOpen} title={title}>
-        {mode === 'create' && isFirewallRulesetsPrefixlistsEnabled && (
+        {mode === 'create' && isFirewallRulesetsPrefixlistsFeatureEnabled && (
           <Grid container spacing={2}>
             {firewallRuleCreateOptions.map((option) => (
               <SelectionCard
@@ -257,7 +257,7 @@ export const FirewallRuleDrawer = React.memo(
 
         {mode === 'create' &&
           createEntityType === 'ruleset' &&
-          isFirewallRulesetsPrefixlistsEnabled && (
+          isFirewallRulesetsPrefixlistsFeatureEnabled && (
             <Formik<FormRuleSetState>
               initialValues={{ ruleset: -1 }}
               onSubmit={(values) => {
@@ -283,11 +283,11 @@ export const FirewallRuleDrawer = React.memo(
                     closeDrawer={onClose}
                     handleOpenPrefixListDrawer={(
                       prefixListLabel,
-                      plFirewallIPRef
+                      plRuleRefTag
                     ) => {
                       handleOpenPrefixListDrawer?.(
                         prefixListLabel,
-                        plFirewallIPRef,
+                        plRuleRefTag,
                         'ruleset'
                       );
                     }}
@@ -303,14 +303,14 @@ export const FirewallRuleDrawer = React.memo(
           <FirewallRuleSetDetailsView
             category={category}
             closeDrawer={onClose}
-            handleOpenPrefixListDrawer={(prefixListLabel, plFirewallIPRef) => {
+            handleOpenPrefixListDrawer={(prefixListLabel, plRuleRefTag) => {
               handleOpenPrefixListDrawer?.(
                 prefixListLabel,
-                plFirewallIPRef,
+                plRuleRefTag,
                 'ruleset'
               );
             }}
-            ruleset={ruleToModifyOrView?.ruleset ?? -1}
+            ruleset={ruleToModifyOrView?.ruleset}
           />
         )}
 

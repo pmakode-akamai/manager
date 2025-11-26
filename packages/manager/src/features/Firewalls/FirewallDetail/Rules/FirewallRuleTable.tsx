@@ -63,8 +63,8 @@ import type { Category, FirewallRuleError } from './shared';
 import type { DragEndEvent } from '@dnd-kit/core';
 import type { FirewallPolicyType } from '@linode/api-v4/lib/firewalls/types';
 import type {
-  FirewallIPPrefixListReference,
   FirewallOptionItem,
+  FirewallRulePrefixListReferenceTag,
 } from 'src/features/Firewalls/shared';
 
 interface RuleRow {
@@ -91,7 +91,7 @@ interface RowActionHandlers {
   handleCloneFirewallRule: (idx: number) => void;
   handleDeleteFirewallRule: (idx: number) => void;
   handleOpenRuleDrawerForEditing: (idx: number) => void;
-  handleOpenRuleSetDrawerForViewing?: (idx: number) => void;
+  handleOpenRuleSetDrawerForViewing?: (ruleset: number) => void;
   handleReorder: (startIdx: number, endIdx: number) => void;
   handleUndo: (idx: number) => void;
 }
@@ -101,7 +101,7 @@ interface FirewallRuleTableProps extends RowActionHandlers {
   disabled: boolean;
   handleOpenPrefixListDrawer?: (
     prefixListLabel: string,
-    plFirewallIPRef: FirewallIPPrefixListReference
+    plRuleRefTag: FirewallRulePrefixListReferenceTag
   ) => void;
   handlePolicyChange: (
     category: Category,
@@ -133,7 +133,7 @@ export const FirewallRuleTable = (props: FirewallRuleTableProps) => {
   const smDown = useMediaQuery(theme.breakpoints.down('sm'));
   const lgDown = useMediaQuery(theme.breakpoints.down('lg'));
 
-  const { isFirewallRulesetsPrefixlistsEnabled } =
+  const { isFirewallRulesetsPrefixlistsFeatureEnabled } =
     useIsFirewallRulesetsPrefixlistsEnabled();
 
   const addressColumnLabel =
@@ -141,7 +141,7 @@ export const FirewallRuleTable = (props: FirewallRuleTableProps) => {
 
   const rowData = firewallRuleToRowData(
     rulesWithStatus,
-    isFirewallRulesetsPrefixlistsEnabled,
+    isFirewallRulesetsPrefixlistsFeatureEnabled,
     handleOpenPrefixListDrawer
   );
 
@@ -324,17 +324,19 @@ const FirewallRuleTableRow = React.memo((props: FirewallRuleTableRowProps) => {
     ruleset,
   } = props;
 
-  const { isFirewallRulesetsPrefixlistsEnabled } =
+  const { isFirewallRulesetsPrefixlistsFeatureEnabled } =
     useIsFirewallRulesetsPrefixlistsEnabled();
 
   const isRuleSetRow = Boolean(ruleset);
   const isRuleSetRowEnabled =
-    isRuleSetRow && isFirewallRulesetsPrefixlistsEnabled;
+    isRuleSetRow && isFirewallRulesetsPrefixlistsFeatureEnabled;
+
+  const isValidRuleSetId = ruleset !== undefined && ruleset !== null;
 
   const { data: rulesetDetails, isLoading: isRuleSetLoading } =
     useFirewallRuleSetQuery(
       ruleset ?? -1,
-      ruleset !== undefined && isRuleSetRowEnabled
+      isValidRuleSetId && isRuleSetRowEnabled
     );
 
   const actionMenuProps = {
@@ -439,7 +441,11 @@ const FirewallRuleTableRow = React.memo((props: FirewallRuleTableRowProps) => {
       {isRuleSetRowEnabled && (
         <>
           <TableCell aria-label={`Label: ${label}`}>
-            <Box alignItems="center" display="flex" gap={1}>
+            <Box
+              alignItems="center"
+              display="flex"
+              gap={rulesetDetails ? 1 : 0}
+            >
               <Box alignItems="center" display="flex">
                 <StyledDragIndicator
                   aria-label="Drag indicator icon"
@@ -447,20 +453,22 @@ const FirewallRuleTableRow = React.memo((props: FirewallRuleTableRowProps) => {
                 />
                 {rulesetDetails && (
                   <Link
-                    onClick={() => handleOpenRuleSetDrawerForViewing?.(index)}
+                    onClick={() =>
+                      handleOpenRuleSetDrawerForViewing?.(rulesetDetails.id)
+                    }
                   >
                     {rulesetDetails?.label}
                   </Link>
                 )}
               </Box>
-              <Hidden smDown>
+              <Hidden smDown={!!rulesetDetails}>
                 <Box
                   sx={{
                     alignItems: 'center',
                     display: 'flex',
                   }}
                 >
-                  <span>ID:&nbsp;</span>
+                  <span>{rulesetDetails ? 'ID:' : 'Rule Set ID:'}&nbsp;</span>
                   <span>{ruleset}</span>
                   <CopyTooltip
                     className={classes.copyIcon}
@@ -642,7 +650,7 @@ export const firewallRuleToRowData = (
   isFirewallRulesetsPrefixlistsEnabled?: boolean,
   handleOpenPrefixListDrawer?: (
     prefixListLabel: string,
-    plFirewallIPRef: FirewallIPPrefixListReference
+    plRuleRefTag: FirewallRulePrefixListReferenceTag
   ) => void
 ): RuleRow[] => {
   return firewallRules.map((thisRule, idx) => {

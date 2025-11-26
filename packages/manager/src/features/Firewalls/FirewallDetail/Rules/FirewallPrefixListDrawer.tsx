@@ -1,21 +1,17 @@
 import { useAllFirewallPrefixListsQuery } from '@linode/queries';
-import {
-  Box,
-  Button,
-  ChevronLeftIcon,
-  Chip,
-  Drawer,
-  Paper,
-  TooltipIcon,
-} from '@linode/ui';
+import { Box, Button, Chip, Drawer, Paper, TooltipIcon } from '@linode/ui';
 import { capitalize } from '@linode/utilities';
 import * as React from 'react';
 
+import ArrowLeftIcon from 'src/assets/icons/arrow-left.svg';
 import { CopyTooltip } from 'src/components/CopyTooltip/CopyTooltip';
 import { DateTimeDisplay } from 'src/components/DateTimeDisplay';
 
 import { useIsFirewallRulesetsPrefixlistsEnabled } from '../../shared';
-import { getPrefixListType } from './shared';
+import {
+  getPrefixListType,
+  PREFIXLIST_MARKED_FOR_DELETION_TEXT,
+} from './shared';
 import {
   StyledLabel,
   StyledListItem,
@@ -23,13 +19,13 @@ import {
   useStyles,
 } from './shared.styles';
 
-import type { FirewallIPPrefixListReference } from '../../shared';
+import type { FirewallRulePrefixListReferenceTag } from '../../shared';
 import type { FirewallRuleDrawerMode } from './FirewallRuleDrawer.types';
 import type { Category } from './shared';
 
 export interface PrefixListRuleReference {
   modeViewedFrom?: FirewallRuleDrawerMode; // Optional in the case of normal rules
-  plFirewallIPRef: FirewallIPPrefixListReference;
+  plRuleRefTag: FirewallRulePrefixListReferenceTag;
   type: 'rule' | 'ruleset';
 }
 
@@ -46,12 +42,12 @@ export const FirewallPrefixListDrawer = React.memo(
     const { category, onClose, reference, isOpen, selectedPrefixListLabel } =
       props;
 
-    const { isFirewallRulesetsPrefixlistsEnabled } =
+    const { isFirewallRulesetsPrefixlistsFeatureEnabled } =
       useIsFirewallRulesetsPrefixlistsEnabled();
     const { classes } = useStyles();
 
     const { data, error, isFetching } = useAllFirewallPrefixListsQuery(
-      isFirewallRulesetsPrefixlistsEnabled,
+      isFirewallRulesetsPrefixlistsFeatureEnabled,
       {},
       { name: selectedPrefixListLabel }
     );
@@ -65,28 +61,35 @@ export const FirewallPrefixListDrawer = React.memo(
       prefixListDetails?.ipv6 !== null && prefixListDetails?.ipv6 !== undefined;
 
     const isIPv4InUse =
-      reference?.plFirewallIPRef === '(IPv4)' ||
-      reference?.plFirewallIPRef === '(IPv4, IPv6)';
+      reference?.plRuleRefTag === '(IPv4)' ||
+      reference?.plRuleRefTag === '(IPv4, IPv6)';
 
     const isIPv6InUse =
-      reference?.plFirewallIPRef === '(IPv6)' ||
-      reference?.plFirewallIPRef === '(IPv4, IPv6)';
+      reference?.plRuleRefTag === '(IPv6)' ||
+      reference?.plRuleRefTag === '(IPv4, IPv6)';
 
     const titleText =
       reference?.type === 'ruleset' && reference.modeViewedFrom === 'create'
         ? `Add an ${capitalize(category)} Rule or Rule Set`
         : reference?.type === 'ruleset' && reference.modeViewedFrom === 'view'
           ? `${capitalize(category)} Rule Set details`
-          : 'Prefix List details';
+          : reference?.type === 'rule' && reference.modeViewedFrom === 'edit'
+            ? 'Edit Rule'
+            : 'Prefix List details';
 
-    const buttonText =
+    const backButtonText =
       reference?.type === 'ruleset' && reference.modeViewedFrom === 'create'
-        ? `Back to ${category} Rule Set`
+        ? `Back to ${capitalize(category)} Rule Set`
         : reference?.type === 'ruleset' && reference.modeViewedFrom === 'view'
           ? 'Back to the Rule Set'
           : reference?.type === 'rule' && reference.modeViewedFrom === 'edit'
             ? 'Back to Rule'
-            : 'Back';
+            : null;
+
+    const plFieldLabel =
+      reference?.type === 'rule' && reference.modeViewedFrom === undefined
+        ? 'Name'
+        : 'Prefix List Name';
 
     return (
       <Drawer
@@ -101,8 +104,7 @@ export const FirewallPrefixListDrawer = React.memo(
             <>
               {[
                 {
-                  label:
-                    reference?.type === 'ruleset' ? 'Prefix List Name' : 'Name',
+                  label: plFieldLabel,
                   value: prefixListDetails.name,
                 },
                 {
@@ -184,7 +186,7 @@ export const FirewallPrefixListDrawer = React.memo(
                       padding: 0,
                       mb: 0.1,
                     }}
-                    text="This Prefix List will be automatically deleted when it’s no longer referenced by other firewalls."
+                    text={PREFIXLIST_MARKED_FOR_DELETION_TEXT}
                   />
                 </StyledListItem>
               )}
@@ -195,6 +197,11 @@ export const FirewallPrefixListDrawer = React.memo(
                     backgroundColor: theme.tokens.alias.Background.Neutral,
                     padding: theme.spacingFunction(12),
                     marginTop: theme.spacingFunction(8),
+                    ...(isIPv4InUse
+                      ? {
+                          border: `1px solid ${theme.tokens.alias.Border.Positive}`,
+                        }
+                      : {}),
                   })}
                 >
                   <StyledLabel
@@ -256,6 +263,11 @@ export const FirewallPrefixListDrawer = React.memo(
                     backgroundColor: theme.tokens.alias.Background.Neutral,
                     padding: theme.spacingFunction(12),
                     marginTop: theme.spacingFunction(8),
+                    ...(isIPv6InUse
+                      ? {
+                          border: `1px solid ${theme.tokens.alias.Border.Positive}`,
+                        }
+                      : {}),
                   })}
                 >
                   <StyledLabel
@@ -312,14 +324,31 @@ export const FirewallPrefixListDrawer = React.memo(
             </>
           )}
 
-          <Button
-            buttonType="outlined"
-            onClick={() => onClose({ closeAll: false })}
-            startIcon={<ChevronLeftIcon />}
-            sx={(theme) => ({ marginTop: theme.spacingFunction(16) })}
+          <Box
+            sx={(theme) => ({
+              marginTop: theme.spacingFunction(16),
+              display: 'flex',
+              justifyContent: backButtonText ? 'flex-start' : 'flex-end',
+            })}
           >
-            {buttonText}
-          </Button>
+            {backButtonText ? (
+              <Button
+                buttonType="outlined"
+                onClick={() => onClose({ closeAll: false })}
+                startIcon={<ArrowLeftIcon />}
+                sx={{ textTransform: 'none' }}
+              >
+                {backButtonText}
+              </Button>
+            ) : (
+              <Button
+                buttonType="secondary"
+                onClick={() => onClose({ closeAll: false })}
+              >
+                Cancel
+              </Button>
+            )}
+          </Box>
         </Box>
       </Drawer>
     );

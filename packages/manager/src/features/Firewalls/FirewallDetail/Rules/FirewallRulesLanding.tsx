@@ -7,7 +7,12 @@ import {
 import { ActionsPanel, Notice, Typography } from '@linode/ui';
 import { styled } from '@mui/material/styles';
 import { useQueryClient } from '@tanstack/react-query';
-import { useBlocker, useLocation, useNavigate } from '@tanstack/react-router';
+import {
+  useBlocker,
+  useLocation,
+  useNavigate,
+  useParams,
+} from '@tanstack/react-router';
 import { useSnackbar } from 'notistack';
 import * as React from 'react';
 
@@ -43,10 +48,13 @@ interface Props {
   rules: FirewallRules;
 }
 
+type RulesDrawerEntityType = 'rule' | 'ruleset';
+
 interface Drawer {
   category: Category;
+  entityType?: RulesDrawerEntityType; // Not applicable for 'create', since 'create' can involve both entity types
   mode: FirewallRuleDrawerMode;
-  ruleIdx?: number;
+  ruleIdx?: number; // Rule row index or ruleset Id (not applicable for 'create')
 }
 
 // TODO: Refactor this code - Becoming too large and hard to maintain
@@ -60,6 +68,18 @@ export const FirewallRulesLanding = React.memo((props: Props) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { enqueueSnackbar } = useSnackbar();
+
+  const getCategoryFromPath = (pathname: string): Category =>
+    pathname.includes('inbound') ? 'inbound' : 'outbound';
+
+  const getDrawerEntityTypeFromPath = (
+    pathname: string
+  ): RulesDrawerEntityType =>
+    pathname.includes('/ruleset') ? 'ruleset' : 'rule';
+
+  const params = useParams({ strict: false });
+  const category = getCategoryFromPath(location.pathname);
+  const entityType = getDrawerEntityTypeFromPath(location.pathname);
 
   /**
    * inbound and outbound policy aren't part of any particular rule
@@ -85,10 +105,19 @@ export const FirewallRulesLanding = React.memo((props: Props) => {
   /**
    * Component state and handlers
    */
-  const [ruleDrawer, setRuleDrawer] = React.useState<Drawer>({
-    category: 'inbound',
-    mode: 'create',
-  });
+
+  // - Initialize the drawer state based on the current route.
+  // - Drawers can be accessed via the route ONLY for viewing rulesets or adding rules/rulesets.
+  // - Accessing the Edit Rule drawer via the route is not allowed (for now),
+  //   since individual rules don't have unique IDs and are part of drag-and-drop feature.
+  const initialDrawer: Drawer = {
+    category,
+    mode: entityType === 'ruleset' ? 'view' : 'create',
+    entityType: entityType === 'ruleset' ? entityType : undefined,
+    ruleIdx: entityType === 'ruleset' ? Number(params.ruleId) : undefined,
+  };
+
+  const [ruleDrawer, setRuleDrawer] = React.useState<Drawer>(initialDrawer);
   const [prefixListDrawer, setPrefixListDrawer] = React.useState<{
     category: Category;
     reference: PrefixListRuleReference | undefined;
@@ -106,15 +135,19 @@ export const FirewallRulesLanding = React.memo((props: Props) => {
   const [discardChangesModalOpen, setDiscardChangesModalOpen] =
     React.useState<boolean>(false);
 
-  const openRuleDrawer = (
-    category: Category,
-    mode: FirewallRuleDrawerMode,
-    idx?: number
-  ) => {
+  const openRuleDrawer = (options: {
+    category: Category;
+    entityType?: RulesDrawerEntityType;
+    idx?: number;
+    mode: FirewallRuleDrawerMode;
+  }) => {
+    const { category, mode, idx, entityType = 'rule' } = options;
+
     setRuleDrawer({
       category,
       mode,
       ruleIdx: idx,
+      entityType,
     });
 
     let path: string;
@@ -341,13 +374,16 @@ export const FirewallRulesLanding = React.memo((props: Props) => {
     [outboundState]
   );
 
-  // This is for the Rule Drawer. If there is a rule to modify,
+  const rulesByCategory =
+    ruleDrawer.category === 'inbound' ? inboundRules : outboundRules;
+
+  // This is for the Rule Drawer. If there is a rule to modify or view,
   // we need to pass it to the drawer to pre-populate the form fields.
   const ruleToModifyOrView =
     ruleDrawer.ruleIdx !== undefined
-      ? ruleDrawer.category === 'inbound'
-        ? inboundRules[ruleDrawer.ruleIdx]
-        : outboundRules[ruleDrawer.ruleIdx]
+      ? ruleDrawer.entityType === 'ruleset'
+        ? rulesByCategory.find((r) => r.ruleset === ruleDrawer.ruleIdx) // Find ruleset by ruleset id
+        : rulesByCategory[ruleDrawer.ruleIdx] // find rule by rule index
       : undefined;
 
   return (
@@ -398,28 +434,40 @@ export const FirewallRulesLanding = React.memo((props: Props) => {
             handleCloneRule('inbound', idx)
           }
           handleDeleteFirewallRule={(idx) => handleDeleteRule('inbound', idx)}
-          handleOpenPrefixListDrawer={(prefixListLabel, plFirewallIPRef) => {
+          handleOpenPrefixListDrawer={(prefixListLabel, plRuleRefTag) => {
             setPrefixListDrawer({
               category: 'inbound',
               reference: {
                 type: 'rule',
-                plFirewallIPRef,
+                plRuleRefTag,
               },
               selectedPrefixListLabel: prefixListLabel,
             });
           }}
           handleOpenRuleDrawerForEditing={(idx: number) =>
-            openRuleDrawer('inbound', 'edit', idx)
+            openRuleDrawer({
+              category: 'inbound',
+              mode: 'edit',
+              idx,
+              entityType: 'rule',
+            })
           }
-          handleOpenRuleSetDrawerForViewing={(idx: number) =>
-            openRuleDrawer('inbound', 'view', idx)
+          handleOpenRuleSetDrawerForViewing={(ruleset: number) =>
+            openRuleDrawer({
+              category: 'inbound',
+              mode: 'view',
+              idx: ruleset,
+              entityType: 'ruleset',
+            })
           }
           handlePolicyChange={handlePolicyChange}
           handleReorder={(startIdx: number, endIdx: number) =>
             handleReorder('inbound', startIdx, endIdx)
           }
           handleUndo={(idx) => handleUndo('inbound', idx)}
-          openRuleDrawer={openRuleDrawer}
+          openRuleDrawer={(category, mode) => {
+            openRuleDrawer({ category, mode });
+          }}
           policy={policy.inbound}
           rulesWithStatus={inboundRules}
         />
@@ -432,25 +480,37 @@ export const FirewallRulesLanding = React.memo((props: Props) => {
             handleCloneRule('outbound', idx)
           }
           handleDeleteFirewallRule={(idx) => handleDeleteRule('outbound', idx)}
-          handleOpenPrefixListDrawer={(prefixListLabel, plFirewallIPRef) => {
+          handleOpenPrefixListDrawer={(prefixListLabel, plRuleRefTag) => {
             setPrefixListDrawer({
               category: 'outbound',
-              reference: { type: 'rule', plFirewallIPRef },
+              reference: { type: 'rule', plRuleRefTag },
               selectedPrefixListLabel: prefixListLabel,
             });
           }}
           handleOpenRuleDrawerForEditing={(idx: number) =>
-            openRuleDrawer('outbound', 'edit', idx)
+            openRuleDrawer({
+              category: 'outbound',
+              mode: 'edit',
+              idx,
+              entityType: 'rule',
+            })
           }
-          handleOpenRuleSetDrawerForViewing={(idx: number) =>
-            openRuleDrawer('outbound', 'view', idx)
+          handleOpenRuleSetDrawerForViewing={(ruleset: number) =>
+            openRuleDrawer({
+              category: 'outbound',
+              mode: 'view',
+              idx: ruleset,
+              entityType: 'ruleset',
+            })
           }
           handlePolicyChange={handlePolicyChange}
           handleReorder={(startIdx: number, endIdx: number) =>
             handleReorder('outbound', startIdx, endIdx)
           }
           handleUndo={(idx) => handleUndo('outbound', idx)}
-          openRuleDrawer={openRuleDrawer}
+          openRuleDrawer={(category, mode) => {
+            openRuleDrawer({ category, mode });
+          }}
           policy={policy.outbound}
           rulesWithStatus={outboundRules}
         />
@@ -459,13 +519,13 @@ export const FirewallRulesLanding = React.memo((props: Props) => {
         category={ruleDrawer.category}
         handleOpenPrefixListDrawer={(
           prefixListLabel,
-          plFirewallIPRef,
+          plRuleRefTag,
           referenceType
         ) => {
           setPrefixListDrawer({
             category: ruleDrawer.category,
             reference: {
-              plFirewallIPRef,
+              plRuleRefTag,
               type: referenceType,
               modeViewedFrom: ruleDrawer.mode,
             },
