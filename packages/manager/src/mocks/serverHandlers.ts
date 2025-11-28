@@ -1323,8 +1323,8 @@ export const handlers = [
         label: 'firewall with rule and ruleset reference',
         rules: firewallRulesFactory.build({
           inbound: [
-            firewallRuleFactory.build({ ruleset: 123 }), // Referenced Ruleset to the Firewall (ID 123)
-            firewallRuleFactory.build({ ruleset: 123456789 }), // Referenced Ruleset to the Firewall (ID 123456789)
+            { ruleset: 123 }, // Referenced Ruleset to the Firewall (ID 123)
+            { ruleset: 123456789 }, // Referenced Ruleset to the Firewall (ID 123456789)
             ...firewallRuleFactory.buildList(1),
           ],
         }),
@@ -1430,8 +1430,8 @@ export const handlers = [
             label: 'firewall with rule and ruleset reference',
             rules: firewallRulesFactory.build({
               inbound: [
-                firewallRuleFactory.build({ ruleset: 123 }), // Referenced Ruleset to the Firewall (ID 123)
-                firewallRuleFactory.build({ ruleset: 123456789 }), // Referenced Ruleset to the Firewall (ID 123456789)
+                { ruleset: 123 }, // Referenced Ruleset to the Firewall (ID 123)
+                { ruleset: 123456789 }, // Referenced Ruleset to the Firewall (ID 123456789)
                 ...firewallRuleFactory.buildList(1, {
                   addresses: {
                     ipv4: [
