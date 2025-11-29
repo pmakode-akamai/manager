@@ -176,6 +176,7 @@ export const FirewallPrefixListDrawer = React.memo(
                   <DateTimeDisplay
                     sx={(theme) => ({
                       color: theme.tokens.alias.Content.Text.Negative,
+                      marginRight: theme.spacingFunction(4),
                     })}
                     value={prefixListDetails.deleted}
                   />
