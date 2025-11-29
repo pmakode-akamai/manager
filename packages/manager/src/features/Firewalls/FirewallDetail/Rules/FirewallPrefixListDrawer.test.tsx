@@ -1,4 +1,5 @@
 import { capitalize } from '@linode/utilities';
+import { within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 
@@ -37,7 +38,7 @@ const spy = vi.spyOn(shared, 'useIsFirewallRulesetsPrefixlistsEnabled');
 //
 // Helper to compute expected UI values/text
 //
-const computeExpected = (
+const computeExpectedElements = (
   category: 'inbound' | 'outbound',
   reference: FirewallPrefixListDrawerProps['reference']
 ) => {
@@ -63,8 +64,9 @@ const computeExpected = (
     label = 'Prefix List Name:';
   }
 
-  // Default: Especially when there is no drawer reference
-  // (for eg., type === rule and modeViewFrom === undefined)
+  // Default values when there is no specific drawer reference
+  // (e.g., type === 'rule' and modeViewedFrom === undefined,
+  // meaning the drawer is opened directly from the Firewall Table row)
   return { title, button, label };
 };
 
@@ -75,10 +77,6 @@ describe('PrefixListDrawer', () => {
       isFirewallRulesetsPrefixListsBetaEnabled: false,
       isFirewallRulesetsPrefixListsLAEnabled: false,
       isFirewallRulesetsPrefixListsGAEnabled: false,
-    });
-
-    queryMocks.useAllFirewallPrefixListsQuery.mockReturnValue({
-      data: [firewallPrefixListFactory.build()],
     });
   });
 
@@ -130,6 +128,10 @@ describe('PrefixListDrawer', () => {
   it.each(drawerProps)(
     'renders correct UI for category:$category, referenceType:$reference.type and modeViewedFrom:$reference.modeViewedFrom',
     ({ category, reference }) => {
+      queryMocks.useAllFirewallPrefixListsQuery.mockReturnValue({
+        data: [firewallPrefixListFactory.build()],
+      });
+
       const { getByText, getByRole } = renderWithTheme(
         <FirewallPrefixListDrawer
           category={category}
@@ -141,7 +143,10 @@ describe('PrefixListDrawer', () => {
       );
 
       // Compute expectations
-      const { title, button, label } = computeExpected(category, reference);
+      const { title, button, label } = computeExpectedElements(
+        category,
+        reference
+      );
 
       // Title
       expect(getByText(title)).toBeVisible();
@@ -166,24 +171,24 @@ describe('PrefixListDrawer', () => {
   );
 
   // Marked for deletion tests
-  const deletionCases = [
-    {
-      description:
-        'should not display "Marked for deletion" when prefix list is active',
-      deleted: null,
-    },
-    {
-      description:
-        'should display "Marked for deletion" when prefix list is deleted',
-      deleted: '2025-07-24T04:23:17',
-    },
+  const deletionTestCases = [
+    [
+      'should not display "Marked for deletion" when prefix list is active',
+      null,
+    ],
+    [
+      'should display "Marked for deletion" when prefix list is deleted',
+      '2025-07-24T04:23:17',
+    ],
   ];
 
-  it.each(deletionCases)('$description', async ({ deleted }) => {
-    const prefixList = firewallPrefixListFactory.build({ deleted });
+  it.each(deletionTestCases)('%s', async (_, deletedTimeStamp) => {
+    const mockPrefixList = firewallPrefixListFactory.build({
+      deleted: deletedTimeStamp,
+    });
 
     queryMocks.useAllFirewallPrefixListsQuery.mockReturnValue({
-      data: [prefixList],
+      data: [mockPrefixList],
     });
 
     const { getByText, getByTestId, findByText, queryByText } = renderWithTheme(
@@ -196,7 +201,7 @@ describe('PrefixListDrawer', () => {
       />
     );
 
-    if (deleted) {
+    if (deletedTimeStamp) {
       expect(getByText('Marked for deletion:')).toBeVisible();
       const tooltip = getByTestId('tooltip-info-icon');
       await userEvent.hover(tooltip);
@@ -225,9 +230,10 @@ describe('PrefixListDrawer', () => {
     { plRuleRefTag: '(IPv4)', type: 'rule' },
     { plRuleRefTag: '(IPv6)', type: 'rule' },
     { plRuleRefTag: '(IPv4, IPv6)', type: 'rule' },
+    { plRuleRefTag: '(IPv4, IPv6)', type: 'ruleset' },
   ];
 
-  const rulesSectionCases = [
+  const ipSectionTestCases = [
     // PL supports both
     {
       prefixList: prefixListVariants[0],
@@ -244,6 +250,12 @@ describe('PrefixListDrawer', () => {
     {
       prefixList: prefixListVariants[0],
       reference: ruleReferences[2],
+      expectedIPv4: 'in use',
+      expectedIPv6: 'in use',
+    },
+    {
+      prefixList: prefixListVariants[0],
+      reference: ruleReferences[3],
       expectedIPv4: 'in use',
       expectedIPv6: 'in use',
     },
@@ -300,17 +312,23 @@ describe('PrefixListDrawer', () => {
     },
   ];
 
-  // rulesSectionCases.forEach(
-  it.each(rulesSectionCases)(
-    'shows correct chips for PL $prefixList.name with reference $reference.plRuleRefTag',
+  it.each(ipSectionTestCases)(
+    'renders correct chip status and IP addresses for Prefix List $prefixList.name with reference $reference.plRuleRefTag',
     ({ prefixList, reference, expectedIPv4, expectedIPv6 }) => {
+      const selectedPrefixList = prefixList.name;
+
+      const mockPrefixList = firewallPrefixListFactory.build({ ...prefixList });
+      queryMocks.useAllFirewallPrefixListsQuery.mockReturnValue({
+        data: [mockPrefixList],
+      });
+
       const { getByTestId } = renderWithTheme(
         <FirewallPrefixListDrawer
           category="inbound"
           isOpen={true}
           onClose={vi.fn()}
           reference={reference}
-          selectedPrefixListLabel={prefixList.name}
+          selectedPrefixListLabel={selectedPrefixList}
         />
       );
 
@@ -320,10 +338,11 @@ describe('PrefixListDrawer', () => {
         expect(ipv4Chip).toHaveTextContent(expectedIPv4);
 
         // Check IPv4 addresses
-        // const ipv4Content = prefixList.ipv4.length
-        //   ? prefixList.ipv4.join(', ')
-        //   : 'no IP addresses';
-        // expect(getByText(ipv4Content)).toBeVisible();
+        const ipv4Section = getByTestId('ipv4-section');
+        const ipv4Content = prefixList.ipv4.length
+          ? prefixList.ipv4.join(', ')
+          : 'no IP addresses';
+        expect(within(ipv4Section).getByText(ipv4Content)).toBeVisible();
       }
 
       if (prefixList.ipv6 && expectedIPv6) {
@@ -332,10 +351,11 @@ describe('PrefixListDrawer', () => {
         expect(ipv6Chip).toHaveTextContent(expectedIPv6);
 
         // Check IPv6 addresses
-        // const ipv6Content = prefixList.ipv6.length
-        //   ? prefixList.ipv6.join(', ')
-        //   : 'no IP addresses';
-        // expect(getByText(ipv6Content)).toBeVisible();
+        const ipv6Section = getByTestId('ipv6-section');
+        const ipv6Content = prefixList.ipv6.length
+          ? prefixList.ipv6.join(', ')
+          : 'no IP addresses';
+        expect(within(ipv6Section).getByText(ipv6Content)).toBeVisible();
       }
     }
   );

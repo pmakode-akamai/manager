@@ -194,6 +194,7 @@ export const FirewallPrefixListDrawer = React.memo(
 
               {isIPv4Supported && (
                 <Paper
+                  data-testid="ipv4-section"
                   sx={(theme) => ({
                     backgroundColor: theme.tokens.alias.Background.Neutral,
                     padding: theme.spacingFunction(12),
@@ -261,6 +262,7 @@ export const FirewallPrefixListDrawer = React.memo(
 
               {isIPv6Supported && (
                 <Paper
+                  data-testid="ipv6-section"
                   sx={(theme) => ({
                     backgroundColor: theme.tokens.alias.Background.Neutral,
                     padding: theme.spacingFunction(12),
