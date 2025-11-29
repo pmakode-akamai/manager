@@ -220,6 +220,7 @@ export const FirewallPrefixListDrawer = React.memo(
                   >
                     IPv4
                     <Chip
+                      data-testid="ipv4-chip"
                       label={isIPv4InUse ? 'in use' : 'not in use'}
                       sx={(theme) => ({
                         background: isIPv4InUse
@@ -286,6 +287,7 @@ export const FirewallPrefixListDrawer = React.memo(
                   >
                     IPv6
                     <Chip
+                      data-testid="ipv6-chip"
                       label={isIPv6InUse ? 'in use' : 'not in use'}
                       sx={(theme) => ({
                         background: isIPv6InUse

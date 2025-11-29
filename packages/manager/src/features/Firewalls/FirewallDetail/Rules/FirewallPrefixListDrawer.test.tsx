@@ -10,6 +10,7 @@ import { FirewallPrefixListDrawer } from './FirewallPrefixListDrawer';
 import { PREFIXLIST_MARKED_FOR_DELETION_TEXT } from './shared';
 
 import type { FirewallPrefixListDrawerProps } from './FirewallPrefixListDrawer';
+import type { FirewallPrefixList } from '@linode/api-v4';
 
 const queryMocks = vi.hoisted(() => ({
   useAllFirewallPrefixListsQuery: vi.fn().mockReturnValue({}),
@@ -206,4 +207,136 @@ describe('PrefixListDrawer', () => {
       expect(queryByText('Marked for deletion:')).not.toBeInTheDocument();
     }
   });
+
+  const prefixListVariants: Partial<FirewallPrefixList>[] = [
+    { name: 'pl::supports-both', ipv4: ['1.1.1.0/24'], ipv6: ['::1/128'] },
+    { name: 'pl::supports-only-ipv4', ipv4: ['1.1.1.0/24'], ipv6: null },
+    { name: 'pl::supports-only-ipv6', ipv4: null, ipv6: ['::1/128'] },
+    { name: 'pl::supports-both-but-ipv4-empty', ipv4: [], ipv6: ['::1/128'] },
+    {
+      name: 'pl::supports-both-but-ipv6-empty',
+      ipv4: ['1.1.1.0/24'],
+      ipv6: [],
+    },
+    { name: 'pl::supports-both-but-both-empty', ipv4: [], ipv6: [] },
+  ];
+
+  const ruleReferences: FirewallPrefixListDrawerProps['reference'][] = [
+    { plRuleRefTag: '(IPv4)', type: 'rule' },
+    { plRuleRefTag: '(IPv6)', type: 'rule' },
+    { plRuleRefTag: '(IPv4, IPv6)', type: 'rule' },
+  ];
+
+  const rulesSectionCases = [
+    // PL supports both
+    {
+      prefixList: prefixListVariants[0],
+      reference: ruleReferences[0],
+      expectedIPv4: 'in use',
+      expectedIPv6: 'not in use',
+    },
+    {
+      prefixList: prefixListVariants[0],
+      reference: ruleReferences[1],
+      expectedIPv4: 'not in use',
+      expectedIPv6: 'in use',
+    },
+    {
+      prefixList: prefixListVariants[0],
+      reference: ruleReferences[2],
+      expectedIPv4: 'in use',
+      expectedIPv6: 'in use',
+    },
+    // PL supports only IPv4
+    {
+      prefixList: prefixListVariants[1],
+      reference: ruleReferences[0],
+      expectedIPv4: 'in use',
+    },
+    // PL supports only IPv6
+    {
+      prefixList: prefixListVariants[2],
+      reference: ruleReferences[1],
+      expectedIPv6: 'in use',
+    },
+    // PL IPv4 empty
+    {
+      prefixList: prefixListVariants[3],
+      reference: ruleReferences[0],
+      expectedIPv4: 'in use',
+      expectedIPv6: 'not in use',
+    },
+    {
+      prefixList: prefixListVariants[3],
+      reference: ruleReferences[1],
+      expectedIPv4: 'not in use',
+      expectedIPv6: 'in use',
+    },
+    // PL IPv6 empty
+    {
+      prefixList: prefixListVariants[4],
+      reference: ruleReferences[0],
+      expectedIPv4: 'in use',
+      expectedIPv6: 'not in use',
+    },
+    {
+      prefixList: prefixListVariants[4],
+      reference: ruleReferences[1],
+      expectedIPv4: 'not in use',
+      expectedIPv6: 'in use',
+    },
+    // PL both empty
+    {
+      prefixList: prefixListVariants[5],
+      reference: ruleReferences[0],
+      expectedIPv4: 'in use',
+      expectedIPv6: 'not in use',
+    },
+    {
+      prefixList: prefixListVariants[5],
+      reference: ruleReferences[1],
+      expectedIPv4: 'not in use',
+      expectedIPv6: 'in use',
+    },
+  ];
+
+  // rulesSectionCases.forEach(
+  it.each(rulesSectionCases)(
+    'shows correct chips for PL $prefixList.name with reference $reference.plRuleRefTag',
+    ({ prefixList, reference, expectedIPv4, expectedIPv6 }) => {
+      const { getByTestId } = renderWithTheme(
+        <FirewallPrefixListDrawer
+          category="inbound"
+          isOpen={true}
+          onClose={vi.fn()}
+          reference={reference}
+          selectedPrefixListLabel={prefixList.name}
+        />
+      );
+
+      if (prefixList.ipv4 && expectedIPv4) {
+        const ipv4Chip = getByTestId('ipv4-chip');
+        expect(ipv4Chip).toBeVisible();
+        expect(ipv4Chip).toHaveTextContent(expectedIPv4);
+
+        // Check IPv4 addresses
+        // const ipv4Content = prefixList.ipv4.length
+        //   ? prefixList.ipv4.join(', ')
+        //   : 'no IP addresses';
+        // expect(getByText(ipv4Content)).toBeVisible();
+      }
+
+      if (prefixList.ipv6 && expectedIPv6) {
+        const ipv6Chip = getByTestId('ipv6-chip');
+        expect(ipv6Chip).toBeVisible();
+        expect(ipv6Chip).toHaveTextContent(expectedIPv6);
+
+        // Check IPv6 addresses
+        // const ipv6Content = prefixList.ipv6.length
+        //   ? prefixList.ipv6.join(', ')
+        //   : 'no IP addresses';
+        // expect(getByText(ipv6Content)).toBeVisible();
+      }
+    }
+  );
 });
