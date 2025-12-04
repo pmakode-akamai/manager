@@ -23,7 +23,9 @@ export interface ExtendedIP {
   error?: string;
 }
 
-export interface ExtendedPL extends ExtendedIP, PrefixListRuleReference {}
+export interface ExtendedPL extends ExtendedIP, PrefixListRuleReference {
+  updated?: PrefixListRuleReference;
+}
 
 export const stringToExtendedIP = (ip: string): ExtendedIP => ({ address: ip });
 export const extendedIPToString = (ip: ExtendedIP): string => ip.address;

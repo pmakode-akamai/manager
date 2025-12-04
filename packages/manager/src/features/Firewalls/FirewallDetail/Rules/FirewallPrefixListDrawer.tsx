@@ -62,6 +62,8 @@ export const FirewallPrefixListDrawer = React.memo(
     const isIPv4InUse = context?.plRuleRef.inIPv4Rule;
     const isIPv6InUse = context?.plRuleRef.inIPv6Rule;
 
+    const doNotShowInUseStatus = !isIPv4InUse && !isIPv6InUse;
+
     // Returns Prefix List drawer title and back button text based on category and reference
     const getDrawerTexts = (
       category: Category,
@@ -231,7 +233,7 @@ export const FirewallPrefixListDrawer = React.memo(
                       display: 'flex',
                       justifyContent: 'space-between',
                       marginBottom: theme.spacingFunction(4),
-                      ...(!isIPv4InUse
+                      ...(!isIPv4InUse && !doNotShowInUseStatus
                         ? {
                             color:
                               theme.tokens.alias.Content.Text.Primary.Disabled,
@@ -240,30 +242,32 @@ export const FirewallPrefixListDrawer = React.memo(
                     })}
                   >
                     IPv4
-                    <Chip
-                      data-testid="ipv4-chip"
-                      label={isIPv4InUse ? 'in use' : 'not in use'}
-                      sx={(theme) => ({
-                        background: isIPv4InUse
-                          ? theme.tokens.component.Badge.Positive.Subtle
-                              .Background
-                          : theme.tokens.component.Badge.Neutral.Subtle
-                              .Background,
-                        color: isIPv4InUse
-                          ? theme.tokens.component.Badge.Positive.Subtle.Text
-                          : theme.tokens.component.Badge.Neutral.Subtle.Text,
-                        font: theme.font.bold,
-                        fontSize: theme.tokens.font.FontSize.Xxxs,
-                        marginRight: theme.spacingFunction(6),
-                        flexShrink: 0,
-                      })}
-                    />
+                    {!doNotShowInUseStatus && (
+                      <Chip
+                        data-testid="ipv4-chip"
+                        label={isIPv4InUse ? 'in use' : 'not in use'}
+                        sx={(theme) => ({
+                          background: isIPv4InUse
+                            ? theme.tokens.component.Badge.Positive.Subtle
+                                .Background
+                            : theme.tokens.component.Badge.Neutral.Subtle
+                                .Background,
+                          color: isIPv4InUse
+                            ? theme.tokens.component.Badge.Positive.Subtle.Text
+                            : theme.tokens.component.Badge.Neutral.Subtle.Text,
+                          font: theme.font.bold,
+                          fontSize: theme.tokens.font.FontSize.Xxxs,
+                          marginRight: theme.spacingFunction(6),
+                          flexShrink: 0,
+                        })}
+                      />
+                    )}
                   </StyledLabel>
 
                   <StyledListItem
                     component="span"
                     sx={(theme) => ({
-                      ...(!isIPv4InUse
+                      ...(!isIPv4InUse && !doNotShowInUseStatus
                         ? {
                             color:
                               theme.tokens.alias.Content.Text.Primary.Disabled,
@@ -299,7 +303,7 @@ export const FirewallPrefixListDrawer = React.memo(
                       display: 'flex',
                       justifyContent: 'space-between',
                       marginBottom: theme.spacingFunction(4),
-                      ...(!isIPv6InUse
+                      ...(!isIPv6InUse && !doNotShowInUseStatus
                         ? {
                             color:
                               theme.tokens.alias.Content.Text.Primary.Disabled,
@@ -308,29 +312,31 @@ export const FirewallPrefixListDrawer = React.memo(
                     })}
                   >
                     IPv6
-                    <Chip
-                      data-testid="ipv6-chip"
-                      label={isIPv6InUse ? 'in use' : 'not in use'}
-                      sx={(theme) => ({
-                        background: isIPv6InUse
-                          ? theme.tokens.component.Badge.Positive.Subtle
-                              .Background
-                          : theme.tokens.component.Badge.Neutral.Subtle
-                              .Background,
-                        color: isIPv6InUse
-                          ? theme.tokens.component.Badge.Positive.Subtle.Text
-                          : theme.tokens.component.Badge.Neutral.Subtle.Text,
-                        font: theme.font.bold,
-                        fontSize: theme.tokens.font.FontSize.Xxxs,
-                        marginRight: theme.spacingFunction(6),
-                        flexShrink: 0,
-                      })}
-                    />
+                    {!doNotShowInUseStatus && (
+                      <Chip
+                        data-testid="ipv6-chip"
+                        label={isIPv6InUse ? 'in use' : 'not in use'}
+                        sx={(theme) => ({
+                          background: isIPv6InUse
+                            ? theme.tokens.component.Badge.Positive.Subtle
+                                .Background
+                            : theme.tokens.component.Badge.Neutral.Subtle
+                                .Background,
+                          color: isIPv6InUse
+                            ? theme.tokens.component.Badge.Positive.Subtle.Text
+                            : theme.tokens.component.Badge.Neutral.Subtle.Text,
+                          font: theme.font.bold,
+                          fontSize: theme.tokens.font.FontSize.Xxxs,
+                          marginRight: theme.spacingFunction(6),
+                          flexShrink: 0,
+                        })}
+                      />
+                    )}
                   </StyledLabel>
                   <StyledListItem
                     component="span"
                     sx={(theme) => ({
-                      ...(!isIPv6InUse
+                      ...(!isIPv6InUse && !doNotShowInUseStatus
                         ? {
                             color:
                               theme.tokens.alias.Content.Text.Primary.Disabled,

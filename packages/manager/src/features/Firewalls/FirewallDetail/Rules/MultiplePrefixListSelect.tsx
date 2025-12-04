@@ -182,24 +182,43 @@ export const MultiplePrefixListSelect = React.memo(
 
       updatePL(idx, {
         address: label,
-        ...getDefaultPLReferenceState(match.support),
+        updated: {
+          ...getDefaultPLReferenceState(match.support),
+        },
       });
     };
 
     const handleToggleIPv4 = (checked: boolean, idx: number) => {
+      const pl = pls[idx];
+
       updatePL(idx, {
-        inIPv4Rule: checked,
+        updated: {
+          inIPv4Rule: checked,
+          inIPv6Rule: pl.updated?.inIPv6Rule ?? pl.inIPv6Rule,
+        },
       });
     };
 
     const handleToggleIPv6 = (checked: boolean, idx: number) => {
+      const pl = pls[idx];
       updatePL(idx, {
-        inIPv6Rule: checked,
+        updated: {
+          inIPv6Rule: checked,
+          inIPv4Rule: pl.updated?.inIPv4Rule ?? pl.inIPv4Rule,
+        },
       });
     };
 
     const addNewInput = () => {
-      onChange([...pls, { address: '', inIPv4Rule: false, inIPv6Rule: false }]);
+      onChange([
+        ...pls,
+        {
+          address: '',
+          inIPv4Rule: false,
+          inIPv6Rule: false,
+          updated: { inIPv4Rule: false, inIPv6Rule: false },
+        },
+      ]);
     };
 
     const removeInput = (idx: number) => {
@@ -226,9 +245,11 @@ export const MultiplePrefixListSelect = React.memo(
         selectedOption?.support.isPLIPv6Unsupported === true;
 
       const ipv4Forced =
-        thisPL.inIPv4Rule === true && thisPL.inIPv6Rule === false;
+        thisPL.updated?.inIPv4Rule === true &&
+        thisPL.updated.inIPv6Rule === false;
       const ipv6Forced =
-        thisPL.inIPv6Rule === true && thisPL.inIPv4Rule === false;
+        thisPL.updated?.inIPv6Rule === true &&
+        thisPL.updated.inIPv4Rule === false;
 
       const disableIPv4 = ipv4Unsupported || ipv4Forced;
       const disableIPv6 = ipv6Unsupported || ipv6Forced;
@@ -271,17 +292,21 @@ export const MultiplePrefixListSelect = React.memo(
               >
                 <Box display="flex" gap={2}>
                   <Checkbox
-                    checked={thisPL.inIPv4Rule === true}
+                    checked={thisPL.updated?.inIPv4Rule === true}
                     data-testid={`ipv4-checkbox-${idx}`}
                     disabled={disableIPv4 || disabled}
-                    onChange={() => handleToggleIPv4(!thisPL.inIPv4Rule, idx)}
+                    onChange={() =>
+                      handleToggleIPv4(!thisPL.updated?.inIPv4Rule, idx)
+                    }
                     text="IPv4"
                   />
                   <Checkbox
-                    checked={thisPL.inIPv6Rule === true}
+                    checked={thisPL.updated?.inIPv6Rule === true}
                     data-testid={`ipv6-checkbox-${idx}`}
                     disabled={disableIPv6 || disabled}
-                    onChange={() => handleToggleIPv6(!thisPL.inIPv6Rule, idx)}
+                    onChange={() =>
+                      handleToggleIPv6(!thisPL.updated?.inIPv6Rule, idx)
+                    }
                     text="IPv6"
                   />
                 </Box>

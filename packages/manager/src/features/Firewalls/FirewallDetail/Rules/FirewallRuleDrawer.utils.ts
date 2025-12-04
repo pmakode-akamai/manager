@@ -142,13 +142,13 @@ export const validateIPs = (
 export const validatePrefixLists = (pls: ExtendedPL[]): ExtendedPL[] => {
   const seen = new Set<string>();
   return pls.map((pl) => {
-    const { address, inIPv4Rule, inIPv6Rule } = pl;
+    const { address, updated } = pl;
 
-    if (!pl.address) {
+    if (!address) {
       return { ...pl, error: 'Please select the Prefix List.' };
     }
 
-    if (pl.inIPv4Rule === false && pl.inIPv6Rule === false) {
+    if (updated?.inIPv4Rule === false && updated.inIPv6Rule === false) {
       return {
         ...pl,
         error: 'At least one IPv4 or IPv6 option must be selected.',
@@ -162,8 +162,8 @@ export const validatePrefixLists = (pls: ExtendedPL[]): ExtendedPL[] => {
       };
     }
 
-    seen.add(pl.address);
-    return { address, inIPv4Rule, inIPv6Rule };
+    seen.add(address);
+    return { ...pl, error: undefined };
   });
 };
 
@@ -199,13 +199,13 @@ export const classifyIPs = (ips: ExtendedIP[]) => {
  */
 export const classifyPLs = (pls: ExtendedPL[]) => {
   return pls.reduce<{ ipv4?: string[]; ipv6?: string[] }>((acc, pl) => {
-    if (pl.inIPv4Rule) {
+    if (pl.updated?.inIPv4Rule) {
       if (!acc.ipv4) {
         acc.ipv4 = [];
       }
       acc.ipv4.push(pl.address);
     }
-    if (pl.inIPv6Rule) {
+    if (pl.updated?.inIPv6Rule) {
       if (!acc.ipv6) {
         acc.ipv6 = [];
       }
@@ -290,6 +290,10 @@ export const getInitialIPsOrPLs = (
     address: pl,
     inIPv4Rule: reference.inIPv4Rule,
     inIPv6Rule: reference.inIPv6Rule,
+    updated: {
+      inIPv4Rule: reference.inIPv4Rule,
+      inIPv6Rule: reference.inIPv6Rule,
+    },
   }));
   const pls: ExtendedPL[] = extendedPL;
 

@@ -68,7 +68,12 @@ export const FirewallRuleDrawer = React.memo(
     const [ips, setIPs] = React.useState<ExtendedIP[]>([{ address: '' }]);
 
     const [pls, setPLs] = React.useState<ExtendedPL[]>([
-      { address: '', inIPv4Rule: false, inIPv6Rule: false },
+      {
+        address: '',
+        inIPv4Rule: false,
+        inIPv6Rule: false,
+        updated: { inIPv4Rule: false, inIPv6Rule: false },
+      },
     ]);
 
     // Firewall Ports, like IPs, are tracked separately. The form.values state value
