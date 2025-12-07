@@ -53,10 +53,12 @@ export const FirewallRuleForm = React.memo((props: FirewallRuleFormProps) => {
     presetPorts,
     ruleErrors,
     setFieldError,
+    setFieldTouched,
     setFieldValue,
     setIPs,
     setPLs,
     setPresetPorts,
+    validateForm,
     touched,
     values,
   } = props;
@@ -180,6 +182,7 @@ export const FirewallRuleForm = React.memo((props: FirewallRuleFormProps) => {
   const handleIPChange = React.useCallback(
     (_ips: ExtendedIP[]) => {
       setIPs(_ips);
+      Promise.resolve().then(() => validateForm());
     },
     [setIPs]
   );
@@ -188,11 +191,13 @@ export const FirewallRuleForm = React.memo((props: FirewallRuleFormProps) => {
     const _ipsWithMasks = enforceIPMasks(_ips);
 
     setIPs(_ipsWithMasks);
+    Promise.resolve().then(() => validateForm());
   };
 
   const handlePrefixListChange = React.useCallback(
     (_pls: ExtendedPL[]) => {
       setPLs(_pls);
+      Promise.resolve().then(() => validateForm());
     },
     [setPLs]
   );
@@ -243,10 +248,10 @@ export const FirewallRuleForm = React.memo((props: FirewallRuleFormProps) => {
       />
       <TextField
         aria-label="Label for firewall rule"
-        errorText={errors.label}
+        errorText={touched.label ? errors.label : undefined}
         label="Label"
         name="label"
-        onBlur={handleBlur}
+        onBlur={() => setFieldTouched('label')}
         onChange={handleTextFieldChange}
         placeholder="Enter a label..."
         required
@@ -264,9 +269,9 @@ export const FirewallRuleForm = React.memo((props: FirewallRuleFormProps) => {
       />
       <Select
         aria-label="Select rule protocol."
-        errorText={errors.protocol}
+        errorText={touched.protocol ? errors.protocol : undefined}
         label="Protocol"
-        onBlur={handleBlur}
+        onBlur={() => setFieldTouched('protocol')}
         onChange={(_, selected) => handleProtocolChange(selected.value)}
         options={protocolOptions}
         placeholder="Select a protocol..."
@@ -277,9 +282,10 @@ export const FirewallRuleForm = React.memo((props: FirewallRuleFormProps) => {
         autoHighlight
         disabled={['ICMP', 'IPENCAP'].includes(values.protocol ?? '')}
         disableSelectAll
-        errorText={generalPortError}
+        errorText={touched.ports ? generalPortError : undefined}
         label="Ports"
         multiple
+        onBlur={() => setFieldTouched('ports')}
         onChange={(_, selected) => handlePortPresetChange(selected)}
         options={portOptions}
         // If options are selected, hide the placeholder
@@ -311,9 +317,9 @@ export const FirewallRuleForm = React.memo((props: FirewallRuleFormProps) => {
       ) : null}
       <Select
         aria-label={`Select rule ${addressesLabel}s.`}
-        errorText={errors.addresses}
+        errorText={touched.addresses ? errors.addresses : undefined}
         label={`${capitalize(addressesLabel)}s`}
-        onBlur={handleBlur}
+        onBlur={() => setFieldTouched('addresses')}
         onChange={(_, selected) => {
           handleAddressesChange(selected.value);
         }}
@@ -343,8 +349,10 @@ export const FirewallRuleForm = React.memo((props: FirewallRuleFormProps) => {
             onBlur={handleIPBlur}
             onChange={handleIPChange}
             placeholder={ipFieldPlaceholder}
+            setFieldTouched={setFieldTouched}
             title={ips.length > 0 ? 'IP / Netmask' : ''}
             tooltip={ipNetmaskTooltipText}
+            touched={touched}
           />
           {isFirewallRulesetsPrefixlistsFeatureEnabled && (
             <MultiplePrefixListSelect

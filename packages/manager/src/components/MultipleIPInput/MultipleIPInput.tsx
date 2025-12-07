@@ -11,6 +11,7 @@ import {
   Typography,
 } from '@linode/ui';
 import Grid from '@mui/material/Grid';
+import { FormikTouched } from 'formik';
 import * as React from 'react';
 import { makeStyles } from 'tss-react/mui';
 
@@ -146,6 +147,12 @@ export interface MultipeIPInputProps {
    */
   required?: boolean;
 
+  setFieldTouched?: (
+    field: string,
+    isTouched?: boolean | undefined,
+    shouldValidate?: boolean | undefined
+  ) => void;
+
   /**
    * Title or label for the input field.
    */
@@ -155,6 +162,9 @@ export interface MultipeIPInputProps {
    * Tooltip text for extra info on hover.
    */
   tooltip?: string;
+
+  // Use separate state for touch (Not formik for IP fields)
+  touched?: FormikTouched<any>;
 }
 
 export const MultipleIPInput = React.memo((props: MultipeIPInputProps) => {
@@ -176,6 +186,8 @@ export const MultipleIPInput = React.memo((props: MultipeIPInputProps) => {
     required,
     title,
     tooltip,
+    setFieldTouched,
+    touched,
   } = props;
   const { classes, cx } = useStyles();
 
@@ -192,12 +204,15 @@ export const MultipleIPInput = React.memo((props: MultipeIPInputProps) => {
     e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>,
     idx: number
   ) => {
+    setFieldTouched?.(`ip${idx}`);
+
     if (!onBlur || e.target.value === '') {
       return;
     }
 
     const newIPs = [...ips];
     newIPs[idx].address = e.target.value;
+
     onBlur(newIPs);
   };
 
@@ -290,7 +305,7 @@ export const MultipleIPInput = React.memo((props: MultipeIPInputProps) => {
             <Grid size={11}>
               <TextField
                 className={classes.input}
-                errorText={thisIP.error}
+                errorText={touched?.[`ip${idx}`] ? thisIP.error : undefined}
                 hideLabel
                 InputProps={{
                   'aria-label': `${title} ip-address-${idx}`,

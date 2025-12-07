@@ -250,8 +250,8 @@ export const FirewallRuleDrawer = React.memo(
             initialValues={getInitialFormValues(ruleToModifyOrView)}
             onSubmit={onSubmitRule}
             validate={onValidateRule}
-            validateOnBlur={false}
-            validateOnChange={false}
+            validateOnBlur={true}
+            validateOnChange={true}
           >
             {(formikProps) => (
               <>
