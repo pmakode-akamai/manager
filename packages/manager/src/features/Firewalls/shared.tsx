@@ -350,6 +350,10 @@ interface GenerateAddressesLabelV2Options {
    */
   addresses: FirewallRuleType['addresses'];
   /**
+   * Whether the Firewall RuleSets and PrefixLists Feature is enabled or NOT
+   */
+  isFirewallRulesetsPrefixlistsEnabled?: boolean;
+  /**
    * Optional callback invoked when a prefix list label is clicked.
    *
    * @param prefixListLabel - The label of the clicked prefix list (e.g., "pl:system:test")
@@ -393,6 +397,7 @@ export const generateAddressesLabelV2 = (
 ) => {
   const {
     addresses,
+    isFirewallRulesetsPrefixlistsEnabled,
     onPrefixListClick,
     showTruncateChip = true,
     truncateAt = 1,
@@ -452,15 +457,19 @@ export const generateAddressesLabelV2 = (
     }
 
     elements.push(
-      <Link
-        key={pl}
-        onClick={(e) => {
-          e.preventDefault();
-          onPrefixListClick?.(pl, reference);
-        }}
-      >
-        {`${pl} ${plRuleRefTag}`}
-      </Link>
+      isFirewallRulesetsPrefixlistsEnabled ? (
+        <Link
+          key={pl}
+          onClick={(e) => {
+            e.preventDefault();
+            onPrefixListClick?.(pl, reference);
+          }}
+        >
+          {`${pl} ${plRuleRefTag}`}
+        </Link>
+      ) : (
+        <span key={pl}>{`${pl} ${plRuleRefTag}`}</span>
+      )
     );
   });
 

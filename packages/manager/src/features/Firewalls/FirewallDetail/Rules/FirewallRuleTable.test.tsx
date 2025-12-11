@@ -1,3 +1,7 @@
+import React from 'react';
+
+import { renderWithTheme } from 'src/utilities/testHelpers';
+
 import { firewallRuleToRowData } from './FirewallRuleTable';
 
 import type { ExtendedFirewallRule } from './firewallRuleEditor';
@@ -13,16 +17,15 @@ describe('Firewall rule table tests', () => {
         protocol: 'TCP',
         status: 'NOT_MODIFIED',
       };
-      expect(firewallRuleToRowData([rule])[0]).toHaveProperty('type', 'SSH');
-      expect(firewallRuleToRowData([rule])[0]).toHaveProperty(
-        'protocol',
-        'TCP'
-      );
-      expect(firewallRuleToRowData([rule])[0]).toHaveProperty('ports', '22');
-      expect(firewallRuleToRowData([rule])[0]).toHaveProperty(
-        'addresses',
-        'All IPv4, All IPv6'
-      );
+      const rowData = firewallRuleToRowData([rule])[0];
+
+      expect(rowData).toHaveProperty('type', 'SSH');
+      expect(rowData).toHaveProperty('protocol', 'TCP');
+      expect(rowData).toHaveProperty('ports', '22');
+
+      // eslint-disable-next-line react/jsx-no-useless-fragment
+      const { getByText } = renderWithTheme(<>{rowData.addresses}</>);
+      expect(getByText('All IPv4, All IPv6')).toBeVisible();
     });
   });
 });

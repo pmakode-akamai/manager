@@ -35,7 +35,6 @@ import { TableRow } from 'src/components/TableRow';
 import { TableRowEmpty } from 'src/components/TableRowEmpty/TableRowEmpty';
 import { TableRowLoading } from 'src/components/TableRowLoading/TableRowLoading';
 import {
-  generateAddressesLabel,
   generateAddressesLabelV2,
   generateRuleLabel,
   predefinedFirewallFromRule as ruleToPredefinedFirewall,
@@ -327,15 +326,15 @@ const FirewallRuleTableRow = React.memo((props: FirewallRuleTableRowProps) => {
     useIsFirewallRulesetsPrefixlistsEnabled();
 
   const isRuleSetRow = Boolean(ruleset);
-  const isRuleSetRowEnabled =
-    isRuleSetRow && isFirewallRulesetsPrefixlistsFeatureEnabled;
 
   const isValidRuleSetId = ruleset !== undefined && ruleset !== null;
 
   const { data: rulesetDetails, isLoading: isRuleSetLoading } =
     useFirewallRuleSetQuery(
       ruleset ?? -1,
-      isValidRuleSetId && isRuleSetRowEnabled
+      isValidRuleSetId &&
+        isRuleSetRow &&
+        isFirewallRulesetsPrefixlistsFeatureEnabled
     );
 
   const actionMenuProps = {
@@ -344,7 +343,7 @@ const FirewallRuleTableRow = React.memo((props: FirewallRuleTableRowProps) => {
     handleDeleteFirewallRule,
     handleOpenRuleDrawerForEditing,
     idx: index,
-    isRuleSetRowEnabled,
+    isRuleSetRowEnabled: isRuleSetRow,
   };
 
   const theme = useTheme();
@@ -412,7 +411,8 @@ const FirewallRuleTableRow = React.memo((props: FirewallRuleTableRowProps) => {
       {...listeners}
       sx={rowStyles}
     >
-      {!isRuleSetRowEnabled && (
+      {/* Normal Rule row */}
+      {!isRuleSetRow && (
         <>
           <TableCell aria-label={`Label: ${label}`}>
             <StyledDragIndicator aria-label="Drag indicator icon" />
@@ -447,7 +447,27 @@ const FirewallRuleTableRow = React.memo((props: FirewallRuleTableRowProps) => {
         </>
       )}
 
-      {isRuleSetRowEnabled && (
+      {/* Rule Set row when feature is disabled */}
+      {isRuleSetRow && !isFirewallRulesetsPrefixlistsFeatureEnabled && (
+        <TableCell
+          aria-label={`Label: ${label}`}
+          colSpan={smDown ? 2 : lgDown ? 4 : 5}
+        >
+          <Box alignItems="center" display="flex">
+            <StyledDragIndicator
+              aria-label="Drag indicator icon"
+              sx={{ flexShrink: 0 }}
+            />
+            <Box sx={{ whiteSpace: 'nowrap' }}>
+              <span>Rule Set ID: </span>
+              <IPAddress ips={[String(ruleset)]} isHovered={isHovered} />
+            </Box>
+          </Box>
+        </TableCell>
+      )}
+
+      {/* Rule Set row when feature is enabled */}
+      {isRuleSetRow && isFirewallRulesetsPrefixlistsFeatureEnabled && (
         <TableCell
           aria-label={`Label: ${label}`}
           colSpan={smDown ? 2 : lgDown ? 4 : 5}
@@ -656,12 +676,11 @@ export const firewallRuleToRowData = (
 
     return {
       ...thisRule,
-      addresses: isFirewallRulesetsPrefixlistsEnabled
-        ? generateAddressesLabelV2({
-            addresses: thisRule.addresses,
-            onPrefixListClick: handleOpenPrefixListDrawer,
-          })
-        : generateAddressesLabel(thisRule.addresses),
+      addresses: generateAddressesLabelV2({
+        addresses: thisRule.addresses,
+        onPrefixListClick: handleOpenPrefixListDrawer,
+        isFirewallRulesetsPrefixlistsEnabled,
+      }),
       id: idx + 1, // ids are 1-indexed, as id given to the useSortable hook cannot be 0
       index: idx,
       ports: sortPortString(thisRule.ports || ''),

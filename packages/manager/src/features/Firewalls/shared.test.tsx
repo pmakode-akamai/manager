@@ -276,11 +276,12 @@ describe('generateAddressesLabelV2', () => {
     expect(getByText('2001:db8:85a3::8a2e:370:7334/128')).toBeVisible();
   });
 
-  it('triggers onPrefixListClick when PL is clicked', async () => {
+  it('triggers onPrefixListClick when PL is clicked and feature is enabled', async () => {
     const result = generateAddressesLabelV2({
       addresses,
       onPrefixListClick,
       showTruncateChip: false,
+      isFirewallRulesetsPrefixlistsEnabled: true, // only clickable when true
     });
     const { getByText } = renderWithTheme(<>{result}</>);
 
