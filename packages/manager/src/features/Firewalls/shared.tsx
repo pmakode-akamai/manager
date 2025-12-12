@@ -9,6 +9,7 @@ import React from 'react';
 
 import { Link } from 'src/components/Link';
 import { useFlags } from 'src/hooks/useFlags';
+import { ExtendedPL } from 'src/utilities/ipUtils';
 
 import type { PORT_PRESETS } from './FirewallDetail/Rules/shared';
 import type {
@@ -77,7 +78,7 @@ export const protocolOptions: FirewallOptionItem<FirewallRuleProtocol>[] = [
   { label: 'IPENCAP', value: 'IPENCAP' },
 ];
 
-export const useAddressOptions = () => {
+export const useAddressOptions = (pls: ExtendedPL[]) => {
   const { isFirewallRulesetsPrefixlistsFeatureEnabled } =
     useIsFirewallRulesetsPrefixlistsEnabled();
 
@@ -86,9 +87,11 @@ export const useAddressOptions = () => {
     { label: 'All IPv4', value: 'allIPv4' },
     { label: 'All IPv6', value: 'allIPv6' },
     {
-      label: isFirewallRulesetsPrefixlistsFeatureEnabled
-        ? 'IP / Netmask / Prefix List'
-        : 'IP / Netmask',
+      label:
+        isFirewallRulesetsPrefixlistsFeatureEnabled ||
+        (!isFirewallRulesetsPrefixlistsFeatureEnabled && pls.length > 0)
+          ? 'IP / Netmask / Prefix List'
+          : 'IP / Netmask',
       // We can keep this entire value even if the option is feature-flagged.
       // Feature-flagging the label (without the "Prefix List" text) is sufficient.
       value: 'ip/netmask/prefixlist',

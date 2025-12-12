@@ -59,7 +59,9 @@ const useStyles = makeStyles()((theme: Theme) => ({
   },
 }));
 
-const isPrefixListSupported = (pl: FirewallPrefixList) => {
+const isPrefixListSupported = (
+  pl: FirewallPrefixList | Partial<FirewallPrefixList>
+) => {
   // Whitelisting all the Special PrefixLists as supported ones.
   if (isSpecialPrefixList(pl.name)) {
     return true;
@@ -71,22 +73,29 @@ const isPrefixListSupported = (pl: FirewallPrefixList) => {
   );
 };
 
-const getSupportDetails = (pl: FirewallPrefixList) => ({
-  isPLIPv4Unsupported: pl.ipv4 === null || pl.ipv4 === undefined,
-  isPLIPv6Unsupported: pl.ipv6 === null || pl.ipv6 === undefined,
-});
+const getSupportDetails = (
+  pl: FirewallPrefixList | Partial<FirewallPrefixList>
+) => {
+  // Treat special prefix lists as fully supported
+  if (isSpecialPrefixList(pl.name)) {
+    return {
+      isPLIPv4Unsupported: false,
+      isPLIPv6Unsupported: false,
+    };
+  }
+
+  return {
+    isPLIPv4Unsupported: pl.ipv4 === null || pl.ipv4 === undefined,
+    isPLIPv6Unsupported: pl.ipv6 === null || pl.ipv6 === undefined,
+  };
+};
 
 /**
  * Default selection state for a newly chosen Prefix List
  */
 const getDefaultPLReferenceState = (
-  support: null | ReturnType<typeof getSupportDetails>
+  support: ReturnType<typeof getSupportDetails>
 ): { inIPv4Rule: boolean; inIPv6Rule: boolean } => {
-  if (support === null) {
-    // Special Prefix List case
-    return { inIPv4Rule: true, inIPv6Rule: true };
-  }
-
   const { isPLIPv4Unsupported, isPLIPv6Unsupported } = support;
 
   // Supports both IPv4 & IPv6
@@ -169,9 +178,7 @@ export const MultiplePrefixListSelect = React.memo(
           .map((pl) => ({
             label: pl.name!,
             value: pl.id ?? pl.name,
-            support: !isSpecialPrefixList(pl.name)
-              ? getSupportDetails(pl as FirewallPrefixList)
-              : null,
+            support: getSupportDetails(pl),
           }))
           // The API does not seem to sort prefix lists by "name" to prioritize certain types.
           // This sort ensures that Autocomplete's groupBy displays groups correctly without duplicates
@@ -252,13 +259,13 @@ export const MultiplePrefixListSelect = React.memo(
 
       const selectedOption = availableOptions.find(
         (o) => o.label === thisPL.address
-      );
+      ) ?? { label: thisPL.address, value: thisPL.address, support: null }; // fallback
 
       // Disabling a checkbox ensures that at least one option (IPv4 or IPv6) remains checked
       const ipv4Unsupported =
-        selectedOption?.support?.isPLIPv4Unsupported === true;
+        selectedOption.support?.isPLIPv4Unsupported === true;
       const ipv6Unsupported =
-        selectedOption?.support?.isPLIPv6Unsupported === true;
+        selectedOption.support?.isPLIPv6Unsupported === true;
 
       const ipv4Forced =
         thisPL.inIPv4Rule === true && thisPL.inIPv6Rule === false;
@@ -350,6 +357,7 @@ export const MultiplePrefixListSelect = React.memo(
                 </Box>
                 <Box alignItems="center" display="flex">
                   <LinkButton
+                    disabled={disabled}
                     onClick={() => {
                       handleOpenPrefixListDrawer(thisPL.address, {
                         inIPv4Rule: thisPL.inIPv4Rule,

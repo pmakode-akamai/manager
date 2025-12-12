@@ -64,7 +64,7 @@ export const FirewallRuleForm = React.memo((props: FirewallRuleFormProps) => {
   const { isFirewallRulesetsPrefixlistsFeatureEnabled } =
     useIsFirewallRulesetsPrefixlistsEnabled();
 
-  const addressOptions = useAddressOptions();
+  const addressOptions = useAddressOptions(pls);
 
   const hasCustomInput = presetPorts.some(
     (thisPort) => thisPort.value === PORT_PRESETS['CUSTOM'].value
@@ -338,7 +338,10 @@ export const FirewallRuleForm = React.memo((props: FirewallRuleFormProps) => {
         >
           <StyledMultipleIPInput
             aria-label="IP / Netmask for Firewall rule"
-            canRemoveFirstInput={isFirewallRulesetsPrefixlistsFeatureEnabled}
+            canRemoveFirstInput={
+              isFirewallRulesetsPrefixlistsFeatureEnabled ||
+              (!isFirewallRulesetsPrefixlistsFeatureEnabled && pls.length > 0)
+            }
             ips={ips}
             onBlur={handleIPBlur}
             onChange={handleIPChange}
@@ -346,9 +349,12 @@ export const FirewallRuleForm = React.memo((props: FirewallRuleFormProps) => {
             title={ips.length > 0 ? 'IP / Netmask' : ''}
             tooltip={ipNetmaskTooltipText}
           />
-          {isFirewallRulesetsPrefixlistsFeatureEnabled && (
+          {(isFirewallRulesetsPrefixlistsFeatureEnabled ||
+            (!isFirewallRulesetsPrefixlistsFeatureEnabled &&
+              pls.length > 0)) && (
             <StyledMultiplePrefixListSelect
               aria-label="Prefix List for Firewall rule"
+              disabled={!isFirewallRulesetsPrefixlistsFeatureEnabled}
               handleOpenPrefixListDrawer={handleOpenPrefixListDrawer}
               onChange={handlePrefixListChange}
               pls={pls}
