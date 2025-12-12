@@ -259,7 +259,14 @@ export const MultiplePrefixListSelect = React.memo(
 
       const selectedOption = availableOptions.find(
         (o) => o.label === thisPL.address
-      ) ?? { label: thisPL.address, value: thisPL.address, support: null }; // fallback
+      ) ?? {
+        label: thisPL.address,
+        value: thisPL.address,
+        support: {
+          isPLIPv4Unsupported: !thisPL.inIPv4Rule,
+          isPLIPv6Unsupported: !thisPL.inIPv6Rule,
+        },
+      }; // fallback
 
       // Disabling a checkbox ensures that at least one option (IPv4 or IPv6) remains checked
       const ipv4Unsupported =
@@ -316,7 +323,8 @@ export const MultiplePrefixListSelect = React.memo(
               options={availableOptions}
               placeholder="Type to search or select Prefix List"
               value={
-                availableOptions.find((o) => o.label === thisPL.address) ?? null
+                availableOptions.find((o) => o.label === thisPL.address) ??
+                selectedOption
               }
             />
             {thisPL.address.length !== 0 && (
