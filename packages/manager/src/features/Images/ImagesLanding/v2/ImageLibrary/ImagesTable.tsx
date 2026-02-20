@@ -20,9 +20,9 @@ import { TableRowEmpty } from 'src/components/TableRowEmpty/TableRowEmpty';
 import { TableRowError } from 'src/components/TableRowError/TableRowError';
 import { TableSortCell } from 'src/components/TableSortCell';
 
-import { ImageRow } from '../ImageRow';
+import { ImageRow } from '../../ImageRow';
 
-import type { Handlers as ImageHandlers } from '../ImagesActionMenu';
+import type { Handlers as ImageHandlers } from '../../ImagesActionMenu';
 import type {
   ImageConfig,
   ImageViewTableColConfig,

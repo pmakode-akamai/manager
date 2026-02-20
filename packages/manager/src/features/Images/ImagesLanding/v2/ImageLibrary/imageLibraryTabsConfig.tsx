@@ -7,10 +7,10 @@ import {
   MANUAL_IMAGES_DEFAULT_ORDER,
   MANUAL_IMAGES_DEFAULT_ORDER_BY,
   MANUAL_IMAGES_PREFERENCE_KEY,
-} from '../../constants';
+} from '../../../constants';
 
-import type { ImageLibrarySubTab } from '../../utils';
-import type { ImageLibraryType } from '../../utils';
+import type { ImageLibrarySubTab } from '../../../utils';
+import type { ImageLibraryType } from '../../../utils';
 import type { Image } from '@linode/api-v4';
 import type { HiddenProps } from '@linode/ui';
 

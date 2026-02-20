@@ -1,9 +1,9 @@
 import { createRoute, redirect } from '@tanstack/react-router';
 
-import { imageLibrarySubTabs } from 'src/features/Images/ImagesLanding/v2/imageLibraryTabsConfig';
+import { imageLibrarySubTabs } from 'src/features/Images/ImagesLanding/v2/ImageLibrary/imageLibraryTabsConfig';
 
 import { rootRoute } from '../root';
-import { ImagesRoute } from './ImagesRoute';
+import { ImagesLayout } from './ImagesLayout';
 
 import type { TableSearchParams } from '../types';
 import type { ImageLibraryType } from 'src/features/Images/utils';
@@ -39,7 +39,7 @@ const imageActions = {
 export type ImageAction = (typeof imageActions)[keyof typeof imageActions];
 
 const imagesRoute = createRoute({
-  component: ImagesRoute,
+  component: ImagesLayout,
   getParentRoute: () => rootRoute,
   path: 'images',
   validateSearch: (search: ImagesSearchParams) => search,
@@ -157,9 +157,9 @@ const imageLibraryRoute = createRoute({
   path: 'image-library',
   validateSearch: (search: ImagesSearchParams) => search,
 }).lazy(() =>
-  import('src/features/Images/ImagesLanding/v2/imagesLandingV2LazyRoute').then(
-    (m) => m.imagesLandingV2LazyRoute
-  )
+  import(
+    'src/features/Images/ImagesLanding/v2/ImageLibrary/imageLibraryLazyRoute'
+  ).then((m) => m.imageLibraryLazyRoute)
 );
 
 // Share Groups tab - for managing image share groups
@@ -175,9 +175,9 @@ const imagesShareGroupsRoute = createRoute({
   path: 'share-groups',
   validateSearch: (search: ImagesSearchParams) => search,
 }).lazy(() =>
-  import('src/features/Images/ImagesLanding/v2/imagesLandingV2LazyRoute').then(
-    (m) => m.imagesLandingV2LazyRoute
-  )
+  import(
+    'src/features/Images/ImagesLanding/v2/ShareGroups/shareGroupsLazyRoute'
+  ).then((m) => m.shareGroupsLazyRoute)
 );
 
 const imageActionRouteV2 = createRoute({
