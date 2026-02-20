@@ -8,8 +8,8 @@ import { Tab } from 'src/components/Tabs/Tab';
 import { TabList } from 'src/components/Tabs/TabList';
 import { TabPanels } from 'src/components/Tabs/TabPanels';
 import { Tabs } from 'src/components/Tabs/Tabs';
+import { getImageLibrarySubTabIndex } from 'src/features/Images/utils';
 
-import { getImageLibrarySubTabIndex } from '../../utils';
 import { imageLibrarySubTabs as subTabs } from './imageLibraryTabsConfig';
 
 export const ImageLibraryTabs = () => {

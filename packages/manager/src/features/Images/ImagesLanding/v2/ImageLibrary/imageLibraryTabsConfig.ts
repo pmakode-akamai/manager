@@ -1,4 +1,4 @@
-import type { ImageLibrarySubTab } from '../../utils';
+import type { ImageLibrarySubTab } from '../../../utils';
 
 export const imageLibrarySubTabs: ImageLibrarySubTab[] = [
   { type: 'owned', title: 'Owned by me' },
