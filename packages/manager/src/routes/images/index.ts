@@ -1,5 +1,7 @@
 import { createRoute, redirect } from '@tanstack/react-router';
 
+import { imageLibrarySubTabs } from 'src/features/Images/ImagesLanding/v2/ImageLibrary/imageLibraryTabsConfig';
+
 import { rootRoute } from '../root';
 import { ImagesRoute } from './ImagesRoute';
 
@@ -8,7 +10,6 @@ import type { ImageLibraryType } from 'src/features/Images/utils';
 
 export interface ImagesSearchParams extends TableSearchParams {
   query?: string;
-  // subType?: ImageLibraryType;
 }
 
 export interface ImageCreateDiskSearchParams {
@@ -217,6 +218,17 @@ const imagesShareGroupsIndexRoute = createRoute({
 );
 
 const imageLibraryTypeRoute = createRoute({
+  beforeLoad: async ({ context, params }) => {
+    if (
+      context.isPrivateImageSharingEnabled &&
+      !imageLibrarySubTabs.map((tab) => tab.type).includes(params.imageType)
+    ) {
+      throw redirect({
+        to: '/images/image-library/$imageType',
+        params: { imageType: 'owned-by-me' },
+      });
+    }
+  },
   getParentRoute: () => imageLibraryIndexRoute,
   params: {
     parse: ({ imageType }: ImageActionRouteParams) => ({
