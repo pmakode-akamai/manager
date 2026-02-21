@@ -1,11 +1,11 @@
 import type { ImageLibrarySubTab } from './utils';
 
 export const imageLibrarySubTabs: ImageLibrarySubTab[] = [
-  { type: 'owned', title: 'Owned by me' },
+  { type: 'owned-by-me', title: 'Owned by me' },
   {
-    type: 'shared',
+    type: 'shared-with-me',
     title: 'Shared with me',
     isBeta: true,
   },
-  { type: 'recovery', title: 'Recovery images' },
+  { type: 'recovery-images', title: 'Recovery images' },
 ];

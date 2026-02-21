@@ -1,6 +1,6 @@
 import { imageQueries, useImageQuery, useQueryClient } from '@linode/queries';
 import { BetaChip, Drawer, Notice, Stack } from '@linode/ui';
-import { useNavigate, useParams, useSearch } from '@tanstack/react-router';
+import { useNavigate, useParams } from '@tanstack/react-router';
 import * as React from 'react';
 
 import { SuspenseLoader } from 'src/components/SuspenseLoader';
@@ -9,16 +9,18 @@ import { Tab } from 'src/components/Tabs/Tab';
 import { TabList } from 'src/components/Tabs/TabList';
 import { TabPanels } from 'src/components/Tabs/TabPanels';
 import { Tabs } from 'src/components/Tabs/Tabs';
+// import { TanStackTabLinkList } from 'src/components/Tabs/TanStackTabLinkList';
+import { getImageLibrarySubTabIndex } from 'src/features/Images/utils';
+// import { useTabs } from 'src/hooks/useTabs';
 
-import { getImageLibrarySubTabIndex } from '../../utils';
-import { DeleteImageDialog } from '../DeleteImageDialog';
-import { EditImageDrawer } from '../EditImageDrawer';
-import { ManageImageReplicasForm } from '../ImageRegions/ManageImageRegionsForm';
-import { RebuildImageDrawer } from '../RebuildImageDrawer';
+import { DeleteImageDialog } from '../../DeleteImageDialog';
+import { EditImageDrawer } from '../../EditImageDrawer';
+import { ManageImageReplicasForm } from '../../ImageRegions/ManageImageRegionsForm';
+import { RebuildImageDrawer } from '../../RebuildImageDrawer';
 import { imageLibrarySubTabs as subTabs } from './imageLibraryTabsConfig';
 import { ImagesView } from './ImagesView';
 
-import type { Handlers as ImageHandlers } from '../ImagesActionMenu';
+import type { Handlers as ImageHandlers } from '../../ImagesActionMenu';
 import type { Image } from '@linode/api-v4';
 import type { ImageAction } from 'src/routes/images';
 
@@ -26,11 +28,14 @@ export const ImageLibraryTabs = () => {
   const navigate = useNavigate();
 
   const params = useParams({
-    from: '/images/image-library/$imageId/$action',
+    from: '/images/image-library/$imageType/$imageId/$action',
     shouldThrow: false,
   });
 
-  const search = useSearch({ from: '/images' });
+  const imageTypeParams = useParams({
+    from: '/images/image-library/$imageType',
+    shouldThrow: false,
+  });
 
   const queryClient = useQueryClient();
 
@@ -42,9 +47,13 @@ export const ImageLibraryTabs = () => {
 
   const actionHandler = (image: Image, action: ImageAction) => {
     navigate({
-      params: { action, imageId: image.id },
+      params: {
+        action,
+        imageId: image.id,
+        imageType: params?.imageType ?? 'owned-by-me',
+      },
       search: (prev) => prev,
-      to: '/images/image-library/$imageId/$action',
+      to: '/images/image-library/$imageType/$imageId/$action',
     });
   };
 
@@ -62,7 +71,7 @@ export const ImageLibraryTabs = () => {
 
   const handleCloseDialog = () => {
     navigate({
-      search: (prev) => ({ ...prev, subType: search.subType }),
+      // search: (prev) => ({ ...prev, subType: search.subType }),
       to: '/images/image-library',
     });
   };
@@ -95,25 +104,47 @@ export const ImageLibraryTabs = () => {
     onRebuild: handleRebuild,
   };
 
-  const subTabIndex = getImageLibrarySubTabIndex(subTabs, search.subType);
+  const subTabIndex = getImageLibrarySubTabIndex(
+    subTabs,
+    imageTypeParams?.imageType
+  );
 
   const onTabChange = (index: number) => {
     // - Update the "subType" query param.
     // - This switches between "Owned by me", "Shared with me" and "Recovery images" sub-tabs within the Image Library tab.
     navigate({
-      to: `/images/image-library`,
-      search: (prev) => ({
-        ...prev,
-        subType: subTabs[index].type,
-        // Reset search, pagination and sorting query params
-        query: undefined,
-        page: undefined,
-        pageSize: undefined,
-        'manual-order': undefined,
-        'manual-orderBy': undefined,
-      }),
+      to: `/images/image-library/$imageType`,
+      params: {
+        imageType: subTabs[index].type,
+      },
+      // search: (prev) => ({
+      //   ...prev,
+      //   // subType: subTabs[index].type,
+      //   // Reset search, pagination and sorting query params
+      //   // query: undefined,
+      //   // page: undefined,
+      //   // pageSize: undefined,
+      //   // 'manual-order': undefined,
+      //   // 'manual-orderBy': undefined,
+      // }),
     });
   };
+
+  // const { handleTabChange, tabIndex, tabs } = useTabs([
+  //   {
+  //     title: 'Owned by me',
+  //     to: '/images/image-library/$imageType',
+  //   },
+  //   {
+  //     title: 'Shared with me',
+  //     to: '/images/image-library/shared-with-me',
+  //     chip: <BetaChip />,
+  //   },
+  //   {
+  //     title: 'Recovery Images',
+  //     to: '/images/image-library/recovery-images',
+  //   },
+  // ]);
 
   return (
     <Stack spacing={3}>
@@ -128,17 +159,17 @@ export const ImageLibraryTabs = () => {
         <React.Suspense fallback={<SuspenseLoader />}>
           <TabPanels>
             {subTabs.map((tab, idx) => (
-              <SafeTabPanel index={idx} key={`images-${tab.type}-content`}>
-                {tab.type === 'owned' && (
-                  <ImagesView handlers={handlers} type="owned" />
+              <SafeTabPanel index={idx} key={`images-${tab.title}-content`}>
+                {tab.type === 'owned-by-me' && (
+                  <ImagesView handlers={handlers} type="owned-by-me" />
                 )}
-                {tab.type === 'shared' && (
+                {tab.type === 'shared-with-me' && (
                   <Notice variant="info">
                     Share with me is coming soon...
                   </Notice>
                 )}
-                {tab.type === 'recovery' && (
-                  // <ImagesView handlers={handlers} type="recovery" />
+                {tab.type === 'recovery-images' && (
+                  // <ImagesView handlers={handlers} type="recovery-images" />
                   <Notice variant="info">Recovery Images</Notice>
                 )}
               </SafeTabPanel>

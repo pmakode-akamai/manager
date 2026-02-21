@@ -27,9 +27,11 @@ export const ImagesRoute = () => {
       // Redirect to Image Library tab when feature flag is enabled
       if (isPrivateImageSharingEnabled && location.pathname === '/images') {
         navigate({
-          to: '/images/image-library',
-          search: { subType: 'owned' },
+          to: '/images/image-library/$imageType',
           replace: true,
+          params: {
+            imageType: 'owned-by-me',
+          },
         });
       } else if (
         // Redirect to legacy route when feature flag is disabled

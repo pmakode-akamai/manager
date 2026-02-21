@@ -71,8 +71,7 @@ describe('ImageLibraryTabs', () => {
 
     it("should render 'Owned by me' tab", async () => {
       const { getByText } = renderWithTheme(<ImageLibraryTabs />, {
-        initialRoute: '/images/image-library',
-        initialEntries: ['/images/image-library?subType=owned'],
+        initialRoute: '/images/image-library/owned-by-me',
       });
 
       expect(getByText('Owned by me')).toBeVisible();
@@ -96,8 +95,7 @@ describe('ImageLibraryTabs', () => {
       const { getByText, findByLabelText, router } = renderWithTheme(
         <ImageLibraryTabs />,
         {
-          initialRoute: '/images/image-library',
-          initialEntries: ['/images/image-library?subType=owned'],
+          initialRoute: '/images/image-library/owned-by-me/',
         }
       );
 
@@ -108,7 +106,7 @@ describe('ImageLibraryTabs', () => {
       await userEvent.click(getByText('Edit'));
 
       expect(router.state.location.pathname).toBe(
-        `/images/image-library/${encodeURIComponent(image.id)}/edit`
+        `/images/image-library/owned-by-me/${encodeURIComponent(image.id)}/edit`
       );
     });
 
@@ -129,8 +127,7 @@ describe('ImageLibraryTabs', () => {
       const { router, getByText, findByLabelText } = renderWithTheme(
         <ImageLibraryTabs />,
         {
-          initialRoute: '/images/image-library',
-          initialEntries: ['/images/image-library?subType=owned'],
+          initialRoute: '/images/image-library/owned-by-me/',
         }
       );
 
@@ -141,7 +138,7 @@ describe('ImageLibraryTabs', () => {
       await userEvent.click(getByText('Rebuild an Existing Linode'));
 
       expect(router.state.location.pathname).toBe(
-        `/images/image-library/${encodeURIComponent(image.id)}/rebuild`
+        `/images/image-library/owned-by-me/${encodeURIComponent(image.id)}/rebuild`
       );
     });
 
@@ -201,8 +198,7 @@ describe('ImageLibraryTabs', () => {
       const { router, findByLabelText, getByText } = renderWithTheme(
         <ImageLibraryTabs />,
         {
-          initialRoute: '/images/image-library',
-          initialEntries: ['/images/image-library?subType=owned'],
+          initialRoute: '/images/image-library/owned-by-me/',
         }
       );
 
@@ -213,7 +209,7 @@ describe('ImageLibraryTabs', () => {
       await userEvent.click(getByText('Delete'));
 
       expect(router.state.location.pathname).toBe(
-        `/images/image-library/${encodeURIComponent(image.id)}/delete`
+        `/images/image-library/owned-by-me/${encodeURIComponent(image.id)}/delete`
       );
     });
   });

@@ -90,10 +90,9 @@ describe('ImagesView component', () => {
       );
 
       const { getByText, queryAllByTestId } = renderWithTheme(
-        <ImagesView handlers={mockHandlers} type="owned" />,
+        <ImagesView handlers={mockHandlers} type="owned-by-me" />,
         {
-          initialRoute: '/images/image-library',
-          initialEntries: ['/images/image-library?subType=owned'],
+          initialRoute: '/images/image-library/owned-by-me',
         }
       );
 
@@ -126,14 +125,13 @@ describe('ImagesView component', () => {
       );
 
       const { findByText } = renderWithTheme(
-        <ImagesView handlers={mockHandlers} type="owned" />,
+        <ImagesView handlers={mockHandlers} type="owned-by-me" />,
         {
-          initialRoute: '/images/image-library',
-          initialEntries: ['/images/image-library?subType=owned'],
+          initialRoute: '/images/image-library/owned-by-me',
         }
       );
 
-      expect(await findByText('No Custom Images to display.')).toBeVisible();
+      expect(await findByText('No custom images to display')).toBeVisible();
     });
 
     it('disables the action menu buttons if user does not have permissions to edit images', async () => {
@@ -160,10 +158,9 @@ describe('ImagesView component', () => {
       );
 
       const { findByLabelText } = renderWithTheme(
-        <ImagesView handlers={mockHandlers} type="owned" />,
+        <ImagesView handlers={mockHandlers} type="owned-by-me" />,
         {
-          initialRoute: '/images/image-library',
-          initialEntries: ['/images/image-library?subType=owned'],
+          initialRoute: '/images/image-library/owned-by-me',
         }
       );
 
@@ -194,10 +191,9 @@ describe('ImagesView component', () => {
       });
 
       const { getByText, queryAllByTestId } = renderWithTheme(
-        <ImagesView handlers={mockHandlers} type="owned" />,
+        <ImagesView handlers={mockHandlers} type="owned-by-me" />,
         {
-          initialRoute: '/images/image-library',
-          initialEntries: ['/images/image-library?subType=owned'],
+          initialRoute: '/images/image-library/owned-by-me',
         }
       );
 
@@ -218,10 +214,9 @@ describe('ImagesView component', () => {
       });
 
       const { getByText, queryAllByTestId } = renderWithTheme(
-        <ImagesView handlers={mockHandlers} type="owned" />,
+        <ImagesView handlers={mockHandlers} type="owned-by-me" />,
         {
-          initialRoute: '/images/image-library',
-          initialEntries: ['/images/image-library?subType=owned'],
+          initialRoute: '/images/image-library/owned-by-me',
         }
       );
 

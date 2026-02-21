@@ -20,13 +20,13 @@ import { TableRowEmpty } from 'src/components/TableRowEmpty/TableRowEmpty';
 import { TableRowError } from 'src/components/TableRowError/TableRowError';
 import { TableSortCell } from 'src/components/TableSortCell';
 
-import { ImageRow } from '../ImageRow';
+import { ImageRow } from '../../ImageRow';
 
-import type { Handlers as ImageHandlers } from '../ImagesActionMenu';
+import type { Handlers as ImageHandlers } from '../../ImagesActionMenu';
 import type {
   ImageConfig,
   ImageViewTableColConfig,
-} from './imageLibraryTabsConfig';
+} from '../ImageLibrary/imageLibraryTabsConfig';
 import type { APIError, Event, Image } from '@linode/api-v4';
 import type { Theme } from '@mui/material/styles';
 import type { Order } from 'src/hooks/useOrderV2';
