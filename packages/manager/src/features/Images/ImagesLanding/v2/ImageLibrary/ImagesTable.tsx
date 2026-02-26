@@ -20,9 +20,10 @@ import { TableSortCell } from 'src/components/TableSortCell';
 
 import { ImageRow } from '../../ImageRow';
 import {
-  StyledImageTable,
+  StyledImageTableContainer,
   StyledImageTableHeader,
   StyledImageTableSubheader,
+  StyledImageViewContainer,
 } from './ImagesTable.styles';
 
 import type { Handlers as ImageHandlers } from '../../ImagesActionMenu';
@@ -87,7 +88,7 @@ export const ImagesTable = (props: ImagesTableProps) => {
   } = props;
 
   return (
-    <StyledImageTable>
+    <StyledImageViewContainer>
       {headerProps && headerProps.title && (
         <StyledImageTableHeader>
           <Box
@@ -125,84 +126,86 @@ export const ImagesTable = (props: ImagesTableProps) => {
           )}
         </StyledImageTableHeader>
       )}
-      <Table>
-        <TableHead>
-          <TableRow>
-            {columns.map((col, idx) => {
-              const cell = col.sortableProps ? (
-                <TableSortCell
-                  active={orderBy === col.sortableProps.label}
-                  direction={order}
-                  handleClick={handleOrderChange}
-                  key={idx}
-                  label={col.sortableProps.label}
-                >
-                  {col.name}
-                </TableSortCell>
-              ) : (
-                <TableCell key={idx}>{col.name}</TableCell>
-              );
+      <StyledImageTableContainer>
+        <Table>
+          <TableHead>
+            <TableRow>
+              {columns.map((col, idx) => {
+                const cell = col.sortableProps ? (
+                  <TableSortCell
+                    active={orderBy === col.sortableProps.label}
+                    direction={order}
+                    handleClick={handleOrderChange}
+                    key={idx}
+                    label={col.sortableProps.label}
+                  >
+                    {col.name}
+                  </TableSortCell>
+                ) : (
+                  <TableCell key={idx}>{col.name}</TableCell>
+                );
 
-              return col.hiddenOn ? (
-                <Hidden key={idx} {...{ [col.hiddenOn]: true }}>
-                  {cell}
-                </Hidden>
-              ) : (
-                cell
-              );
-            })}
-            <TableCell />
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {!error && images?.length === 0 && (
-            <TableRowEmpty
-              colSpan={columns.length + 1}
-              message={
-                <Box
-                  sx={(theme) => ({
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    gap: theme.spacingFunction(4),
-                    p: `${theme.spacingFunction(24)} ${theme.spacingFunction(32)}`,
-                  })}
-                >
-                  <ZeroStateSearchNarrowIcon />
-                  <Typography variant="h3">{emptyMessage.main}</Typography>
-                  {!query && emptyMessage.instruction && (
-                    <Typography variant="body1">
-                      {emptyMessage.instruction}
-                    </Typography>
-                  )}
-                </Box>
-              }
-            />
-          )}
-          {error && query && (
-            <TableRowError
-              colSpan={columns.length + 1}
-              message={error[0].reason}
-            />
-          )}
-          {images?.map((image) => (
-            <ImageRow
-              event={events[image.id]}
-              handlers={handlers}
-              image={image}
-              key={image.id}
-            />
-          ))}
-        </TableBody>
-      </Table>
-      <PaginationFooter
-        count={pagination.count}
-        eventCategory={eventCategory}
-        handlePageChange={pagination.handlePageChange}
-        handleSizeChange={pagination.handlePageSizeChange}
-        page={pagination.page}
-        pageSize={pagination.pageSize}
-      />
-    </StyledImageTable>
+                return col.hiddenOn ? (
+                  <Hidden key={idx} {...{ [col.hiddenOn]: true }}>
+                    {cell}
+                  </Hidden>
+                ) : (
+                  cell
+                );
+              })}
+              <TableCell />
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {!error && images?.length === 0 && (
+              <TableRowEmpty
+                colSpan={columns.length + 1}
+                message={
+                  <Box
+                    sx={(theme) => ({
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: theme.spacingFunction(4),
+                      p: `${theme.spacingFunction(24)} ${theme.spacingFunction(32)}`,
+                    })}
+                  >
+                    <ZeroStateSearchNarrowIcon />
+                    <Typography variant="h3">{emptyMessage.main}</Typography>
+                    {!query && emptyMessage.instruction && (
+                      <Typography variant="body1">
+                        {emptyMessage.instruction}
+                      </Typography>
+                    )}
+                  </Box>
+                }
+              />
+            )}
+            {error && query && (
+              <TableRowError
+                colSpan={columns.length + 1}
+                message={error[0].reason}
+              />
+            )}
+            {images?.map((image) => (
+              <ImageRow
+                event={events[image.id]}
+                handlers={handlers}
+                image={image}
+                key={image.id}
+              />
+            ))}
+          </TableBody>
+        </Table>
+        <PaginationFooter
+          count={pagination.count}
+          eventCategory={eventCategory}
+          handlePageChange={pagination.handlePageChange}
+          handleSizeChange={pagination.handlePageSizeChange}
+          page={pagination.page}
+          pageSize={pagination.pageSize}
+        />
+      </StyledImageTableContainer>
+    </StyledImageViewContainer>
   );
 };

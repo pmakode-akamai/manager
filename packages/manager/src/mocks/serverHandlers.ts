@@ -884,7 +884,7 @@ export const handlers = [
 
     if (filter?.includes('manual')) {
       const images = [
-        imageFactory.build({
+        ...imageFactory.buildList(25, {
           capabilities: ['distributed-sites'],
           regions: [{ region: 'us-east', status: 'available' }],
           type: 'manual',
