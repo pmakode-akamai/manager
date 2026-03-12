@@ -1,8 +1,8 @@
 import { useLinodeQuery, useLinodeUpdateMutation } from '@linode/queries';
+import { getFeatureChip } from '@linode/shared';
 import {
   Accordion,
   ActionsPanel,
-  BetaChip,
   Box,
   Divider,
   Notice,
@@ -239,9 +239,9 @@ const LinodeAlerts = () => {
                     detailProps={{ sx: { p: 0 } }}
                     disableGutters // Removes unnecessary default margins when stacking Accordions
                     heading="Alerts"
-                    headingChip={
-                      aclpServices?.linode?.alerts?.beta ? <BetaChip /> : null
-                    }
+                    headingChip={getFeatureChip(
+                      aclpServices?.linode?.alerts ?? {}
+                    )}
                     summaryProps={{ sx: { p: 0 } }}
                   >
                     <AlertReusableComponent

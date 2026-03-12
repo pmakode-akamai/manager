@@ -1,4 +1,5 @@
-import { Accordion, BetaChip } from '@linode/ui';
+import { getFeatureChip } from '@linode/shared';
+import { Accordion } from '@linode/ui';
 import * as React from 'react';
 import { useController, useFormContext } from 'react-hook-form';
 
@@ -14,13 +15,13 @@ import type { LinodeCreateFormValues } from '../utilities';
 import type { CloudPulseAlertsPayload } from '@linode/api-v4';
 
 interface AlertsProps {
-  isAlertsBetaMode: boolean;
-  onAlertsModeChange: (isBeta: boolean) => void;
+  isAlertsAclpEnabledMode: boolean;
+  onAlertsModeChange: (isAclpEnabled: boolean) => void;
 }
 
 export const Alerts = ({
   onAlertsModeChange,
-  isAlertsBetaMode,
+  isAlertsAclpEnabledMode,
 }: AlertsProps) => {
   const { aclpServices } = useFlags();
 
@@ -35,7 +36,7 @@ export const Alerts = ({
     field.onChange(updatedAlerts);
   };
 
-  const subHeading = isAlertsBetaMode ? (
+  const subHeading = isAlertsAclpEnabledMode ? (
     <>
       Receive notifications through System Alerts when metric thresholds are
       exceeded. After you&apos;ve created your Linode, you can create and manage
@@ -54,22 +55,20 @@ export const Alerts = ({
       detailProps={{ sx: { p: 0 } }}
       heading="Alerts"
       headingChip={
-        aclpServices?.linode?.alerts?.beta && isAlertsBetaMode ? (
-          <BetaChip />
-        ) : null
+        isAlertsAclpEnabledMode
+          ? getFeatureChip(aclpServices?.linode?.alerts ?? {})
+          : null
       }
       subHeading={subHeading}
       summaryProps={{ sx: { p: 0 } }}
     >
-      {aclpServices?.linode?.alerts?.enabled && (
-        <AclpPreferenceToggle
-          isAlertsBetaMode={isAlertsBetaMode}
-          onAlertsModeChange={onAlertsModeChange}
-          type="alerts"
-        />
-      )}
-      {aclpServices?.linode?.alerts?.enabled && isAlertsBetaMode ? (
-        // Beta ACLP Alerts View
+      <AclpPreferenceToggle
+        isAlertsAclpEnabledMode={isAlertsAclpEnabledMode}
+        onAlertsModeChange={onAlertsModeChange}
+        type="alerts"
+      />
+      {isAlertsAclpEnabledMode ? (
+        // ACLP Alerts View
         <AlertReusableComponent
           onToggleAlert={handleToggleAlert}
           paperSx={{ p: 0 }}

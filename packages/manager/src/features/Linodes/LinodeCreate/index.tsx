@@ -94,7 +94,7 @@ export const LinodeCreate = () => {
   const { aclpServices, linodeCreateBanner } = useFlags();
 
   // In Create flow, alerts always default to 'legacy' mode
-  const [isAclpAlertsBetaCreateFlow, setIsAclpAlertsBetaCreateFlow] =
+  const [isAclpAlertsCreateFlow, setIsAclpAlertsCreateFlow] =
     React.useState<boolean>(false);
 
   const queryClient = useQueryClient();
@@ -123,7 +123,7 @@ export const LinodeCreate = () => {
       if (isBeta) {
         form.setValue('alerts', EMPTY_ACLP_ALERTS);
       }
-      setIsAclpAlertsBetaCreateFlow(isBeta);
+      setIsAclpAlertsCreateFlow(isBeta);
     },
     [form]
   );
@@ -183,8 +183,8 @@ export const LinodeCreate = () => {
     const payload = getLinodeCreatePayload(values, {
       isDualStackEnabled,
       isShowingNewNetworkingUI: isLinodeInterfacesEnabled,
-      isAclpIntegration: aclpServices?.linode?.alerts?.enabled,
-      isAclpAlertsPreferenceBeta: isAclpAlertsBetaCreateFlow,
+      isAclpAlertsEnabled: aclpServices?.linode?.alerts?.enabled,
+      isAclpAlertsEnabledMode: isAclpAlertsCreateFlow,
     });
 
     try {
@@ -334,15 +334,15 @@ export const LinodeCreate = () => {
             <Networking />
           )}
           <AdditionalOptions
-            isAlertsBetaMode={isAclpAlertsBetaCreateFlow}
+            isAlertsAclpEnabledMode={isAclpAlertsCreateFlow}
             onAlertsModeChange={handleAlertsModeChange}
           />
           <Addons />
           <EUAgreement />
-          <Summary isAlertsBetaMode={isAclpAlertsBetaCreateFlow} />
+          <Summary isAlertsAclpEnabledMode={isAclpAlertsCreateFlow} />
           <SMTP />
           {secureVMNoticesEnabled && <FirewallAuthorization />}
-          <Actions isAlertsBetaMode={isAclpAlertsBetaCreateFlow} />
+          <Actions isAlertsAclpEnabledMode={isAclpAlertsCreateFlow} />
         </Stack>
       </form>
     </FormProvider>

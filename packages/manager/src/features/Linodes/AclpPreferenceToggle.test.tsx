@@ -20,7 +20,7 @@ import {
 import type { AclpPreferenceToggleType } from './AclpPreferenceToggle';
 
 interface ExpectedAclpPreferenceItem {
-  betaModeBannertext: string;
+  betaModeBannerText: string;
   betaModeButtonText: string;
   legacyModeBannerText: string;
   legacyModeButtonText: string;
@@ -34,14 +34,14 @@ const expectedAclpPreferences: Record<
   metrics: {
     preference: true,
     legacyModeBannerText: METRICS_LEGACY_MODE_BANNER_TEXT,
-    betaModeBannertext: METRICS_BETA_MODE_BANNER_TEXT,
+    betaModeBannerText: METRICS_BETA_MODE_BANNER_TEXT,
     legacyModeButtonText: METRICS_LEGACY_MODE_BUTTON_TEXT,
     betaModeButtonText: METRICS_BETA_MODE_BUTTON_TEXT,
   },
   alerts: {
     preference: true,
     legacyModeBannerText: ALERTS_LEGACY_MODE_BANNER_TEXT,
-    betaModeBannertext: ALERTS_BETA_MODE_BANNER_TEXT,
+    betaModeBannerText: ALERTS_BETA_MODE_BANNER_TEXT,
     legacyModeButtonText: ALERTS_LEGACY_MODE_BUTTON_TEXT,
     betaModeButtonText: ALERTS_BETA_MODE_BUTTON_TEXT,
   },
@@ -50,6 +50,10 @@ const expectedAclpPreferences: Record<
 const queryMocks = vi.hoisted(() => ({
   useMutatePreferences: vi.fn(),
   usePreferences: vi.fn(),
+}));
+
+const flagsMock = vi.hoisted(() => ({
+  useFlags: vi.fn(),
 }));
 
 vi.mock('@linode/queries', async () => {
@@ -61,7 +65,22 @@ vi.mock('@linode/queries', async () => {
   };
 });
 
+vi.mock('src/hooks/useFlags', () => ({
+  useFlags: flagsMock.useFlags,
+}));
+
 describe('AclpPreferenceToggle', () => {
+  beforeEach(() => {
+    flagsMock.useFlags.mockReturnValue({
+      aclpServices: {
+        linode: {
+          metrics: { beta: true },
+          alerts: { beta: true },
+        },
+      },
+    });
+  });
+
   /**
    * ACLP Preference Toggle tests for Metrics
    */
@@ -111,7 +130,7 @@ describe('AclpPreferenceToggle', () => {
     // Check if the banner content and button text is correct in beta mode
     const typography = screen.getByTestId('metrics-preference-banner-text');
     expect(typography).toHaveTextContent(
-      expectedAclpPreferences.metrics.betaModeBannertext
+      expectedAclpPreferences.metrics.betaModeBannerText
     );
 
     const expectedLegacyModeButtonText = screen.getByText(
@@ -134,7 +153,7 @@ describe('AclpPreferenceToggle', () => {
 
     renderWithTheme(<AclpPreferenceToggle type="metrics" />);
 
-    // Click the button to switch from legacy to beta
+    // Click the button to switch from legacy to aclp
     const button = screen.getByText(
       expectedAclpPreferences.metrics.legacyModeButtonText
     );
@@ -145,7 +164,7 @@ describe('AclpPreferenceToggle', () => {
     });
   });
 
-  it('should update ACLP Metrics preference to legacy mode when toggling from beta mode', async () => {
+  it('should update ACLP Metrics preference to legacy mode when toggling from aclp mode', async () => {
     queryMocks.usePreferences.mockReturnValue({
       data: expectedAclpPreferences.metrics.preference,
       isLoading: false,
@@ -173,10 +192,10 @@ describe('AclpPreferenceToggle', () => {
   /**
    * ACLP Preference Toggle tests for Alerts
    */
-  it('should display the correct legacy mode banner and button text for Alerts when isAlertsBetaMode is false', () => {
+  it('should display the correct legacy mode banner and button text for Alerts when isAlertsAclpEnabledMode is false', () => {
     renderWithTheme(
       <AclpPreferenceToggle
-        isAlertsBetaMode={false}
+        isAlertsAclpEnabledMode={false}
         onAlertsModeChange={vi.fn()}
         type="alerts"
       />
@@ -194,10 +213,10 @@ describe('AclpPreferenceToggle', () => {
     expect(button).toBeInTheDocument();
   });
 
-  it('should display the correct beta mode banner and button text for Alerts when isAlertsBetaMode is true', () => {
+  it('should display the correct beta mode banner and button text for Alerts when isAlertsAclpEnabledMode is true', () => {
     renderWithTheme(
       <AclpPreferenceToggle
-        isAlertsBetaMode={true}
+        isAlertsAclpEnabledMode={true}
         onAlertsModeChange={vi.fn()}
         type="alerts"
       />
@@ -206,7 +225,7 @@ describe('AclpPreferenceToggle', () => {
     // Check if the banner content and button text is correct in beta mode
     const typography = screen.getByTestId('alerts-preference-banner-text');
     expect(typography).toHaveTextContent(
-      expectedAclpPreferences.alerts.betaModeBannertext
+      expectedAclpPreferences.alerts.betaModeBannerText
     );
 
     const button = screen.getByText(
@@ -215,18 +234,18 @@ describe('AclpPreferenceToggle', () => {
     expect(button).toBeInTheDocument();
   });
 
-  it('should call onAlertsModeChange with true when switching from legacy to beta mode', async () => {
+  it('should call onAlertsModeChange with true when switching from legacy to aclp mode', async () => {
     const mockSetIsAclpBetaLocal = vi.fn();
 
     renderWithTheme(
       <AclpPreferenceToggle
-        isAlertsBetaMode={false}
+        isAlertsAclpEnabledMode={false}
         onAlertsModeChange={mockSetIsAclpBetaLocal}
         type="alerts"
       />
     );
 
-    // Click the button to switch from legacy to beta
+    // Click the button to switch from legacy to aclp
     const button = screen.getByText(
       expectedAclpPreferences.alerts.legacyModeButtonText
     );
@@ -235,18 +254,18 @@ describe('AclpPreferenceToggle', () => {
     expect(mockSetIsAclpBetaLocal).toHaveBeenCalledWith(true);
   });
 
-  it('should call onAlertsModeChange with false when switching from beta to legacy mode', async () => {
+  it('should call onAlertsModeChange with false when switching from aclp to legacy mode', async () => {
     const mockSetIsAclpBetaLocal = vi.fn();
 
     renderWithTheme(
       <AclpPreferenceToggle
-        isAlertsBetaMode={true}
+        isAlertsAclpEnabledMode={true}
         onAlertsModeChange={mockSetIsAclpBetaLocal}
         type="alerts"
       />
     );
 
-    // Click the button to switch from beta to legacy
+    // Click the button to switch from aclp to legacy
     const button = screen.getByText(
       expectedAclpPreferences.alerts.betaModeButtonText
     );
