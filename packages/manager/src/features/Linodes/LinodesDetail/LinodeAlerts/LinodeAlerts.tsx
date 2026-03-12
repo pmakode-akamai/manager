@@ -182,9 +182,15 @@ const LinodeAlerts = () => {
             variant="info"
           >
             <Typography>
-              Try the <strong>Alerts (Beta)</strong>, featuring new options like
-              customizable alerts. You can keep your legacy alerts and add them
-              to the new Beta Alerts.
+              Try the{' '}
+              <strong>
+                {aclpServices?.linode?.alerts?.beta
+                  ? 'Alerts (Beta)'
+                  : 'new Alerts'}
+              </strong>
+              , featuring new options like customizable alerts. You can keep
+              your legacy alerts and add them to the new{' '}
+              {aclpServices?.linode?.alerts?.beta ? 'Beta Alerts' : 'Alerts'}.
             </Typography>
           </DismissibleBanner>
         )}

@@ -36,16 +36,17 @@ const preferenceConfig: Record<
     getButtonText: (isAclp, isBeta) =>
       isAclp
         ? 'Switch to legacy Metrics'
-        : `Try the Metrics ${isBeta ? '(Beta)' : ''}`,
+        : `Try the ${isBeta ? 'Metrics (Beta)' : 'new Metrics'}`,
     getBannerText: (isAclp, isBeta) =>
       isAclp ? (
         <span>
-          Welcome to <strong>{isBeta ? 'Metrics (Beta)' : 'Metrics'}</strong>{' '}
-          with more options and greater flexibility for better data analysis.
+          Welcome to{' '}
+          <strong>{isBeta ? 'Metrics (Beta)' : 'new Metrics'}</strong> with more
+          options and greater flexibility for better data analysis.
         </span>
       ) : (
         <span>
-          Try the new <strong>{isBeta ? 'Metrics (Beta)' : 'Metrics'}</strong>{' '}
+          Try the <strong>{isBeta ? 'Metrics (Beta)' : 'new Metrics'}</strong>{' '}
           with more options and greater flexibility for better data analysis.
           You can switch back to the current view at any time.
         </span>
@@ -56,16 +57,16 @@ const preferenceConfig: Record<
     getButtonText: (isAclp, isBeta) =>
       isAclp
         ? 'Switch to legacy Alerts'
-        : `Try ${isBeta ? 'Alerts (Beta)' : 'Alerts'}`,
+        : `Try ${isBeta ? 'Alerts (Beta)' : 'new Alerts'}`,
     getBannerText: (isAclp, isBeta) =>
       isAclp ? (
         <span>
-          Welcome to <strong>{isBeta ? 'Alerts (Beta)' : 'Alerts'}</strong>,
+          Welcome to <strong>{isBeta ? 'Alerts (Beta)' : 'new Alerts'}</strong>,
           designed for flexibility with features like customizable alerts.
         </span>
       ) : (
         <span>
-          Try the <strong>{isBeta ? 'Alerts (Beta)' : 'Alerts'}</strong>,
+          Try the <strong>{isBeta ? 'Alerts (Beta)' : 'new Alerts'}</strong>,
           featuring new options like customizable alerts. You can switch back to
           legacy Alerts at any time.
         </span>
