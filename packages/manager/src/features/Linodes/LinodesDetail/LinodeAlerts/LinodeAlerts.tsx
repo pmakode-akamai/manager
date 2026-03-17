@@ -175,25 +175,32 @@ const LinodeAlerts = () => {
         </Typography>
       </ConfirmationDialog>
       <Box>
-        {isAclpAlertingInRegionEnabled && (
-          <DismissibleBanner
-            dismissible={false}
-            preferenceKey="alerts-preference-linode-details"
-            variant="info"
-          >
-            <Typography>
-              Try the{' '}
-              <strong>
-                {aclpServices?.linode?.alerts?.beta
-                  ? 'Alerts (Beta)'
-                  : 'new Alerts'}
-              </strong>
-              , featuring new options like customizable alerts. You can keep
-              your legacy alerts and add them to the new{' '}
-              {aclpServices?.linode?.alerts?.beta ? 'Beta Alerts' : 'Alerts'}.
-            </Typography>
-          </DismissibleBanner>
-        )}
+        {isAclpAlertingInRegionEnabled &&
+          (aclpServices.linode?.alerts?.beta ||
+            aclpServices.linode?.alerts?.new) && (
+            <DismissibleBanner
+              dismissible={false}
+              preferenceKey="alerts-preference-linode-details"
+              variant="info"
+            >
+              <Typography>
+                {aclpServices?.linode?.alerts?.beta && (
+                  <>
+                    Try the <strong>Alerts (Beta)</strong>, featuring new
+                    options like customizable alerts. You can keep your legacy
+                    alerts and add them to the new Beta Alerts.
+                  </>
+                )}
+                {aclpServices?.linode?.alerts?.new && (
+                  <>
+                    Try <strong>Alerts (New)</strong> with features like
+                    customizable alerts. Legacy and new alerts can be used
+                    together.
+                  </>
+                )}
+              </Typography>
+            </DismissibleBanner>
+          )}
         {isAclpAlertingInRegionEnabled ? (
           // Unified mode - both Legacy Alerts and ACLP Alerts are displayed with a shared save button.
           <Paper ref={unifiedAlertsContainerRef}>
