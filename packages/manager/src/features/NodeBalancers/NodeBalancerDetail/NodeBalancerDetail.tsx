@@ -2,7 +2,7 @@ import {
   useNodeBalancerQuery,
   useNodebalancerUpdateMutation,
 } from '@linode/queries';
-import { CircleProgress, ErrorState, Notice } from '@linode/ui';
+import { BetaChip, CircleProgress, ErrorState, Notice } from '@linode/ui';
 import { useParams } from '@tanstack/react-router';
 import React from 'react';
 
@@ -12,11 +12,14 @@ import { SafeTabPanel } from 'src/components/Tabs/SafeTabPanel';
 import { TabPanels } from 'src/components/Tabs/TabPanels';
 import { Tabs } from 'src/components/Tabs/Tabs';
 import { TanStackTabLinkList } from 'src/components/Tabs/TanStackTabLinkList';
+import { useIsAclpSupportedRegion } from 'src/features/CloudPulse/Utils/utils';
 import { usePermissions } from 'src/features/IAM/hooks/usePermissions';
+import { useFlags } from 'src/hooks/useFlags';
 import { useTabs } from 'src/hooks/useTabs';
 import { getErrorMap } from 'src/utilities/errorUtils';
 
 import { NodeBalancerConfigurationsWrapper } from './NodeBalancerConfigurationsWrapper';
+import { NodebalancerMetrics } from './NodeBalancerMetrics';
 import { NodeBalancerSettings } from './NodeBalancerSettings';
 import { NodeBalancerSummary } from './NodeBalancerSummary/NodeBalancerSummary';
 
@@ -43,6 +46,18 @@ export const NodeBalancerDetail = () => {
     nodebalancer?.id
   );
 
+  const { aclpServices } = useFlags();
+
+  const isAclpMetricsSupportedRegionNodeBalancer = useIsAclpSupportedRegion({
+    capability: 'NodeBalancers',
+    regionId: nodebalancer?.region,
+    type: 'metrics',
+  });
+
+  const isAclpMetricsInRegionEnabled =
+    aclpServices?.nodebalancer?.metrics?.enabled &&
+    isAclpMetricsSupportedRegionNodeBalancer;
+
   const { handleTabChange, tabIndex, tabs } = useTabs([
     {
       title: 'Summary',
@@ -51,6 +66,12 @@ export const NodeBalancerDetail = () => {
     {
       title: 'Configurations',
       to: '/nodebalancers/$id/configurations',
+    },
+    {
+      title: 'Metrics',
+      to: '/nodebalancers/$id/metrics',
+      hide: !isAclpMetricsInRegionEnabled,
+      chip: <BetaChip />,
     },
     {
       title: 'Settings',
@@ -106,7 +127,12 @@ export const NodeBalancerDetail = () => {
             <SafeTabPanel index={1}>
               <NodeBalancerConfigurationsWrapper />
             </SafeTabPanel>
-            <SafeTabPanel index={2}>
+            {isAclpMetricsInRegionEnabled && (
+              <SafeTabPanel index={2}>
+                <NodebalancerMetrics />
+              </SafeTabPanel>
+            )}
+            <SafeTabPanel index={tabs.length - 1}>
               <NodeBalancerSettings />
             </SafeTabPanel>
           </TabPanels>
