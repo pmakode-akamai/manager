@@ -281,6 +281,7 @@ export interface Flags {
   objSummaryPage: boolean;
   passwordlessLinodes: boolean;
   placementGroupPolicyUpdate: boolean;
+  pricingDisplayInterval: PricingDisplayIntervalFlag;
   privateImageSharing: boolean;
   productInformationBanners: ProductInformationBannerFlag[];
   promos: boolean;
@@ -457,4 +458,33 @@ interface GenerationalPlansFlag extends BaseFeatureFlag {
 interface LinodeCreateBanner extends BaseFeatureFlag {
   message?: string;
   pendo_id?: string;
+}
+
+/**
+ * The billing interval shown across the app, driven by the LD flag `pricingDisplayInterval`.
+ */
+export type PricingInterval = 'hourly' | 'minutely' | 'monthly';
+
+interface PricingDisplayIntervalFlag {
+  /**
+   * Optional banner shown to users when the pricing interval changes.
+   */
+  banner?: {
+    /**
+     * Optional Markdown message override.
+     * When absent, the component uses a default message derived from `interval`.
+     * @example 'Pricing is now displayed **per hour**. [Learn more](https://linode.com/pricing)'
+     */
+    bannerMessage?: string;
+    /**
+     * Whether to show the banner.
+     */
+    enabled: boolean;
+  };
+  /**
+   * Active billing interval displayed across the app.
+   * Switch between 'monthly', 'hourly', or 'minutely' (future) via LD without a code deploy.
+   * @default 'hourly'
+   */
+  interval: PricingInterval;
 }

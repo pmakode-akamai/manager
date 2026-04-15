@@ -1,5 +1,8 @@
+import { getPriceForInterval } from './priceInterval';
+
 import type { ExtendedType } from '../extendType';
 import type { Linode, LinodeType, PriceObject } from '@linode/api-v4';
+import type { PricingInterval } from 'src/featureFlags';
 
 /**
  * Gets the backup price of a Linode type for a specific region.
@@ -30,26 +33,38 @@ export const getLinodeBackupPrice = (
 };
 
 interface BackupsPriceOptions {
+  /**
+   * Billing interval driven by the LD flag.
+   * Defaults to 'monthly' for backward compatibility.
+   */
+  interval?: PricingInterval;
   region: string | undefined;
   type: ExtendedType | LinodeType | undefined;
 }
 
 /**
- * @returns The monthly backup price for a single linode without backups enabled;
- * if price cannot be calculated, returns undefined.
+ * Returns the backup price for a single Linode at the given billing interval.
+ * The interval is driven by the LD flag — pass `usePricingInterval()` from the caller.
+ * If price cannot be calculated, returns undefined.
  */
 export const getMonthlyBackupsPrice = ({
+  interval = 'monthly',
   region,
   type,
-}: BackupsPriceOptions): PriceObject['monthly'] | undefined => {
+}: BackupsPriceOptions): null | number | undefined => {
   if (!region || !type) {
     return undefined;
   }
 
-  return getLinodeBackupPrice(type, region)?.monthly;
+  return getPriceForInterval(getLinodeBackupPrice(type, region), interval);
 };
 
 export interface TotalBackupsPriceOptions {
+  /**
+   * Billing interval driven by the LD flag.
+   * Defaults to 'monthly' for backward compatibility.
+   */
+  interval?: PricingInterval;
   /**
    * List of linodes without backups enabled
    */
@@ -61,10 +76,12 @@ export interface TotalBackupsPriceOptions {
 }
 
 /**
- * @returns The summed monthly backups prices for all linodes without backups enabled;
- * if price cannot be calculated, returns undefined.
+ * Returns the summed backup price for all Linodes without backups at the given billing interval.
+ * The interval is driven by the LD flag — pass `usePricingInterval()` from the caller.
+ * If price cannot be calculated, returns undefined.
  */
 export const getTotalBackupsPrice = ({
+  interval = 'monthly',
   linodes,
   types,
 }: TotalBackupsPriceOptions) => {
@@ -75,18 +92,16 @@ export const getTotalBackupsPrice = ({
       return undefined;
     }
 
-    const backupsMonthlyPrice: PriceObject['monthly'] | undefined =
-      getMonthlyBackupsPrice({
-        region: linode.region,
-        type,
-      });
+    const backupsPrice = getMonthlyBackupsPrice({
+      interval,
+      region: linode.region,
+      type,
+    });
 
-    if (backupsMonthlyPrice === null || backupsMonthlyPrice === undefined) {
+    if (backupsPrice === null || backupsPrice === undefined) {
       return undefined;
     }
 
-    return prevValue !== undefined
-      ? prevValue + backupsMonthlyPrice
-      : undefined;
+    return prevValue !== undefined ? prevValue + backupsPrice : undefined;
   }, 0);
 };

@@ -4,6 +4,7 @@ import * as React from 'react';
 import type { JSX } from 'react';
 
 import { DisplayPrice } from 'src/components/DisplayPrice';
+import { usePricingIntervalLabel } from 'src/hooks/usePricingInterval';
 
 import { SxTypography } from './styles';
 
@@ -76,6 +77,7 @@ export const CheckoutBar = (props: CheckoutBarProps) => {
   } = props;
 
   const theme = useTheme();
+  const intervalLabel = usePricingIntervalLabel();
 
   const price = calculatedPrice ?? 0;
 
@@ -97,7 +99,11 @@ export const CheckoutBar = (props: CheckoutBarProps) => {
           <>
             {children}
             <Box>
-              <DisplayPrice data-qa-total-price interval="mo" price={price} />
+              <DisplayPrice
+                data-qa-total-price
+                interval={intervalLabel}
+                price={price}
+              />
             </Box>
             {additionalPricing}
           </>
