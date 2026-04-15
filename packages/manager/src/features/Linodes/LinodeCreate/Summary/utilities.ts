@@ -1,9 +1,18 @@
 import { renderMonthlyPriceToCorrectDecimalPlace } from 'src/utilities/pricing/dynamicPricing';
 import { getLinodeRegionPrice } from 'src/utilities/pricing/linodes';
+import {
+  getLabelForInterval,
+  getPriceForInterval,
+} from 'src/utilities/pricing/priceInterval';
 
-import type { LinodeType } from '@linode/api-v4';
+import type { LinodeType, PriceObject } from '@linode/api-v4';
 
 interface LinodePriceOptions {
+  /**
+   * The billing interval to display pricing for.
+   * Driven by the `computePricing` LD flag. Defaults to `'monthly'`.
+   */
+  interval?: keyof PriceObject;
   /**
    * The selected region for the Linode
    */
@@ -26,7 +35,13 @@ interface LinodePriceOptions {
 }
 
 export const getLinodePrice = (options: LinodePriceOptions) => {
-  const { stackscriptData, regionId, type, types } = options;
+  const {
+    interval = 'monthly',
+    stackscriptData,
+    regionId,
+    type,
+    types,
+  } = options;
 
   const price = getLinodeRegionPrice(type, regionId);
 
@@ -63,7 +78,10 @@ export const getLinodePrice = (options: LinodePriceOptions) => {
     return `${totalClusterSize} Nodes - $${renderMonthlyPriceToCorrectDecimalPlace(clusterTotalMonthlyPrice)}/month $${renderMonthlyPriceToCorrectDecimalPlace(clusterTotalHourlyPrice)}/hr`;
   }
 
-  return `$${renderMonthlyPriceToCorrectDecimalPlace(price.monthly)}/month`;
+  const priceValue = getPriceForInterval(price, interval);
+  const label = getLabelForInterval(interval);
+
+  return `$${renderMonthlyPriceToCorrectDecimalPlace(priceValue)}/${label}`;
 };
 
 interface MarketplaceClusterData {

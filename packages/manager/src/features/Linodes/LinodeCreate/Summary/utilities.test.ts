@@ -3,7 +3,7 @@ import { linodeTypeFactory } from '@linode/utilities';
 import { getLinodePrice, getParsedMarketplaceClusterData } from './utilities';
 
 describe('getLinodePrice', () => {
-  it('gets a price for a normal Linode', () => {
+  it('gets a price for a normal Linode (default monthly interval)', () => {
     const type = linodeTypeFactory.build({
       price: { hourly: 0.1, monthly: 5 },
     });
@@ -15,7 +15,23 @@ describe('getLinodePrice', () => {
       types: [],
     });
 
-    expect(result).toBe('$5/month');
+    expect(result).toBe('$5/mo');
+  });
+
+  it('gets a price for a normal Linode with hourly interval', () => {
+    const type = linodeTypeFactory.build({
+      price: { hourly: 0.1, monthly: 5 },
+    });
+
+    const result = getLinodePrice({
+      interval: 'hourly',
+      stackscriptData: undefined,
+      regionId: 'fake-region-id',
+      type,
+      types: [],
+    });
+
+    expect(result).toBe('$0.10/hr');
   });
 
   it('gets a price for a Marketplace Cluster deployment', () => {
