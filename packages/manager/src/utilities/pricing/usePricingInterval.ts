@@ -20,7 +20,7 @@ export const usePricingInterval = () => {
 
   return {
     /**
-     * The active interval - `'hourly'` or `'monthly'`.
+     * The active interval - (eg., `'hourly'`, `'monthly'`, etc.).
      */
     interval,
     /**
