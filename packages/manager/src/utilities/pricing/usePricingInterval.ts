@@ -25,7 +25,7 @@ export const usePricingInterval = () => {
   const interval: keyof PriceObject = computePricing?.interval ?? 'monthly';
 
   return {
-    /** The active billing interval (eg., `'monthly'`, `'hourly'`, etc.). */
+    /** The active billing interval (eg., `'monthly'`, `'hourly'`, etc). */
     interval,
     /**
      * Decimal places for the active interval (2 for monthly, 3 for hourly).
@@ -57,7 +57,7 @@ export const usePricingInterval = () => {
       const value = getPriceForInterval(priceObject, interval);
       return formatPriceForInterval(value, interval);
     },
-    /** Short label for the active interval — `'hr'` or `'mo'`. */
+    /** Short label for the active interval (eg., `'hour'`, `'month'`, etc). */
     priceLabel: getLabelForInterval(interval),
   };
 };

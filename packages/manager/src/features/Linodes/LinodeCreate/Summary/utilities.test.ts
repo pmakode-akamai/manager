@@ -15,7 +15,7 @@ describe('getLinodePrice', () => {
       types: [],
     });
 
-    expect(result).toBe('$5/mo');
+    expect(result).toBe('$5.00/month');
   });
 
   it('gets a price for a normal Linode with hourly interval', () => {
@@ -31,7 +31,7 @@ describe('getLinodePrice', () => {
       types: [],
     });
 
-    expect(result).toBe('$0.100/hr');
+    expect(result).toBe('$0.100/hour');
   });
 
   it('gets a monthly price for a Marketplace Cluster deployment', () => {
@@ -49,7 +49,7 @@ describe('getLinodePrice', () => {
       type,
     });
 
-    expect(result).toBe('3 Nodes - $15/mo');
+    expect(result).toBe('3 Nodes - $15.00/month');
   });
 
   it('gets an hourly price for a Marketplace Cluster deployment', () => {
@@ -67,7 +67,7 @@ describe('getLinodePrice', () => {
       type,
     });
 
-    expect(result).toBe('3 Nodes - $0.600/hr');
+    expect(result).toBe('3 Nodes - $0.600/hour');
   });
 });
 

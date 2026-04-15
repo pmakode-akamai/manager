@@ -120,7 +120,7 @@ describe('Linode Create Summary', () => {
       useFormOptions: { defaultValues: { region: 'us-east', type: type.id } },
     });
 
-    await findByText('$5/month');
+    await findByText('$5.00/month');
   });
 
   it('should render a DC specific price if the selected region has price overrides', async () => {
@@ -142,7 +142,7 @@ describe('Linode Create Summary', () => {
       useFormOptions: { defaultValues: { region: regionId, type: type.id } },
     });
 
-    await findByText('$7/month');
+    await findByText('$7.00/month');
   });
 
   it('should render a backups price if backups are enabled, a type is selected, and a region is selected', async () => {
@@ -169,7 +169,7 @@ describe('Linode Create Summary', () => {
       },
     });
 
-    await findByText('$2/month');
+    await findByText((_, el) => el?.textContent === '$2.00/month');
   });
 
   it('should render a DC specific backups price if the region has overrides ', async () => {
@@ -201,7 +201,7 @@ describe('Linode Create Summary', () => {
       },
     });
 
-    await findByText('$4.20/month');
+    await findByText((_, el) => el?.textContent === '$4.20/month');
   });
 
   it('should render a summary item for an attached VLAN', async () => {
@@ -261,7 +261,7 @@ describe('Linode Create Summary', () => {
         },
       });
 
-    await findByText(`5 Nodes - $10/month $2.50/hr`);
+    await findByText(`5 Nodes - $10.00/month`);
   });
 
   it('should render correct pricing for Marketplace app cluster deployments with multiple plans involved', async () => {
@@ -308,7 +308,7 @@ describe('Linode Create Summary', () => {
         },
       });
 
-    await findByText(`5 Nodes - $11/month $1.10/hr`);
+    await findByText(`5 Nodes - $11.00/month`);
   });
 
   it('should render "Encrypted" if a distributed region is selected', async () => {

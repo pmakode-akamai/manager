@@ -31,7 +31,7 @@ export const getPriceForInterval = (
 };
 
 /**
- * Returns the display label for a given interval — e.g. `'hr'` or `'mo'`.
+ * Returns the display label for a given interval — e.g. `'hour'` or `'month'`.
  */
 export const getLabelForInterval = (interval: keyof PriceObject): string =>
   PRICING_INTERVAL_LABELS[interval];
@@ -39,8 +39,7 @@ export const getLabelForInterval = (interval: keyof PriceObject): string =>
 /**
  * Formats a price for display at the correct decimal places for the given
  * interval. Returns `UNKNOWN_PRICE` if the value is null or undefined.
- * Integers are left as-is (e.g. `5` -> `'5'`, not `'5.00'`).
- * Non-integers use 2 d.p. for monthly and 3 d.p. for hourly.
+ * Always applies fixed decimal places: 2 for monthly, 3 for hourly.
  */
 export const formatPriceForInterval = (
   value: null | number | undefined,
@@ -48,9 +47,6 @@ export const formatPriceForInterval = (
 ): string => {
   if (value === null || value === undefined) {
     return UNKNOWN_PRICE;
-  }
-  if (Number.isInteger(value)) {
-    return String(value);
   }
   return interval === 'hourly' ? value.toFixed(3) : value.toFixed(2);
 };
