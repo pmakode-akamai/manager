@@ -3,14 +3,6 @@ import { UNKNOWN_PRICE } from './constants';
 import type { PriceObject } from '@linode/api-v4';
 
 /**
- * Display labels for each billing interval.
- */
-export const PRICING_INTERVAL_LABELS: Record<keyof PriceObject, string> = {
-  hourly: 'hour',
-  monthly: 'month',
-};
-
-/**
  * Returns the price value for the given interval from a PriceObject.
  *
  * Falls back to `price.monthly` if the interval key doesn't exist yet on the
@@ -31,10 +23,12 @@ export const getPriceForInterval = (
 };
 
 /**
- * Returns the display label for a given interval — e.g. `'hour'` or `'month'`.
+ * Returns the display label for a given interval by dropping the trailing 'ly'.
+ * e.g. `'hourly'` -> `'hour'`, `'monthly'` -> `'month'`.
+ * Any future interval ending in 'ly' (e.g. `'minutely'`) will work automatically.
  */
 export const getLabelForInterval = (interval: keyof PriceObject): string =>
-  PRICING_INTERVAL_LABELS[interval];
+  interval.slice(0, -2);
 
 /**
  * Formats a price for display at the correct decimal places for the given
