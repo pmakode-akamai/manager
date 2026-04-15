@@ -37,13 +37,13 @@ export const Backups = () => {
   });
 
   const { data: permissions } = usePermissions('account', ['create_linode']);
-  const { getPrice, priceLabel } = usePricingInterval();
+  const { decimalPlaces, getPrice, priceLabel } = usePricingInterval();
 
   const { data: type } = useTypeQuery(typeId, Boolean(typeId));
   const { data: regions } = useRegionsQuery();
   const { data: accountSettings } = useAccountSettings();
 
-  const backupsPrice = getPrice(getLinodeBackupPrice(type, regionId));
+  const backupsPriceObj = getLinodeBackupPrice(type, regionId);
 
   const selectedRegion = useMemo(
     () => regions?.find((r) => r.id === regionId),
@@ -79,9 +79,13 @@ export const Backups = () => {
             <Typography component="span" variant="h3">
               Backups
             </Typography>
-            {backupsPrice && (
+            {backupsPriceObj && (
               <Typography component="span">
-                <Currency quantity={backupsPrice} /> per {priceLabel}
+                <Currency
+                  decimalPlaces={decimalPlaces}
+                  quantity={getPrice(backupsPriceObj)}
+                />{' '}
+                per {priceLabel}
               </Typography>
             )}
           </Stack>

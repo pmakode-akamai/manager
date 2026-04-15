@@ -1,11 +1,13 @@
+import { UNKNOWN_PRICE } from './constants';
+
 import type { PriceObject } from '@linode/api-v4';
 
 /**
  * Display labels for each billing interval.
  */
 export const PRICING_INTERVAL_LABELS: Record<keyof PriceObject, string> = {
-  hourly: 'hr',
-  monthly: 'mo',
+  hourly: 'hour',
+  monthly: 'month',
 };
 
 /**
@@ -33,3 +35,22 @@ export const getPriceForInterval = (
  */
 export const getLabelForInterval = (interval: keyof PriceObject): string =>
   PRICING_INTERVAL_LABELS[interval];
+
+/**
+ * Formats a price for display at the correct decimal places for the given
+ * interval. Returns `UNKNOWN_PRICE` if the value is null or undefined.
+ * Integers are left as-is (e.g. `5` -> `'5'`, not `'5.00'`).
+ * Non-integers use 2 d.p. for monthly and 3 d.p. for hourly.
+ */
+export const formatPriceForInterval = (
+  value: null | number | undefined,
+  interval: keyof PriceObject
+): string => {
+  if (value === null || value === undefined) {
+    return UNKNOWN_PRICE;
+  }
+  if (Number.isInteger(value)) {
+    return String(value);
+  }
+  return interval === 'hourly' ? value.toFixed(3) : value.toFixed(2);
+};

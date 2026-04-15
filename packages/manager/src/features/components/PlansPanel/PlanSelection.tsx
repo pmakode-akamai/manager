@@ -9,11 +9,7 @@ import { SelectionCard } from 'src/components/SelectionCard/SelectionCard';
 import { TableCell } from 'src/components/TableCell';
 import { TableRow } from 'src/components/TableRow';
 import { LINODE_NETWORK_IN } from 'src/constants';
-import {
-  PRICE_ERROR_TOOLTIP_TEXT,
-  UNKNOWN_PRICE,
-} from 'src/utilities/pricing/constants';
-import { renderMonthlyPriceToCorrectDecimalPlace } from 'src/utilities/pricing/dynamicPricing';
+import { PRICE_ERROR_TOOLTIP_TEXT } from 'src/utilities/pricing/constants';
 import { getLinodeRegionPrice } from 'src/utilities/pricing/linodes';
 import { usePricingInterval } from 'src/utilities/pricing/usePricingInterval';
 
@@ -68,8 +64,8 @@ export const PlanSelection = (props: PlanSelectionProps) => {
     planIsTooSmall,
   } = plan;
   const isSamePlan = plan.heading === currentPlanHeading;
-  const isGPU = plan.class === 'gpu';
-  const { interval } = usePricingInterval();
+  const { decimalPlaces, formatPrice, getPrice, interval, priceLabel } =
+    usePricingInterval();
 
   const { data: linode } = useLinodeQuery(
     linodeID ?? -1,
@@ -82,9 +78,7 @@ export const PlanSelection = (props: PlanSelectionProps) => {
   const price: PriceObject | undefined = !isDatabaseFlow
     ? getLinodeRegionPrice(plan, selectedRegionId)
     : plan.price;
-  plan.subHeadings[0] = `$${renderMonthlyPriceToCorrectDecimalPlace(
-    price?.monthly
-  )}/mo ($${price?.hourly ?? UNKNOWN_PRICE}/hr)`;
+  plan.subHeadings[0] = `$${formatPrice(price)}/${priceLabel}`;
 
   const rowIsDisabled =
     (!isDatabaseFlow && isSamePlan) ||
@@ -198,8 +192,10 @@ export const PlanSelection = (props: PlanSelectionProps) => {
               errorCell={typeof price?.monthly !== 'number'}
               errorText={!price?.monthly ? PRICE_ERROR_TOOLTIP_TEXT : undefined}
             >
-              {' '}
-              ${renderMonthlyPriceToCorrectDecimalPlace(price?.monthly)}
+              <Currency
+                decimalPlaces={decimalPlaces}
+                quantity={getPrice(price)}
+              />
             </TableCell>
           )}
           {interval === 'hourly' && (
@@ -208,11 +204,10 @@ export const PlanSelection = (props: PlanSelectionProps) => {
               errorCell={typeof price?.hourly !== 'number'}
               errorText={!price?.hourly ? PRICE_ERROR_TOOLTIP_TEXT : undefined}
             >
-              {isGPU ? (
-                <Currency quantity={price?.hourly ?? UNKNOWN_PRICE} />
-              ) : (
-                `$${price?.hourly ?? UNKNOWN_PRICE}`
-              )}
+              <Currency
+                decimalPlaces={decimalPlaces}
+                quantity={getPrice(price)}
+              />
             </TableCell>
           )}
           <TableCell center data-qa-ram noWrap>

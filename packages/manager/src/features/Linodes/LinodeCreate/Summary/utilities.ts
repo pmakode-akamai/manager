@@ -1,6 +1,6 @@
-import { renderMonthlyPriceToCorrectDecimalPlace } from 'src/utilities/pricing/dynamicPricing';
 import { getLinodeRegionPrice } from 'src/utilities/pricing/linodes';
 import {
+  formatPriceForInterval,
   getLabelForInterval,
   getPriceForInterval,
 } from 'src/utilities/pricing/priceInterval';
@@ -44,23 +44,18 @@ export const getLinodePrice = (options: LinodePriceOptions) => {
   } = options;
 
   const price = getLinodeRegionPrice(type, regionId);
+  const priceValue = getPriceForInterval(price, interval);
 
   const clusterSize = stackscriptData?.['cluster_size'];
   const isCluster = clusterSize !== undefined;
 
-  if (
-    regionId === undefined ||
-    price === undefined ||
-    price.monthly === null ||
-    price.hourly === null
-  ) {
+  if (regionId === undefined || price === undefined || priceValue === null) {
     return undefined;
   }
 
   if (isCluster) {
     let totalClusterSize = Number(clusterSize);
-    let clusterTotalMonthlyPrice = price.monthly * Number(clusterSize);
-    let clusterTotalHourlyPrice = price.hourly * Number(clusterSize);
+    let clusterTotal = (priceValue ?? 0) * Number(clusterSize);
 
     const complexClusterData = getParsedMarketplaceClusterData(
       stackscriptData,
@@ -68,20 +63,21 @@ export const getLinodePrice = (options: LinodePriceOptions) => {
     );
 
     for (const clusterPool of complexClusterData) {
-      const price = getLinodeRegionPrice(clusterPool.type, regionId);
+      const poolPrice = getLinodeRegionPrice(clusterPool.type, regionId);
       const numberOfNodesInPool = parseInt(clusterPool.size ?? '0', 10);
-      clusterTotalMonthlyPrice += (price?.monthly ?? 0) * numberOfNodesInPool;
-      clusterTotalHourlyPrice += (price?.hourly ?? 0) * numberOfNodesInPool;
+      clusterTotal +=
+        (getPriceForInterval(poolPrice, interval) ?? 0) * numberOfNodesInPool;
       totalClusterSize += numberOfNodesInPool;
     }
 
-    return `${totalClusterSize} Nodes - $${renderMonthlyPriceToCorrectDecimalPlace(clusterTotalMonthlyPrice)}/month $${renderMonthlyPriceToCorrectDecimalPlace(clusterTotalHourlyPrice)}/hr`;
+    const clusterLabel = getLabelForInterval(interval);
+
+    return `${totalClusterSize} Nodes - $${formatPriceForInterval(clusterTotal, interval)}/${clusterLabel}`;
   }
 
-  const priceValue = getPriceForInterval(price, interval);
   const label = getLabelForInterval(interval);
 
-  return `$${renderMonthlyPriceToCorrectDecimalPlace(priceValue)}/${label}`;
+  return `$${formatPriceForInterval(priceValue, interval)}/${label}`;
 };
 
 interface MarketplaceClusterData {

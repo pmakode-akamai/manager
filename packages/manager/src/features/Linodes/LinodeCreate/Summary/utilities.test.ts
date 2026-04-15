@@ -31,15 +31,16 @@ describe('getLinodePrice', () => {
       types: [],
     });
 
-    expect(result).toBe('$0.10/hr');
+    expect(result).toBe('$0.100/hr');
   });
 
-  it('gets a price for a Marketplace Cluster deployment', () => {
+  it('gets a monthly price for a Marketplace Cluster deployment', () => {
     const type = linodeTypeFactory.build({
       price: { hourly: 0.2, monthly: 5 },
     });
 
     const result = getLinodePrice({
+      interval: 'monthly',
       stackscriptData: {
         cluster_size: '3',
       },
@@ -48,7 +49,25 @@ describe('getLinodePrice', () => {
       type,
     });
 
-    expect(result).toBe('3 Nodes - $15/month $0.60/hr');
+    expect(result).toBe('3 Nodes - $15/mo');
+  });
+
+  it('gets an hourly price for a Marketplace Cluster deployment', () => {
+    const type = linodeTypeFactory.build({
+      price: { hourly: 0.2, monthly: 5 },
+    });
+
+    const result = getLinodePrice({
+      interval: 'hourly',
+      stackscriptData: {
+        cluster_size: '3',
+      },
+      regionId: 'fake-region-id',
+      types: [],
+      type,
+    });
+
+    expect(result).toBe('3 Nodes - $0.600/hr');
   });
 });
 
